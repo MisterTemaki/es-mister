@@ -51,6 +51,7 @@
 
 #if defined(MISTER) && defined(__linux__)
 #include <sched.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #include <cstring>
 #endif
@@ -366,6 +367,41 @@ int setLocale(char * argv1)
 }
 
 
+#if defined(MISTER) && defined(__linux__)
+#include <ucontext.h>
+// A crash's place, on standard error (es-mister.log): the signal, the address it touched, and the
+// instruction's and its caller's addresses, put back to function names with the unstripped binary
+// (llvm-symbolizer); then the signal does what it would have.
+static void crashReport(int signum, siginfo_t* info, void* context)
+{
+	char text[256];
+	const ucontext_t* uc = (const ucontext_t*)context;
+#if defined(__arm__)
+	const unsigned long pc = uc->uc_mcontext.arm_pc, lr = uc->uc_mcontext.arm_lr, sp = uc->uc_mcontext.arm_sp;
+#else
+	const unsigned long pc = 0, lr = 0, sp = 0;
+	(void)uc;
+#endif
+	const int length = snprintf(text, sizeof(text), "ES crashed: signal %d (code %d) at address %p, pc 0x%08lx, lr 0x%08lx, sp 0x%08lx, thread %ld\n",
+		signum, info ? info->si_code : 0, info ? info->si_addr : nullptr, pc, lr, sp, (long)syscall(SYS_gettid));
+	if (length > 0)
+		write(2, text, (size_t)length);
+	signal(signum, SIG_DFL);
+	raise(signum);
+}
+
+static void reportCrashes()
+{
+	struct sigaction action;
+	memset(&action, 0, sizeof(action));
+	action.sa_sigaction = crashReport;
+	action.sa_flags = SA_SIGINFO | SA_RESETHAND;
+	sigemptyset(&action.sa_mask);
+	for (int signum : { SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT })
+		sigaction(signum, &action, nullptr);
+}
+#endif
+
 void signalHandler(int signum) 
 {
 	if (signum == SIGSEGV)
@@ -594,6 +630,7 @@ int main(int argc, char* argv[])
 
 #if defined(MISTER) && defined(__linux__)
 	useAllProcessors();
+	reportCrashes();
 #endif
 	SampleProfiler::start();
 
