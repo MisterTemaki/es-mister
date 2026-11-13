@@ -7,8 +7,16 @@
 #include "Log.h"
 #include "Settings.h"
 #include "SystemData.h"
+#ifdef ES_USE_STB_IMAGE
+#include <stb_image.h>
+#include <stb_image_resize2.h>
+#include <stb_image_write.h>
+#else
 #include <FreeImage.h>
+#endif
 #include <fstream>
+#include <cstring>
+#include <vector>
 #include "utils/FileSystemUtil.h"
 #include "utils/StringUtil.h"
 #include <thread>
@@ -689,6 +697,68 @@ void ImageDownloadHandle::update()
 }
 
 //you can pass 0 for width or height to keep aspect ratio
+#ifdef ES_USE_STB_IMAGE
+bool resizeImage(const std::string& path, int maxWidth, int maxHeight)
+{
+	// nothing to do
+	if(maxWidth == 0 && maxHeight == 0)
+		return true;
+
+	unsigned char header[8] = {};
+	{
+		std::ifstream probe(path, std::ios::binary);
+		probe.read((char*)header, sizeof(header));
+	}
+	const bool png = memcmp(header, "\x89PNG", 4) == 0;
+	const bool jpeg = header[0] == 0xFF && header[1] == 0xD8;
+	if (!png && !jpeg)
+		return true; // stb writes PNG and JPEG only: anything else is kept as it is
+
+	int width = 0, height = 0, components = 0;
+	unsigned char* image = stbi_load(path.c_str(), &width, &height, &components, png ? 4 : 3);
+	if (image == nullptr)
+	{
+		LOG(LogError) << "Error - could not read image \"" << path << "\"!";
+		return false;
+	}
+
+	if (width == 0 || height == 0)
+	{
+		stbi_image_free(image);
+		return true;
+	}
+
+	if(maxWidth == 0)
+		maxWidth = (int)((maxHeight / (float)height) * width);
+	else if(maxHeight == 0)
+		maxHeight = (int)((maxWidth / (float)width) * height);
+
+	if (width <= maxWidth && height <= maxHeight)
+	{
+		stbi_image_free(image);
+		return true;
+	}
+
+	const int channels = png ? 4 : 3;
+	std::vector<unsigned char> scaled((size_t)maxWidth * maxHeight * channels);
+	const bool resized = stbir_resize(image, width, height, 0, scaled.data(), maxWidth, maxHeight, 0, png ? STBIR_RGBA : STBIR_RGB, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_TRIANGLE) != nullptr;
+	stbi_image_free(image);
+
+	if (!resized)
+	{
+		LOG(LogError) << "Could not resize image! (not enough memory?)";
+		return false;
+	}
+
+	const bool saved = png ? stbi_write_png(path.c_str(), maxWidth, maxHeight, channels, scaled.data(), maxWidth * channels) != 0
+		: stbi_write_jpg(path.c_str(), maxWidth, maxHeight, channels, scaled.data(), 90) != 0;
+
+	if(!saved)
+		LOG(LogError) << "Failed to save resized image!";
+
+	return saved;
+}
+#else
 bool resizeImage(const std::string& path, int maxWidth, int maxHeight)
 {
 	// nothing to do
@@ -775,6 +845,7 @@ bool resizeImage(const std::string& path, int maxWidth, int maxHeight)
 
 	return saved;
 }
+#endif // ES_USE_STB_IMAGE
 
 std::string Scraper::getSaveAsPath(FileData* game, const MetaDataId metadataId, const std::string& extension)
 {

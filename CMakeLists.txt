@@ -26,9 +26,22 @@ option(DISABLE_KODI "Set to ON to disable kodi in menu" OFF)
 option(ENABLE_PULSE "Set to ON to enable pulse audio (versus alsa)" OFF)
 option(ENABLE_TTS "Set to ON to enable text to speech" OFF)
 option(USE_SYSTEM_PUGIXML "Set to ON to use system-wide pugixml library" OFF)
+option(SOFTWARE "Set to ON to draw with the software renderer, without OpenGL" OFF)
+option(MISTER "Set to ON for the MiSTer FPGA: the software renderer, stb_image in place of FreeImage, no libVLC" OFF)
+
+if(MISTER)
+  MESSAGE("MiSTer FPGA build")
+  set(SOFTWARE ON)
+  set(CEC OFF)
+  set(DISABLE_KODI ON)
+  add_definitions(-DMISTER -DES_USE_STB_IMAGE -DES_NO_VLC)
+  set(STB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/stb" CACHE PATH "stb's headers")
+endif()
 
 # Win32 default platform & directory detection
-if(WIN32)
+if(SOFTWARE)
+    set(GLSystem "Software" CACHE STRING "The OpenGL system to be used" FORCE)
+elseif(WIN32)
 
 	set(CMAKE_CXX_STANDARD 17)
 	set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -174,7 +187,7 @@ elseif(NOT GLSystem)
     unset(_ES_DEFAULT_GLSYSTEM)
 endif()
 
-set_property(CACHE GLSystem PROPERTY STRINGS "Desktop OpenGL" "Embedded OpenGL" "OpenGL ES 2.0" "OpenGL ES 3.0")
+set_property(CACHE GLSystem PROPERTY STRINGS "Desktop OpenGL" "Embedded OpenGL" "OpenGL ES 2.0" "OpenGL ES 3.0" "Software")
 
 MESSAGE("-- Graphics API: ${GLSystem}")
 if(NOT GLES AND NOT GLES2 AND NOT GLES3 AND NOT GL)
@@ -183,7 +196,9 @@ endif()
 
 #finding necessary packages
 #-------------------------------------------------------------------------------
-if(${GLSystem} MATCHES "Desktop OpenGL")
+if(SOFTWARE)
+    MESSAGE("-- Software renderer: no OpenGL")
+elseif(${GLSystem} MATCHES "Desktop OpenGL")
     find_package(OpenGL REQUIRED)
 elseif(${GLSystem} MATCHES "OpenGL ES 3.0")
     find_package(OpenGLES3 REQUIRED)
@@ -193,13 +208,24 @@ else()
     find_package(OpenGLES REQUIRED)
 endif()
 find_package(Freetype REQUIRED)
-find_package(FreeImage REQUIRED)
+if(MISTER)
+    set(FreeImage_INCLUDE_DIRS "")
+    set(FreeImage_LIBRARIES "")
+else()
+    find_package(FreeImage REQUIRED)
+endif()
 # batocera / background musics
 find_package(SDL2MIXER REQUIRED)
 # batocera / customisations
 find_package(SDL2 REQUIRED)
 find_package(CURL REQUIRED)
-find_package(VLC REQUIRED)
+if(MISTER)
+    # libVLC's headers only: its functions are stubs (es-core/src/components/VideoVlcStub.cpp)
+    find_path(VLC_INCLUDE_DIR vlc/vlc.h REQUIRED)
+    set(VLC_LIBRARIES "")
+else()
+    find_package(VLC REQUIRED)
+endif()
 find_package(RapidJSON REQUIRED)
 
 # FriBidi is only used to reorder right-to-left scripts (Arabic, Hebrew) at render time.
@@ -323,7 +349,9 @@ else()
 endif()
 endif()
 
-if(${GLSystem} MATCHES "Desktop OpenGL")
+if(SOFTWARE)
+    add_definitions(-DUSE_SOFTWARE_RENDERER)
+elseif(${GLSystem} MATCHES "Desktop OpenGL")
     add_definitions(-DUSE_OPENGL_21)
 elseif(${GLSystem} MATCHES "OpenGL ES 3.0")
     add_definitions(-DUSE_OPENGLES_30)
@@ -349,6 +377,10 @@ set(COMMON_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/external
     ${CMAKE_CURRENT_SOURCE_DIR}/es-core/src
 )
+
+if(SOFTWARE)
+  LIST(APPEND COMMON_INCLUDE_DIRS ${STB_INCLUDE_DIR})
+endif()
 
 if(ENABLE_PULSE)
  LIST(APPEND COMMON_INCLUDE_DIRS
@@ -389,7 +421,7 @@ elseif(DEFINED VERO4K)
     LIST(APPEND COMMON_INCLUDE_DIRS
         "${CMAKE_FIND_ROOT_PATH}/opt/vero3/include"
     )
-else()
+elseif(NOT SOFTWARE)
     if(${GLSystem} MATCHES "Desktop OpenGL")
         LIST(APPEND COMMON_INCLUDE_DIRS
             ${OPENGL_INCLUDE_DIR}
@@ -506,7 +538,9 @@ else()
             winmm
         )
     endif()
-    if(${GLSystem} MATCHES "Desktop OpenGL")
+    if(SOFTWARE)
+        # no OpenGL
+    elseif(${GLSystem} MATCHES "Desktop OpenGL")
         LIST(APPEND COMMON_LIBRARIES
             ${OPENGL_LIBRARIES}
         )

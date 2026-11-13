@@ -53,3 +53,4 @@ CPackSourceConfig.cmake
 /.vs/
 *.sqlite
 .DS_Store
+main_test

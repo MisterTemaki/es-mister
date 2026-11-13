@@ -292,5 +292,25 @@ if(MSVC)
 endif()
 
 include_directories(${COMMON_INCLUDE_DIRS})
+if(SOFTWARE)
+	LIST(APPEND CORE_HEADERS
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/Renderer_Soft.h
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftRaster.h
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftOutput.h
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScript.h
+	)
+	LIST(APPEND CORE_SOURCES
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/Renderer_Soft.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftRaster.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftOutput.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScript.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/stb_impl.cpp
+	)
+endif()
+
+if(MISTER)
+	LIST(APPEND CORE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/components/VideoVlcStub.cpp)
+endif()
+
 add_library(es-core STATIC ${CORE_SOURCES} ${CORE_HEADERS})
 target_link_libraries(es-core ${COMMON_LIBRARIES})

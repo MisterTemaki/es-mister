@@ -29,7 +29,9 @@
 #include "NetworkThread.h"
 #include "scrapers/ThreadedScraper.h"
 #include "ThreadedHasher.h"
+#ifndef ES_USE_STB_IMAGE
 #include <FreeImage.h>
+#endif
 #include "ImageIO.h"
 #include "components/VideoVlcComponent.h"
 #include <csignal>

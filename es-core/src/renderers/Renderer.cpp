@@ -4,6 +4,7 @@
 #include "Renderer_GLES10.h"
 #include "Renderer_GLES20.h"
 #include "Renderer_GLES30.h"
+#include "Renderer_Soft.h"
 
 #include "math/Transform4x4f.h"
 #include "math/Vector2i.h"
@@ -148,6 +149,12 @@ namespace Renderer
 	{
 		LOG(LogInfo) << "Creating window...";
 
+#ifdef RENDERER_SOFTWARE
+		// no window system: SDL's dummy video driver, with the keyboard and mouse read from evdev
+		if (getenv("SDL_VIDEODRIVER") == nullptr)
+			SDL_SetHint(SDL_HINT_VIDEODRIVER, "evdev");
+#endif
+
 		if(SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
 			LOG(LogError) << "Error initializing SDL!\n	" << SDL_GetError();
@@ -160,6 +167,15 @@ namespace Renderer
 		if (windowWidth == 0)
 		{
 			SDL_GetDesktopDisplayMode(0, &dispMode);
+#ifdef RENDERER_SOFTWARE
+			// the window is the output: the framebuffer's size
+			int outputWidth = 0, outputHeight = 0;
+			if (getSoftwareOutputSize(outputWidth, outputHeight))
+			{
+				dispMode.w = outputWidth;
+				dispMode.h = outputHeight;
+			}
+#endif
 		}
 
 		windowWidth   = Settings::getInstance()->getInt("WindowWidth")   ? Settings::getInstance()->getInt("WindowWidth")   : dispMode.w;
@@ -891,6 +907,13 @@ namespace Renderer
 			ret.push_back(rd.getDriverName());
 		}
 #endif
+
+#ifdef RENDERER_SOFTWARE
+		{
+			SoftRenderer rd;
+			ret.push_back(rd.getDriverName());
+		}
+#endif
 		return ret;
 	}
 
@@ -929,6 +952,14 @@ namespace Renderer
 		}
 #endif
 
+#ifdef RENDERER_SOFTWARE
+		{
+			SoftRenderer rd;
+			if (rd.getDriverName() == name)
+				return new SoftRenderer();
+		}
+#endif
+
 		return nullptr;
 	}
 
@@ -945,6 +976,8 @@ namespace Renderer
 			instance = new OpenGL21Renderer();
 #elif RENDERER_OPENGLES_10
 			instance = new GLES10Renderer();
+#elif defined(RENDERER_SOFTWARE)
+			instance = new SoftRenderer();
 #endif
 		}
 

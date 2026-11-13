@@ -1,7 +1,12 @@
 #include "ImageIO.h"
 
 #include "Log.h"
+#ifdef ES_USE_STB_IMAGE
+#include <stb_image.h>
+#include <stb_image_resize2.h>
+#else
 #include <FreeImage.h>
+#endif
 #include <string.h>
 #include "utils/FileSystemUtil.h"
 #include "utils/StringUtil.h"
@@ -15,6 +20,115 @@
 #include "math/Vector4f.h"
 
 const MaxSizeInfo MaxSizeInfo::Empty;
+
+#ifdef ES_USE_STB_IMAGE
+
+// stb_image in place of FreeImage (the MiSTer build: nothing to install, and small). The result is the
+// same as FreeImage's: RGBA bytes, the rows bottom up, shrunk to the size asked.
+unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const size_t size, size_t & width, size_t & height, MaxSizeInfo* maxSize, Vector2i* baseSize, Vector2i* packedSize, int subImageIndex)
+{
+	LOG(LogDebug) << "ImageIO::loadFromMemoryRGBA32";
+
+	if (baseSize != nullptr)
+		*baseSize = Vector2i(0, 0);
+
+	if (packedSize != nullptr)
+		*packedSize = Vector2i(0, 0);
+
+	width = 0;
+	height = 0;
+
+	if (data == nullptr || size == 0)
+		return nullptr;
+
+	int w = 0, h = 0, components = 0;
+	unsigned char* rgba = nullptr;
+	bool ownBuffer = false; // rgba from new[] rather than stbi
+
+	// an animated GIF's frame
+	if (subImageIndex >= 0 && size > 6 && memcmp(data, "GIF", 3) == 0)
+	{
+		int* delays = nullptr;
+		int frames = 0;
+		unsigned char* all = stbi_load_gif_from_memory(data, (int)size, &delays, &w, &h, &frames, &components, 4);
+		if (all != nullptr && frames > 0)
+		{
+			const int index = subImageIndex < frames ? subImageIndex : frames - 1;
+			const size_t frameBytes = (size_t)w * h * 4;
+			rgba = new unsigned char[frameBytes];
+			memcpy(rgba, all + frameBytes * index, frameBytes);
+			ownBuffer = true;
+		}
+		if (all != nullptr)
+			stbi_image_free(all);
+		if (delays != nullptr)
+			stbi_image_free(delays);
+	}
+
+	if (rgba == nullptr)
+		rgba = stbi_load_from_memory(data, (int)size, &w, &h, &components, 4);
+
+	if (rgba == nullptr)
+	{
+		LOG(LogError) << "Error - Failed to load image from memory: " << (stbi_failure_reason() ? stbi_failure_reason() : "unknown");
+		return nullptr;
+	}
+
+	width = w;
+	height = h;
+
+	if (baseSize != nullptr)
+		*baseSize = Vector2i(w, h);
+
+	size_t maxX = maxSize == nullptr ? 0 : (size_t)Math::round(maxSize->x());
+	size_t maxY = maxSize == nullptr ? 0 : (size_t)Math::round(maxSize->y());
+
+	if (maxSize != nullptr && maxX > 0 && maxY > 0 && (width > maxX || height > maxY))
+	{
+		Vector2i sz = adjustPictureSize(Vector2i(width, height), Vector2i(maxX, maxY), maxSize->externalZoom());
+
+		if (sz.x() > Renderer::getScreenWidth() || sz.y() > Renderer::getScreenHeight())
+			sz = adjustPictureSize(sz, Vector2i(Renderer::getScreenWidth(), Renderer::getScreenHeight()), false);
+
+		if (sz.x() > 0 && sz.y() > 0 && (sz.x() != (int)width || sz.y() != (int)height))
+		{
+			LOG(LogDebug) << "ImageIO : rescaling image from " << width << "x" << height << " to " << sz.x() << "x" << sz.y();
+
+			unsigned char* scaled = new unsigned char[(size_t)sz.x() * sz.y() * 4];
+			if (stbir_resize(rgba, w, h, 0, scaled, sz.x(), sz.y(), 0, STBIR_RGBA, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_BOX) != nullptr)
+			{
+				if (ownBuffer)
+					delete[] rgba;
+				else
+					stbi_image_free(rgba);
+				rgba = scaled;
+				ownBuffer = true;
+				width = sz.x();
+				height = sz.y();
+
+				if (packedSize != nullptr)
+					*packedSize = Vector2i(width, height);
+			}
+			else
+				delete[] scaled;
+		}
+	}
+
+	// bottom up, as FreeImage gives them
+	const size_t rowBytes = width * 4;
+	unsigned char* result = new unsigned char[rowBytes * height];
+	for (size_t y = 0; y < height; y++)
+		memcpy(result + y * rowBytes, rgba + (height - 1 - y) * rowBytes, rowBytes);
+
+	if (ownBuffer)
+		delete[] rgba;
+	else
+		stbi_image_free(rgba);
+
+	return result;
+}
+
+#else
 
 unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const size_t size, size_t & width, size_t & height, MaxSizeInfo* maxSize, Vector2i* baseSize, Vector2i* packedSize, int subImageIndex)
 {
@@ -207,6 +321,8 @@ unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const s
 	return nullptr;
 }
 
+#endif // ES_USE_STB_IMAGE
+
 void ImageIO::flipPixelsVert(unsigned char* imagePx, const size_t& width, const size_t& height)
 {
 	unsigned int temp;
@@ -318,6 +434,45 @@ Vector2f ImageIO::getPictureMinSize(Vector2f imageSize, Vector2f maxSize)
 	return Vector2f(cxDIB, cyDIB);
 }
 
+#ifdef ES_USE_STB_IMAGE
+
+bool ImageIO::getMultiBitmapInformation(const std::string& path, int& totalFrames, int& frameTime)
+{
+	totalFrames = 1;
+	frameTime = 0;
+
+	// only GIFs are animated (as with FreeImage)
+	auto size = Utils::FileSystem::getFileSize(path);
+	if (size < 6)
+		return false;
+
+	std::ifstream stream(path, std::ios::binary);
+	std::vector<unsigned char> data((size_t)size);
+	stream.read((char*)data.data(), size);
+	if (!stream || memcmp(data.data(), "GIF", 3) != 0)
+		return false;
+
+	int* delays = nullptr;
+	int w = 0, h = 0, frames = 0, components = 0;
+	unsigned char* all = stbi_load_gif_from_memory(data.data(), (int)data.size(), &delays, &w, &h, &frames, &components, 4);
+	bool result = false;
+	if (all != nullptr && frames > 1)
+	{
+		totalFrames = frames;
+		frameTime = delays != nullptr ? delays[0] : 0;
+		if (frameTime == 0)
+			frameTime = 100;
+		result = true;
+	}
+	if (all != nullptr)
+		stbi_image_free(all);
+	if (delays != nullptr)
+		stbi_image_free(delays);
+	return result;
+}
+
+#else
+
 bool ImageIO::getMultiBitmapInformation(const std::string& path, int& totalFrames, int& frameTime)
 {	
 	totalFrames = 1;
@@ -392,3 +547,5 @@ bool ImageIO::getMultiBitmapInformation(const std::string& path, int& totalFrame
 
 	return result;
 }
+
+#endif // ES_USE_STB_IMAGE
