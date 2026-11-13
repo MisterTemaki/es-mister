@@ -11,7 +11,7 @@ ES=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 LOG=$ES/logs/es-mister.log
 exec >>"$LOG" 2>&1
 
-SIZE=640x360
+SIZE=auto
 [ -f "$ES/es-mister.ini" ] && . "$ES/es-mister.ini"
 
 system=$1
@@ -67,4 +67,4 @@ else
 	echo "the core did not start"
 fi
 
-"$ES/es-mister-helper" console "$SIZE"
+echo "framebuffer $("$ES/es-mister-helper" console "$SIZE")"

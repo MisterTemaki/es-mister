@@ -6,10 +6,14 @@
 // first key.
 //
 //   es-mister-helper console WIDTHxHEIGHT   the Linux framebuffer on, at that size (fb_cmd1), 0 on success
+//   es-mister-helper console auto          the same, at the size Main_MiSTer gives it for the menu (from
+//                                          video_mode and fb_size in MiSTer.ini); the size is printed
+//   es-mister-helper console auto/N        that size divided by N (auto/2: 960x540 on a 1080p screen)
 //   es-mister-helper key NAME               a key pressed and let go (F9, F12, ESC, ENTER)
 //   es-mister-helper core                   the core loaded now (/tmp/CORENAME)
 
 #include <fcntl.h>
+#include <linux/fb.h>
 #include <linux/uinput.h>
 #include <linux/vt.h>
 #include <stdio.h>
@@ -119,12 +123,35 @@ static int chvt(int n)
 	return ok;
 }
 
+// the Linux framebuffer's size as it is now; 0 when it cannot be read
+static int framebuffer_size(int* width, int* height)
+{
+	int fd = open("/dev/fb0", O_RDONLY | O_CLOEXEC);
+	if (fd < 0)
+		return 0;
+	struct fb_var_screeninfo var;
+	int ok = ioctl(fd, FBIOGET_VSCREENINFO, &var) == 0 && var.xres > 0 && var.yres > 0;
+	close(fd);
+	if (ok)
+	{
+		*width = (int)var.xres;
+		*height = (int)var.yres;
+	}
+	return ok;
+}
+
 static int console_on(const char* size)
 {
-	int width = 640, height = 360;
-	if (size && sscanf(size, "%dx%d", &width, &height) != 2)
+	int width = 640, height = 360, divisor = 1;
+	const int automatic = !size || !strncmp(size, "auto", 4);
+	if (automatic && size && size[4] == '/' && (sscanf(size + 5, "%d", &divisor) != 1 || divisor < 1 || divisor > 8))
 	{
-		fprintf(stderr, "es-mister-helper: size as WIDTHxHEIGHT, not %s\n", size);
+		fprintf(stderr, "es-mister-helper: auto/N with N from 1 to 8, not %s\n", size);
+		return 2;
+	}
+	if (!automatic && sscanf(size, "%dx%d", &width, &height) != 2)
+	{
+		fprintf(stderr, "es-mister-helper: size as WIDTHxHEIGHT, auto or auto/N, not %s\n", size);
 		return 2;
 	}
 
@@ -164,8 +191,24 @@ static int console_on(const char* size)
 		return 1;
 	}
 
-	// the framebuffer at our size, scaled to the screen by whole steps
+	// auto: the size Main_MiSTer gave the framebuffer for the menu, which follows the screen's
 	sleep_ms(200);
+	if (automatic)
+	{
+		if (framebuffer_size(&width, &height))
+		{
+			width /= divisor;
+			height /= divisor;
+		}
+		else
+		{
+			fprintf(stderr, "es-mister-helper: cannot read the framebuffer's size, 640x360\n");
+			width = 640;
+			height = 360;
+		}
+	}
+
+	// the framebuffer at that size, 32 bits a pixel
 	FILE* cmd = fopen("/dev/MiSTer_cmd", "w");
 	if (!cmd)
 	{
@@ -175,6 +218,7 @@ static int console_on(const char* size)
 	fprintf(cmd, "fb_cmd1 8888 1 %d %d\n", width, height);
 	fclose(cmd);
 	sleep_ms(300); // Main_MiSTer sets the framebuffer driver's mode
+	printf("%dx%d\n", width, height);
 	return 0;
 }
 
@@ -207,6 +251,6 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT | key NAME | core\n", argv[0]);
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto | key NAME | core\n", argv[0]);
 	return 2;
 }

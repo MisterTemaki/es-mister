@@ -13,7 +13,7 @@ exec >>"$LOG" 2>&1
 echo "== $(date '+%F %T') es-mister.sh"
 
 # settings (es-mister.ini): SIZE, FPS, GAMES_ROOTS
-SIZE=640x360
+SIZE=auto
 FPS=60
 BENCH=0
 PROFILE=0
@@ -73,7 +73,8 @@ for i in $(seq 30); do
 	sleep 1
 done
 
-if ! "$ES/es-mister-helper" console "$SIZE"; then
+# the framebuffer ES draws in: at SIZE, or with auto at the size Main_MiSTer gives it for the menu
+if ! DRAWN=$("$ES/es-mister-helper" console "$SIZE"); then
 	echo "no Linux framebuffer: ES does not start"
 	rm -f /tmp/es-mister.pid
 	exit 1
@@ -93,7 +94,7 @@ export ES_STARTUP_TRACE=$LOGS/es-startup.log
 # where ES spends the processor (logs/es-profile.txt), for the port's tuning
 [ "$PROFILE" = 1 ] && export ES_PROFILE=$LOGS/es-profile.txt
 export ES_ARCADE_SKIP="$ARCADE_SKIP"
-echo "starting ES at $SIZE"
+echo "starting ES at $DRAWN (SIZE=$SIZE)"
 ./emulationstation
 echo "ES closed ($?)"
 

@@ -44,9 +44,11 @@ cp "$ROOT/mister/scripts/emulationstation.sh" "$STAGE/Scripts/"
 cat >"$ES/es-mister.ini" <<'EOF'
 # EmulationStation on the MiSTer: settings read by es-mister.sh and mister-launch.sh
 
-# The size ES draws at. The FPGA scales it to the screen by whole steps: 640x360 fills 1080p (x3)
-# and 720p (x2). Larger is sharper and slower.
-SIZE=640x360
+# The size ES draws at. auto: the size the MiSTer gives the Linux framebuffer for its menu, which
+# follows the screen (video_mode in MiSTer.ini): the sharpest, and the slowest (a 1080p screen is nine
+# times the pixels of 640x360). auto/2: half of it (960x540 on 1080p), auto/3: a third (640x360 on
+# 1080p, the fastest). Or WIDTHxHEIGHT.
+SIZE=auto
 
 # The most frames a second ES draws (fewer leaves the ARM more time)
 FPS=60
@@ -86,7 +88,7 @@ EOF
 cp "$SRC/batocera.linux/package/batocera/emulationstation/batocera-emulationstation/controllers/es_input.cfg" "$ES/defaults/es_input.cfg"
 
 echo "== theme"
-python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv" 640x360
+python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv" 1920x1080
 
 cp "$ROOT/mister/LEIA-ME.txt" "$ES/"
 cp "$ROOT/LICENSE.md" "$ES/LICENSE-EmulationStation.md"
