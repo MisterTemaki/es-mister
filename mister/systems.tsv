@@ -1,0 +1,39 @@
+# The systems ES shows on the MiSTer, and how mister-launch.sh starts their games. One a line, tab separated:
+# ES name (Batocera's, which its themes know) | full name | folder under games/ ("@" first: under the SD card's root) |
+# extensions | core (as an MGL names it) | set name ("-": none) | MGL file: method (f: file, s: disc), delay, index.
+# The values follow the MiSTer cores' own (the same Zaparoo and mrext launch with).
+nes	Nintendo Entertainment System	NES	.nes	_Console/NES	-	f	2	1
+fds	Famicom Disk System	NES	.fds	_Console/NES	FDS	f	2	1
+snes	Super Nintendo	SNES	.sfc .smc .bin .bs	_Console/SNES	-	f	2	0
+sgb	Super Game Boy	SGB	.gb .gbc	_Console/SGB	-	f	1	1
+gb	Game Boy	GAMEBOY	.gb	_Console/Gameboy	-	f	2	1
+gbc	Game Boy Color	GAMEBOY	.gbc	_Console/Gameboy	GBC	f	2	1
+gba	Game Boy Advance	GBA	.gba	_Console/GBA	-	f	2	1
+n64	Nintendo 64	N64	.n64 .z64 .v64	_Console/N64	-	f	1	1
+virtualboy	Virtual Boy	VirtualBoy	.vb	_Console/VirtualBoy	-	f	1	1
+pokemini	Pokemon Mini	PokemonMini	.min	_Console/PokemonMini	-	f	1	1
+mastersystem	Master System	SMS	.sms	_Console/SMS	-	f	1	1
+gamegear	Game Gear	SMS	.gg	_Console/SMS	GameGear	f	1	2
+sg1000	SG-1000	SG1000	.sg	_Console/ColecoVision	SG1000	f	1	0
+megadrive	Mega Drive	MegaDrive	.md .gen .bin	_Console/MegaDrive	-	f	1	1
+sega32x	32X	S32X	.32x	_Console/S32X	-	f	1	1
+segacd	Mega-CD	MegaCD	.cue .chd	_Console/MegaCD	-	s	1	0
+saturn	Saturn	Saturn	.cue .chd	_Console/Saturn	-	s	2	0
+pcengine	PC Engine	TGFX16	.pce .bin	_Console/TurboGrafx16	-	f	1	0
+supergrafx	SuperGrafx	TGFX16	.sgx	_Console/TurboGrafx16	-	f	1	1
+pcenginecd	PC Engine CD	TGFX16-CD	.cue .chd	_Console/TurboGrafx16	-	s	1	0
+neogeo	Neo-Geo	NEOGEO	.neo	_Console/NeoGeo	-	f	1	1
+neogeocd	Neo-Geo CD	NeoGeo-CD	.cue .chd	_Console/NeoGeo	-	s	1	1
+psx	PlayStation	PSX	.cue .chd	_Console/PSX	-	s	1	1
+atari2600	Atari 2600	ATARI7800	.a26	_Console/Atari7800	Atari2600	f	1	1
+atari7800	Atari 7800	ATARI7800	.a78	_Console/Atari7800	-	f	1	1
+lynx	Lynx	AtariLynx	.lnx	_Console/AtariLynx	-	f	1	1
+colecovision	ColecoVision	Coleco	.col .rom	_Console/ColecoVision	-	f	1	1
+intellivision	Intellivision	Intellivision	.int .rom	_Console/Intellivision	-	f	1	1
+vectrex	Vectrex	VECTREX	.vec	_Console/Vectrex	-	f	1	1
+o2em	Odyssey 2	ODYSSEY2	.bin	_Console/Odyssey2	-	f	1	1
+wswan	WonderSwan	WonderSwan	.ws	_Console/WonderSwan	-	f	1	1
+wswanc	WonderSwan Color	WonderSwan	.wsc	_Console/WonderSwan	WonderSwanColor	f	1	1
+ngp	Neo-Geo Pocket	NGP	.ngp	_Arcade/JTNGP	NeoGeoPocket	f	2	1
+ngpc	Neo-Geo Pocket Color	NGPC	.ngc	_Arcade/JTNGPC	JTNGPC	f	2	1
+arcade	Arcade	@_Arcade	.mra	-	-	-	-	-
