@@ -171,6 +171,12 @@ namespace Renderer
 
  	bool        init            ();
  	void        deinit          ();
+#ifdef MISTER
+	// Around a game on the MiSTer: the screen (the framebuffer, and the console's graphics mode, which stops
+	// all console switches) let go of, then taken again; ES, SDL and the input stay as they are
+	void        releaseScreen   ();
+	void        reclaimScreen   ();
+#endif
 	void        pushClipRect    (const Vector2i& _pos, const Vector2i& _size);
 	void		pushClipRect	(int x, int y, int w, int h);
 	void		pushClipRect	(Rect rect);

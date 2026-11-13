@@ -14,6 +14,7 @@
 #include "SystemData.h"
 #include "VolumeControl.h"
 #include "Window.h"
+#include "renderers/Renderer.h"
 #include "views/UIModeController.h"
 #include <assert.h>
 #include "SystemConf.h"
@@ -719,6 +720,11 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 
 	bool hideWindow = Settings::getInstance()->getBool("HideWindow");
 	window->deinit(hideWindow);
+#ifdef MISTER
+	// the MiSTer shows the game: ES lets go of the screen (and of the console, which it holds in graphics
+	// mode: no console switch could happen until it did, and ES could not be shown again after the game)
+	Renderer::releaseScreen();
+#endif
 	
 	const std::string rom = Utils::FileSystem::getEscapedPath(getPath());
 	const std::string basename = Utils::FileSystem::getStem(getPath());
@@ -764,6 +770,9 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 
 	Scripting::fireEvent("game-end");
 
+#ifdef MISTER
+	Renderer::reclaimScreen();
+#endif
 	if (!hideWindow && Settings::getInstance()->getBool("HideWindowFullReinit"))
 	{
 		ResourceManager::getInstance()->reloadAll();

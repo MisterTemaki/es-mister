@@ -1335,6 +1335,36 @@ namespace Renderer
 			total += texture.second->pixels.size() * 4;
 		return total + Soft::scaledBytes();
 	}
+
+#ifdef MISTER
+	void releaseScreen()
+	{
+		SoftState& s = S();
+		if (s.output)
+			s.output->close();
+		s.open = false;
+	}
+
+	void reclaimScreen()
+	{
+		SoftState& s = S();
+		if (!s.output || s.open)
+			return;
+		std::string error;
+		int width = 0, height = 0;
+		if (!s.output->open(width, height, error))
+		{
+			LOG(LogError) << "SoftRenderer: the screen after a game: " << error;
+			return;
+		}
+		if (width != s.width || height != s.height)
+			LOG(LogWarning) << "SoftRenderer: the screen is " << width << "x" << height << " after a game, ES draws at " << s.width << "x" << s.height;
+		s.open = true;
+		s.forceRedraw = true;
+		s.lastValid = false;
+		LOG(LogInfo) << "SoftRenderer: output " << s.output->describe() << " again";
+	}
+#endif
 }
 
 #endif // RENDERER_SOFTWARE
