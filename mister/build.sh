@@ -114,7 +114,8 @@ deps() {
 
 	if [ ! -f "$PREFIX/lib/libSDL2.a" ]; then
 		echo "== SDL2"
-		(cd "$SRC/SDL2" && git apply --check "$ROOT"/mister/patches/sdl2/*.patch 2>/dev/null && git apply "$ROOT"/mister/patches/sdl2/*.patch || true)
+		# the patches on a clean tree, one after another (a later one may build on an earlier one)
+		(cd "$SRC/SDL2" && git checkout -q -- . && for patch in "$ROOT"/mister/patches/sdl2/*.patch; do git apply "$patch" || exit 1; done) || exit 1
 		cmake_dep "$SRC/SDL2" "$WORK/obj/SDL2" -DSDL_SHARED=OFF -DSDL_STATIC=ON -DSDL_TEST=OFF \
 			-DSDL_X11=OFF -DSDL_WAYLAND=OFF -DSDL_KMSDRM=OFF -DSDL_OPENGL=OFF -DSDL_OPENGLES=OFF -DSDL_VULKAN=OFF \
 			-DSDL_RPI=OFF -DSDL_DIRECTFB=OFF -DSDL_OFFSCREEN=OFF -DSDL_DUMMYVIDEO=ON \

@@ -18,6 +18,7 @@ FPS=60
 BENCH=0
 PROFILE=0
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
+INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
 [ -f "$ES/es-mister.ini" ] && . "$ES/es-mister.ini"
 
@@ -112,6 +113,8 @@ export ES_STARTUP_TRACE=$LOGS/es-startup.log
 # where ES spends the processor (logs/es-profile.txt), for the port's tuning
 [ "$PROFILE" = 1 ] && export ES_PROFILE=$LOGS/es-profile.txt
 export ES_ARCADE_SKIP="$ARCADE_SKIP"
+# keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
+export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
 echo "starting ES at $DRAWN (SIZE=$SIZE)"
 ./emulationstation
 echo "ES closed ($?)"

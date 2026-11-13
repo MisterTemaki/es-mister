@@ -66,6 +66,11 @@ PROFILE=0
 # Take it out of the list to see them in ES.
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 
+# Input devices ES leaves out, by name (comma apart; /proc/bus/input/devices lists them). Main_MiSTer's
+# and Zaparoo's virtual keyboards repeat a controller's presses as keys: without this, each press moved
+# twice. Physical keyboards and controllers are not affected.
+INPUT_IGNORE="MiSTer virtual input,Zaparoo"
+
 # Where games folders are looked for, in order (each system takes the first that has its folder)
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
 EOF
