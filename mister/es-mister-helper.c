@@ -15,6 +15,7 @@
 
 #include <fcntl.h>
 #include <linux/fb.h>
+#include <linux/kd.h>
 #include <linux/uinput.h>
 #include <linux/vt.h>
 #include <stdio.h>
@@ -113,15 +114,31 @@ static int key_code(const char* name)
 	return 0;
 }
 
+// The active console, as /sys has it (tty1...): its number, 0 when unknown
+static int active_console(void)
+{
+	char tty[32] = "";
+	int n = 0;
+	read_line("/sys/devices/virtual/tty/tty0/active", tty, sizeof(tty));
+	return sscanf(tty, "tty%d", &n) == 1 ? n : 0;
+}
+
+// Switches to console n, waiting at most a second for it. Not VT_WAITACTIVE: it waits for ever when
+// the switch does not happen, as when the console is in graphics mode (the kernel ignores switches
+// then), and the helper hung there after a game while ES held the console.
 static int chvt(int n)
 {
 	int fd = open("/dev/tty0", O_RDWR | O_CLOEXEC);
 	if (fd < 0)
 		return 0;
+	int mode = KD_TEXT;
+	if (ioctl(fd, KDGETMODE, &mode) == 0 && mode == KD_GRAPHICS)
+		fprintf(stderr, "es-mister-helper: the console is in graphics mode (a program drawing on it holds it): it cannot switch\n");
 	int ok = ioctl(fd, VT_ACTIVATE, n) == 0;
-	ioctl(fd, VT_WAITACTIVE, n);
 	close(fd);
-	return ok;
+	for (int wait = 0; ok && wait < 20 && active_console() != n; wait++)
+		sleep_ms(50);
+	return ok && active_console() == n;
 }
 
 // the Linux framebuffer's size as it is now; 0 when it cannot be read

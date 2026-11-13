@@ -351,8 +351,10 @@ void Settings::setDefaults()
 
 	mBoolMap["ShowFilenames"] = false;
 
-#if defined(RK3128)
-	// no compositor, so the emulator needs the display ES would keep
+#if defined(RK3128) || defined(MISTER)
+	// no compositor, so the emulator needs the display ES would keep. On the MiSTer, ES lets go of the
+	// Linux framebuffer and its console while a game runs: a console left in graphics mode stops all
+	// console switches, and the MiSTer could not show ES again after the game (nor run a script)
 	mBoolMap["HideWindow"] = true;
 #else
 	mBoolMap["HideWindow"] = false;
