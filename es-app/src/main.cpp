@@ -917,6 +917,14 @@ int main(int argc, char* argv[])
 		if(deltaTime < 0)
 			deltaTime = 1000;
 
+#ifdef MISTER
+		// A frame slowed by a large picture loading counts for at most 100 ms: lists repeat a held button
+		// after 500 ms of frame time, and one slow frame made a single press move two places (the system
+		// after the next was shown, the next one never).
+		if (deltaTime > 100)
+			deltaTime = 100;
+#endif
+
 		TRYCATCH("Window.update" ,window.update(deltaTime))	
 		TRYCATCH("Window.render", window.render())
 
