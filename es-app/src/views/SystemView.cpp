@@ -1,3 +1,4 @@
+#include "utils/StartupTrace.h"
 #include "views/SystemView.h"
 
 #include "animations/LambdaAnimation.h"
@@ -199,17 +200,27 @@ void SystemView::populate()
 
 	clearEntries();
 
+	std::string traceShown, traceLeft; // the carousel's systems, and those left out with why, for the startup trace
+
 	for (auto system : SystemData::sSystemVector)
 	{
 		const std::shared_ptr<ThemeData>& theme = system->getTheme();
 		if (theme == nullptr)
+		{
+			traceLeft += (traceLeft.empty() ? "" : ", ") + system->getName() + " (no theme)";
 			continue;
+		}
 
 		if (mViewNeedsReload)
 			getViewElements(theme);
 
+		if (!system->isVisible())
+			traceLeft += (traceLeft.empty() ? "" : ", ") + system->getName() + " (not visible: " + std::to_string(system->getGameCountInfo()->totalGames) + " games" +
+				(system->isGroupChildSystem() ? ", in a group" : "") + ")";
+
 		if (system->isVisible())
 		{
+			traceShown += (traceShown.empty() ? "" : ", ") + system->getName();
 			mCarousel.add(system->getName(), system, true);
 			loadExtras(system);
 
@@ -224,6 +235,9 @@ void SystemView::populate()
 	}
 
 	TextureLoader::paused = false;
+
+	StartupTrace::mark("carousel", traceShown);
+	StartupTrace::mark("carousel leaves out", traceLeft.empty() ? "-" : traceLeft);
 
 	if (mEntries.size() == 0)
 	{
