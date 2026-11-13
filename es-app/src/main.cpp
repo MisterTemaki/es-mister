@@ -672,6 +672,20 @@ int main(int argc, char* argv[])
 		StartupTrace::Scope trace("load systems");
 		systemsLoaded = loadSystemConfigFile(splashScreen && splashScreenProgress ? &window : nullptr, &errorMsg);
 	}
+	if (StartupTrace::enabled())
+	{
+		// what ES shows: each system with its games, and the ones it keeps out of sight
+		std::string shown, hidden;
+		for (auto sys : SystemData::sSystemVector)
+		{
+			const std::string entry = sys->getName() + " " + std::to_string(sys->getGameCountInfo()->totalGames);
+			std::string& list = sys->isVisible() ? shown : hidden;
+			list += (list.empty() ? "" : ", ") + entry;
+		}
+		StartupTrace::mark("systems shown", shown);
+		StartupTrace::mark("systems not shown", hidden.empty() ? "-" : hidden);
+	}
+
 	if (!systemsLoaded)
 	{
 		// something went terribly wrong
