@@ -227,6 +227,12 @@ namespace StartupTrace
 			s->lastFrame = now();
 	}
 
+	bool onMainThread()
+	{
+		State* s = get();
+		return s->file != nullptr && threadId() == s->mainThread;
+	}
+
 	void finish()
 	{
 		State* s = get();

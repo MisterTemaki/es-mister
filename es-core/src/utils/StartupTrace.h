@@ -12,6 +12,7 @@
 //   StartupTrace::mark("ready");                       a moment
 //   StartupTrace::frameShown();                       the main thread showed a frame (the renderer)
 //   StartupTrace::finish();                           ES is up: the watchdog stops
+//   StartupTrace::onMainThread()                      the caller is ES's main thread (the one that draws)
 
 #include <string>
 
@@ -21,6 +22,7 @@ namespace StartupTrace
 	void mark(const std::string& step, const std::string& detail = "");
 	void frameShown();
 	void finish();
+	bool onMainThread();
 
 	class Scope
 	{

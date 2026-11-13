@@ -14,6 +14,7 @@
 #include "views/UIModeController.h"
 #include "FileFilterIndex.h"
 #include "Log.h"
+#include "utils/StartupTrace.h"
 #include "Scripting.h"
 #include "Settings.h"
 #include "SystemData.h"
@@ -730,6 +731,9 @@ std::shared_ptr<IGameListView> ViewController::getGameListView(SystemData* syste
 		system->setUIModeFilters();
 		system->updateDisplayedGameCount();
 	}
+
+	// the time a system's game list takes to make (the startup trace)
+	StartupTrace::Scope traced("game list view", system->getName());
 
 	//if we didn't, make it, remember it, and return it
 	std::shared_ptr<IGameListView> view;

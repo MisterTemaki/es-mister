@@ -16,13 +16,37 @@
 #include "utils/StringUtil.h"
 #include "utils/FileSystemUtil.h"
 #include "utils/StringListLock.h"
+#include "utils/StartupTrace.h"
 #include "Paths.h"
+#include <chrono>
 
 #define DPI 96
 
 #define OPTIMIZEVRAM Settings::getInstance()->getBool("OptimizeVRAM")
 
 IPdfHandler* TextureData::PdfHandler = nullptr;
+
+namespace
+{
+	// an image read and decoded while ES waits for it (on its main thread, the one that draws): in the
+	// startup trace when it takes long, to find what stops the frames
+	struct WaitedLoad
+	{
+		const std::string& path;
+		const bool traced;
+		const std::chrono::steady_clock::time_point start;
+
+		explicit WaitedLoad(const std::string& p) : path(p), traced(StartupTrace::onMainThread()), start(std::chrono::steady_clock::now()) { }
+		~WaitedLoad()
+		{
+			if (!traced)
+				return;
+			const int ms = (int)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+			if (ms >= 15)
+				StartupTrace::mark("image loaded on the main thread", std::to_string(ms) + " ms, " + path);
+		}
+	};
+}
 
 TextureData::TextureData(bool tile, bool linear) : 
 	mTile(tile), mLinear(linear), mTextureID(0), mDataRGBA(nullptr), mScalable(false), mDynamic(true), mReloadable(false),
@@ -499,6 +523,7 @@ bool TextureData::load()
 		return false;
 
 	LOG(LogDebug) << "TextureData::load " << mPath;
+	WaitedLoad waited(mPath);
 	mScalable = false;
 
 	std::string ext = Utils::String::toLower(Utils::FileSystem::getExtension(mPath));
