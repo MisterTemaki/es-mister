@@ -38,11 +38,22 @@ Usar
 Ajustes
 -------
 /media/fat/emulationstation/es-mister.ini:
-  SIZE=640x360   tamanho em que o EmulationStation desenha (640x360 preenche
-                 1080p e 720p exatos); maior fica mais nítido e mais lento
+  SIZE=auto      tamanho em que o EmulationStation desenha: auto é o da tela
+                 (1920x1080 numa TV 1080p), o mais nítido e o mais lento;
+                 auto/2 é a metade, auto/3 um terço, ou LARGURAxALTURA
   FPS=60         limite de quadros por segundo
   BENCH=0        1 = redesenha a tela inteira em todo quadro, para medir o
                  custo do desenho (veja logs/es-mister-stats.txt)
+  STRIP=16       linhas de cada faixa do desenho (0 = uma camada por vez)
+
+Medir o desenho no seu MiSTer
+-----------------------------
+es-mister-bench desenha, sem mostrar nada de novo, o quadro mais pesado do
+EmulationStation (a troca de sistema no carrossel, em 1920x1080) de várias
+maneiras e mede cada uma no ARM do MiSTer. Feche o EmulationStation (Menu >
+Sair) e, pelo SSH, logo em seguida:
+  /media/fat/emulationstation/es-mister-bench | tee /media/fat/emulationstation/logs/es-mister-bench.txt
+Leva uns 2 minutos. Mande de volta o logs/es-mister-bench.txt.
 
 O que mandar de volta depois do teste
 -------------------------------------

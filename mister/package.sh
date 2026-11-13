@@ -39,6 +39,7 @@ mkdir -p "$ES/defaults" "$ES/logs" "$ES/home/.emulationstation/themes" "$STAGE/S
 echo "== program"
 llvm-strip -o "$ES/emulationstation" "$WORK/out/emulationstation"
 "$TOOLS/zcc" -O2 -s -static -o "$ES/es-mister-helper" "$ROOT/mister/es-mister-helper.c"
+"$TOOLS/zcc" -O3 -s -static -pthread -o "$ES/es-mister-bench" "$ROOT/mister/es-mister-bench.c"
 cp "$ROOT/mister/scripts/es-mister.sh" "$ROOT/mister/scripts/mister-launch.sh" "$ROOT/mister/systems.tsv" "$ES/"
 cp "$ROOT/mister/scripts/emulationstation.sh" "$STAGE/Scripts/"
 cat >"$ES/es-mister.ini" <<'EOF'
@@ -123,7 +124,7 @@ with zipfile.ZipFile(sys.argv[1], "w", zipfile.ZIP_DEFLATED) as z:
                 path = os.path.join(folder, name)
                 info = zipfile.ZipInfo.from_file(path)
                 info.compress_type = zipfile.ZIP_DEFLATED
-                if name in ("emulationstation", "es-mister-helper") or name.endswith(".sh"):
+                if name in ("emulationstation", "es-mister-helper", "es-mister-bench") or name.endswith(".sh"):
                     info.external_attr = 0o100755 << 16
                 with open(path, "rb") as f:
                     z.writestr(info, f.read())
