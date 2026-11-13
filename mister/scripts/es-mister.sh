@@ -81,8 +81,18 @@ for i in $(seq 30); do
 	sleep 1
 done
 
-# the framebuffer ES draws in: at SIZE, or with auto at the size Main_MiSTer gives it for the menu
-if ! DRAWN=$("$ES/es-mister-helper" console "$SIZE"); then
+# the framebuffer ES draws in: at SIZE, or with auto at the size Main_MiSTer gives it for the menu.
+# Started from the Scripts menu, Main_MiSTer is still closing the script's screen and may not take F9
+# yet: a moment first, then a few tries, a few seconds apart.
+sleep 2
+DRAWN=""
+for attempt in 1 2 3; do
+	DRAWN=$("$ES/es-mister-helper" console "$SIZE") && break
+	DRAWN=""
+	echo "the framebuffer is not on yet (try $attempt)"
+	sleep 3
+done
+if [ -z "$DRAWN" ]; then
 	echo "no Linux framebuffer: ES does not start"
 	rm -f /tmp/es-mister.pid
 	exit 1

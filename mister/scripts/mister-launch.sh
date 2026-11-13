@@ -67,4 +67,9 @@ else
 	echo "the core did not start"
 fi
 
-echo "framebuffer $("$ES/es-mister-helper" console "$SIZE")"
+for attempt in 1 2 3; do
+	DRAWN=$("$ES/es-mister-helper" console "$SIZE") && break
+	echo "the framebuffer is not on yet (try $attempt)"
+	sleep 3
+done
+echo "framebuffer $DRAWN"
