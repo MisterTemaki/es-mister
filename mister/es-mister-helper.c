@@ -168,6 +168,8 @@ static int console_on(const char* size)
 		return 1;
 
 	// a console Main_MiSTer does not use, so its switch to tty1 can be seen
+	char before[32] = "";
+	read_line("/sys/devices/virtual/tty/tty0/active", before, sizeof(before));
 	chvt(3);
 	sleep_ms(100);
 
@@ -187,7 +189,8 @@ static int console_on(const char* size)
 
 	if (!done)
 	{
-		fprintf(stderr, "es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer\n");
+		fprintf(stderr, "es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer "
+			"(console %s before, %s after 30 F9 presses)\n", before, tty);
 		return 1;
 	}
 

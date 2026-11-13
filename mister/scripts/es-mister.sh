@@ -27,6 +27,14 @@ if [ -f /tmp/es-mister.pid ] && kill -0 "$(cat /tmp/es-mister.pid)" 2>/dev/null;
 fi
 echo $$ >/tmp/es-mister.pid
 
+# an ES left from a start that did not end well (it holds the framebuffer)
+if pidof emulationstation >/dev/null 2>&1; then
+	echo "an earlier ES is still running: closing it"
+	killall emulationstation 2>/dev/null
+	sleep 1
+	killall -9 emulationstation 2>/dev/null
+fi
+
 # first start: the default settings and controllers
 for file in es_settings.cfg es_input.cfg; do
 	[ -f "$CONFIG/$file" ] || cp "$ES/defaults/$file" "$CONFIG/$file"
