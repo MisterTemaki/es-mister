@@ -65,6 +65,11 @@ PROFILE=0
 # logs/es-slow-frame-N.txt, to see what to make faster; 0: none
 SLOW_DUMPS=4
 
+# Rows of the screen drawn at a time through all its layers, so they stay in the processor's cache
+# between them (the memory is what a 1080p frame waits for). 16 by default; to compare, 8 or 32, or 0
+# (each band whole, as before), then logs/es-mister-stats.txt and logs/es-slow-frame-N.txt
+STRIP=16
+
 # Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of
 # other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.
 # Take it out of the list to see them in ES.

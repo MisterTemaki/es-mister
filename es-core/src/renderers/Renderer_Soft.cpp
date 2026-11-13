@@ -169,6 +169,7 @@ namespace Renderer
 			// frame drawn, and the parts of it where this frame's draws are not the last one's are drawn again
 			bool dirty = true;
 			bool dirtyCheck = false;          // ES_SOFT_DIRTY_CHECK=1: each part-drawn frame checked against a whole one
+			int stripRows = 16;               // ES_SOFT_STRIP: rows drawn at a time through all the commands (executeBand)
 			bool lastValid = false;           // the raster holds the frame of lastDrawn
 			std::vector<Drawn> lastDrawn;
 			std::vector<Box> rects;           // this frame's parts to draw (when drawn in part)
@@ -347,13 +348,67 @@ namespace Renderer
 			s.commands.push_back(std::move(command));
 		}
 
-		// the frame's commands, in one band: all of it, or (drawn in part) each part, cleared then drawn by
-		// the commands that reach it, clipped to it
+		// one part of a band, cleared, then drawn by the commands that reach it, clipped to it (a pixel is the
+		// same however its draw is clipped)
+		void executePart(Raster& raster, const Box& part)
+		{
+			SoftState& s = S();
+			raster.clearBox(part.x0, part.y0, part.x1, part.y1, 0);
+			for (const Command& command : s.commands)
+			{
+				// a stencil shape is always set: it also clears the last one
+				if (!command.stencil && !command.box.meets(part))
+					continue;
+				DrawState state = command.state;
+				if (state.scissor)
+				{
+					state.sx0 = std::max(state.sx0, part.x0); state.sy0 = std::max(state.sy0, part.y0);
+					state.sx1 = std::min(state.sx1, part.x1); state.sy1 = std::min(state.sy1, part.y1);
+				}
+				else
+				{
+					state.scissor = true;
+					state.sx0 = part.x0; state.sy0 = part.y0; state.sx1 = part.x1; state.sy1 = part.y1;
+				}
+				const SVertex* vertices = s.vertices.data() + command.first;
+				if (command.stencil)
+					raster.setStencil(vertices, (int)command.count, state);
+				else
+				{
+					state.texture = command.texture.get();
+					raster.draw(vertices, (int)command.count, command.topology, state);
+				}
+			}
+		}
+
+		// The frame's commands, in one band: all of it, or (drawn in part) each part. A few rows at a time
+		// (ES_SOFT_STRIP, default 16; 0: the whole band or part at once), every command over them before the
+		// next rows: the rows stay in the processor's cache between the layers (a background, another over it
+		// in a fade, a shade...), and go to memory once instead of once a layer. On the MiSTer the memory is
+		// what a frame waits for (the FPGA reads the screen from the same DDR3): a 1080p frame took as long
+		// with two cores as with one.
 		void executeBand(Raster& raster)
 		{
 			SoftState& s = S();
+			const int top = raster.bandTop(), bottom = raster.bandBottom();
+			auto inStrips = [&](const Box& part)
+			{
+				if (s.stripRows <= 0)
+				{
+					executePart(raster, part);
+					return;
+				}
+				for (int y = part.y0; y < part.y1; y += s.stripRows)
+					executePart(raster, Box{ part.x0, y, part.x1, std::min(part.y1, y + s.stripRows) });
+			};
+
 			if (!s.partial)
 			{
+				if (s.stripRows > 0)
+				{
+					inStrips(Box{ 0, top, s.raster.width(), bottom });
+					return;
+				}
 				raster.clear(0);
 				for (const Command& command : s.commands)
 				{
@@ -373,36 +428,10 @@ namespace Renderer
 			for (const Box& whole : s.rects)
 			{
 				Box part = whole;
-				part.y0 = std::max(part.y0, raster.bandTop());
-				part.y1 = std::min(part.y1, raster.bandBottom());
-				if (part.empty())
-					continue;
-				raster.clearBox(part.x0, part.y0, part.x1, part.y1, 0);
-				for (const Command& command : s.commands)
-				{
-					// a stencil shape is always set: it also clears the last one
-					if (!command.stencil && !command.box.meets(part))
-						continue;
-					DrawState state = command.state;
-					if (state.scissor)
-					{
-						state.sx0 = std::max(state.sx0, part.x0); state.sy0 = std::max(state.sy0, part.y0);
-						state.sx1 = std::min(state.sx1, part.x1); state.sy1 = std::min(state.sy1, part.y1);
-					}
-					else
-					{
-						state.scissor = true;
-						state.sx0 = part.x0; state.sy0 = part.y0; state.sx1 = part.x1; state.sy1 = part.y1;
-					}
-					const SVertex* vertices = s.vertices.data() + command.first;
-					if (command.stencil)
-						raster.setStencil(vertices, (int)command.count, state);
-					else
-					{
-						state.texture = command.texture.get();
-						raster.draw(vertices, (int)command.count, command.topology, state);
-					}
-				}
+				part.y0 = std::max(part.y0, top);
+				part.y1 = std::min(part.y1, bottom);
+				if (!part.empty())
+					inStrips(part);
 			}
 		}
 
@@ -716,7 +745,7 @@ namespace Renderer
 			if (count == 0)
 				return;
 			s.stats.wrong++;
-			LOG(LogError) << "SoftRenderer: drawn in part, " << count << " pixels differ from the whole frame, in "
+			LOG(LogError) << "SoftRenderer: drawn in parts or strips, " << count << " pixels differ from the frame drawn whole, in "
 				<< at.x0 << "," << at.y0 << " " << (at.x1 - at.x0) << "x" << (at.y1 - at.y0) << " (" << s.rects.size() << " parts)";
 			// the next frames checked on their own
 			memcpy(s.raster.pixels(), right, (size_t)w * h * 4);
@@ -947,6 +976,8 @@ namespace Renderer
 		s.dirty = dirty == nullptr || strcmp(dirty, "0") != 0;
 		const char* check = getenv("ES_SOFT_DIRTY_CHECK");
 		s.dirtyCheck = check != nullptr && strcmp(check, "0") != 0;
+		const char* strip = getenv("ES_SOFT_STRIP");
+		s.stripRows = strip != nullptr ? std::max(0, atoi(strip)) : 16;
 
 		const char* stats = getenv("ES_SOFT_STATS");
 		if (stats != nullptr)
@@ -1240,7 +1271,7 @@ namespace Renderer
 				if (s.output)
 					s.output->finishFrame(0);
 			}
-			if (s.partial && s.dirtyCheck)
+			if ((s.partial || s.stripRows > 0) && s.dirtyCheck)
 				checkParts();
 			uint64_t redrawn = 0;
 			if (!s.partial)
