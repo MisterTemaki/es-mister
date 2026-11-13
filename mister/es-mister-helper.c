@@ -9,6 +9,7 @@
 //   es-mister-helper console auto          the same, at the size Main_MiSTer gives it for the menu (from
 //                                          video_mode and fb_size in MiSTer.ini); the size is printed
 //   es-mister-helper console auto/N        that size divided by N (auto/2: 960x540 on a 1080p screen)
+//   es-mister-helper console SIZE PRESSES  at most PRESSES presses of F9 (default 30, about 10 s)
 //   es-mister-helper key NAME               a key pressed and let go (F9, F12, ESC, ENTER)
 //   es-mister-helper core                   the core loaded now (/tmp/CORENAME)
 
@@ -140,7 +141,7 @@ static int framebuffer_size(int* width, int* height)
 	return ok;
 }
 
-static int console_on(const char* size)
+static int console_on(const char* size, int presses)
 {
 	int width = 640, height = 360, divisor = 1;
 	const int automatic = !size || !strncmp(size, "auto", 4);
@@ -175,7 +176,7 @@ static int console_on(const char* size)
 
 	char tty[32] = "";
 	int done = 0;
-	for (int tries = 0; tries < 30 && !done; tries++)
+	for (int tries = 0; tries < presses && !done; tries++)
 	{
 		press(kbd, KEY_F9);
 		for (int wait = 0; wait < 6 && !done; wait++)
@@ -190,7 +191,7 @@ static int console_on(const char* size)
 	if (!done)
 	{
 		fprintf(stderr, "es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer "
-			"(console %s before, %s after 30 F9 presses)\n", before, tty);
+			"(console %s before, %s after %d F9 presses)\n", before, tty, presses);
 		return 1;
 	}
 
@@ -228,7 +229,10 @@ static int console_on(const char* size)
 int main(int argc, char** argv)
 {
 	if (argc >= 2 && !strcmp(argv[1], "console"))
-		return console_on(argc >= 3 ? argv[2] : NULL);
+	{
+		const int presses = argc >= 4 ? atoi(argv[3]) : 30;
+		return console_on(argc >= 3 ? argv[2] : NULL, presses >= 1 && presses <= 100 ? presses : 30);
+	}
 
 	if (argc >= 3 && !strcmp(argv[1], "key"))
 	{
