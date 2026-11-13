@@ -904,6 +904,12 @@ int main(int argc, char* argv[])
 			    continue;
 #endif
 
+				// a press of the user's: the renderer measures the time until a frame shows its effect
+				if ((event.type == SDL_KEYDOWN && !event.key.repeat) || event.type == SDL_JOYBUTTONDOWN || event.type == SDL_CONTROLLERBUTTONDOWN ||
+					(event.type == SDL_JOYHATMOTION && event.jhat.value != SDL_HAT_CENTERED) ||
+					(event.type == SDL_JOYAXISMOTION && (event.jaxis.value > 23000 || event.jaxis.value < -23000)))
+					StartupTrace::inputArrived();
+
 				TRYCATCH("InputManager::parseEvent", InputManager::getInstance()->parseEvent(event, &window));
 
 				if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED && Settings::getInstance()->getBool("Windowed"))

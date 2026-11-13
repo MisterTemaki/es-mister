@@ -10,7 +10,9 @@ LOGS=$ES/logs
 mkdir -p "$CONFIG" "$LOGS"
 LOG=$LOGS/es-mister.log
 exec >>"$LOG" 2>&1
-echo "== $(date '+%F %T') es-mister.sh"
+# times since the machine started (as ES's startup trace has them): from here to ES on the screen
+uptime() { cut -d' ' -f1 /proc/uptime; }
+echo "== $(date '+%F %T') es-mister.sh (uptime $(uptime) s)"
 
 # settings (es-mister.ini): SIZE, FPS, GAMES_ROOTS
 SIZE=auto
@@ -121,7 +123,7 @@ if [ "$SLOW_DUMPS" -gt 0 ] 2>/dev/null; then
 fi
 # keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
-echo "starting ES at $DRAWN (SIZE=$SIZE)"
+echo "starting ES at $DRAWN (SIZE=$SIZE, uptime $(uptime) s)"
 ./emulationstation
 echo "ES closed ($?)"
 

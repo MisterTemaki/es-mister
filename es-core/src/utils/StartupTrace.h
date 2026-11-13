@@ -13,6 +13,13 @@
 //   StartupTrace::frameShown();                       the main thread showed a frame (the renderer)
 //   StartupTrace::finish();                           ES is up: the watchdog stops
 //   StartupTrace::onMainThread()                      the caller is ES's main thread (the one that draws)
+//   StartupTrace::inputArrived()                      a press of the user's (main.cpp), and
+//   StartupTrace::inputAnswered(ms)                   after a frame is shown: true, with the time since the
+//                                                     press, for the first frame shown after one (the renderer)
+//   StartupTrace::inputWaitingMs()                    how long a press has waited (-1: none)
+//
+// The trace's first line has the time since the machine started (/proc/uptime), as the MiSTer scripts'
+// lines do, to put ES's steps on the same clock as theirs.
 
 #include <string>
 
@@ -23,6 +30,9 @@ namespace StartupTrace
 	void frameShown();
 	void finish();
 	bool onMainThread();
+	void inputArrived();
+	bool inputAnswered(double& ms);
+	double inputWaitingMs(); // how long the press not yet answered has waited; -1: none
 
 	class Scope
 	{

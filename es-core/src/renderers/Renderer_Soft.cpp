@@ -97,6 +97,8 @@ namespace Renderer
 			int partial = 0;             // frames drawn in part (what changed)
 			uint64_t redrawn = 0;        // pixels drawn again
 			int checked = 0, wrong = 0;  // ES_SOFT_DIRTY_CHECK: frames drawn in part checked against whole ones
+			std::vector<float> answers;  // ms from a press of the user's to the first frame shown after it
+			int overBudget = 0;          // drawn frames that took more than 1/60 s (ES, drawing and copy)
 		};
 
 		// The frame drawn in horizontal bands, one a thread: the first by the thread that swaps, the others
@@ -852,14 +854,27 @@ namespace Renderer
 				snprintf(parts, sizeof(parts), ", %d drawn in part, %.0f%% of the screen drawn again a drawn frame%s",
 					st.partial, 100.0 * st.redrawn / drawn / std::max(1, s.width * s.height),
 					st.checked ? (", " + std::to_string(st.wrong) + " of " + std::to_string(st.checked) + " checked wrong").c_str() : "");
-			char line[1024];
+			// presses answered: the median, the 99th percentile and the longest
+			char answers[200] = "";
+			if (!st.answers.empty())
+			{
+				std::vector<float> sorted = st.answers;
+				std::sort(sorted.begin(), sorted.end());
+				const size_t n = sorted.size();
+				snprintf(answers, sizeof(answers), "; %zu presses answered in %.0f ms (median), %.0f ms (99%%), %.0f ms (longest)",
+					n, sorted[n / 2], sorted[std::min(n - 1, (size_t)std::ceil(n * 0.99) - 1)], sorted[n - 1]);
+			}
+			char budget[96];
+			snprintf(budget, sizeof(budget), "; %d of %d drawn frames over 16.7 ms", st.overBudget, st.drawn);
+			char line[1400];
 			snprintf(line, sizeof(line),
 				"SoftRenderer: %d frames, %d drawn; frame %.1f ms (max %.1f), ES before a drawn frame %.1f ms (max %.1f), drawing %.1f ms (max %.1f)%s, copy %.2f ms, %.0f k pixels copied, "
 				"%.0f vertices, %.0f k pixels, %u quads, %u triangles a drawn frame%s; k pixels: fill %.0f, copy %.0f, colour %.0f, "
-				"picture 1:1 %.0f, nearest %.0f, bilinear %.0f, triangles %.0f",
+				"picture 1:1 %.0f, nearest %.0f, bilinear %.0f, triangles %.0f%s%s",
 				st.frames, st.drawn, st.frameMs / st.frames, st.frameMax, st.esMs / drawn, st.esMax, st.rasterMs / drawn, st.rasterMax, bands, st.copyMs / drawn,
 				(double)st.copied / drawn / 1000.0, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn, parts,
-				kpx(Soft::PX_FILL), kpx(Soft::PX_COPY), kpx(Soft::PX_COLOR), kpx(Soft::PX_TEX_1TO1), kpx(Soft::PX_TEX_NEAREST), kpx(Soft::PX_TEX_LINEAR), kpx(Soft::PX_TRIANGLE));
+				kpx(Soft::PX_FILL), kpx(Soft::PX_COPY), kpx(Soft::PX_COLOR), kpx(Soft::PX_TEX_1TO1), kpx(Soft::PX_TEX_NEAREST), kpx(Soft::PX_TEX_LINEAR), kpx(Soft::PX_TRIANGLE),
+				budget, answers);
 			LOG(LogInfo) << line;
 
 			// also where it can be read without ES's debug log (ES_SOFT_STATS_FILE), with the time
@@ -1269,6 +1284,29 @@ namespace Renderer
 					dumpCommands(std::string(slowPrefix) + std::to_string(++written) + ".txt", header);
 				}
 			}
+			// the first frame on the screen (the splash), in the startup trace
+			static bool shownOnce = false;
+			if (!shownOnce && s.output != nullptr)
+			{
+				shownOnce = true;
+				StartupTrace::mark("first frame shown");
+			}
+
+			// the time from a press to the frame that shows its effect, and the frames over a 60 Hz frame's time
+			double answeredMs;
+			if (StartupTrace::inputAnswered(answeredMs))
+			{
+				st.answers.push_back((float)answeredMs);
+				static bool first = true;
+				if (first && StartupTrace::enabled())
+				{
+					first = false;
+					StartupTrace::mark("first press answered", std::to_string((int)answeredMs) + " ms");
+				}
+			}
+			if (esMs + rasterMs + copyMs > 1000.0 / 60.0)
+				st.overBudget++;
+
 			st.rasterMs += rasterMs;
 			st.rasterMax = std::max(st.rasterMax, rasterMs);
 			st.copyMs += copyMs;
@@ -1290,6 +1328,12 @@ namespace Renderer
 					100.0 * redrawn / std::max(1, s.width * s.height));
 				StartupTrace::mark("slow frame", detail);
 			}
+		}
+		else if (StartupTrace::inputWaitingMs() > 250)
+		{
+			// a press that changed nothing on the screen (frames went on, the same): not counted
+			double ignored;
+			StartupTrace::inputAnswered(ignored);
 		}
 
 		if (s.scriptLoaded && s.script.active())

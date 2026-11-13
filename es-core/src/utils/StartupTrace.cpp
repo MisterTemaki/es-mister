@@ -196,7 +196,14 @@ namespace StartupTrace
 				if (s->file != nullptr)
 				{
 					s->mainThread = threadId();
-					line(*s, "%9.3f [%ld] trace started", now(), s->mainThread);
+					char uptime[32] = "?";
+					if (FILE* f = fopen("/proc/uptime", "r"))
+					{
+						if (fscanf(f, "%31s", uptime) != 1)
+							strcpy(uptime, "?");
+						fclose(f);
+					}
+					line(*s, "%9.3f [%ld] trace started (uptime %s s)", now(), s->mainThread, uptime);
 					s->lastFrame = now();
 					std::thread(watch, s).detach();
 				}
@@ -225,6 +232,33 @@ namespace StartupTrace
 		State* s = get();
 		if (s->file != nullptr)
 			s->lastFrame = now();
+	}
+
+	namespace
+	{
+		std::atomic<int64_t> pressedAt{ 0 }; // steady clock, ns; 0: none waiting
+		int64_t steadyNs() { return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
+	}
+
+	void inputArrived()
+	{
+		int64_t none = 0;
+		pressedAt.compare_exchange_strong(none, steadyNs()); // the first press not yet answered counts
+	}
+
+	bool inputAnswered(double& ms)
+	{
+		const int64_t at = pressedAt.exchange(0);
+		if (at == 0)
+			return false;
+		ms = (steadyNs() - at) / 1e6;
+		return true;
+	}
+
+	double inputWaitingMs()
+	{
+		const int64_t at = pressedAt.load();
+		return at == 0 ? -1.0 : (steadyNs() - at) / 1e6;
 	}
 
 	bool onMainThread()
