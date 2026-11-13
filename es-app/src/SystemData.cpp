@@ -421,6 +421,10 @@ void SystemData::populateFolder(FolderData* folder, std::unordered_map<std::stri
 				continue;			
 
 #ifdef MISTER
+			// MiSTer's games folders: Palettes (the NES core's colour palettes, a few thousand files) has no games
+			if (depth == 0 && fn == "palettes")
+				continue;
+
 			// MiSTer's _Arcade: 'cores' holds the cores the .mra files name, 'mame' and 'hbmame' (on older
 			// cards) the ROMs they load, '_Organized' (the Arcade Organizer's) thousands of links to the same
 			// .mra files, sorted by year, maker, genre..., and '_alternatives' thousands of other versions in
