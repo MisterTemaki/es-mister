@@ -29,6 +29,15 @@ int Font::getSize() const { return mSize; }
 std::map< std::pair<std::string, int>, std::weak_ptr<Font> > Font::sFontMap;
 static std::map<unsigned int, std::string> substituableChars;
 
+// How glyphs are rendered. On the MiSTer, without hinting: running a TrueType font's hinting program
+// took most of the time a game list takes to open on its ARM (a new font renders its ASCII glyphs at
+// once), and at the screen's resolution the glyphs look the same without it.
+#ifdef MISTER
+static const FT_Int32 kGlyphLoad = FT_LOAD_RENDER | FT_LOAD_NO_HINTING;
+#else
+static const FT_Int32 kGlyphLoad = FT_LOAD_RENDER;
+#endif
+
 Font::FontFace::FontFace(ResourceData&& d, int size) : data(d)
 {
 	int err = FT_New_Memory_Face(sLibrary, data.ptr.get(), (FT_Long)data.length, 0, &face);
@@ -381,7 +390,7 @@ Font::Glyph* Font::getGlyph(unsigned int id)
 
 	FT_GlyphSlot g = face->glyph;
 
-	if(FT_Load_Char(face, id, FT_LOAD_RENDER))
+	if(FT_Load_Char(face, id, kGlyphLoad))
 	{
 		LOG(LogError) << "Could not find glyph for character " << id << " for font " << mPath << ", size " << mSize << "!";
 		return NULL;
@@ -442,7 +451,7 @@ void Font::rebuildTextures()
 		FT_GlyphSlot glyphSlot = face->glyph;
 
 		// load the glyph bitmap through FT
-		FT_Load_Char(face, it->first, FT_LOAD_RENDER);
+		FT_Load_Char(face, it->first, kGlyphLoad);
 
 		Glyph* glyph = it->second;
 		
