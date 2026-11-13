@@ -4,7 +4,7 @@
 
 #include <SDL_joystick.h>
 #include <map>
-#include <pugixml/src/pugixml.hpp>
+#include "utils/Xml.h"
 #include <utils/Delegate.h>
 
 #include "GunManager.h"

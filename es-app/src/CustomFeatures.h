@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <pugixml/src/pugixml.hpp>
+#include "utils/Xml.h"
 
 #include "utils/VectorEx.h"
 

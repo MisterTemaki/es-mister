@@ -7,7 +7,7 @@
 #include "Settings.h"
 #include "LocaleES.h"
 
-#include <pugixml/src/pugixml.hpp>
+#include "utils/Xml.h"
 
 #include "SystemData.h"
 #include "FileData.h"

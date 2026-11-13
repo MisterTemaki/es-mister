@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-13",
+  "host": "Ubuntu 26.04 / WSL2 / Windows",
+  "baseline_git_local": "bd16a02421affddfdb09814c181f57c1b04fb04f",
+  "cmake": "cmake version 4.2.3",
+  "compiler": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "cppcheck": "Cppcheck 2.19.0",
+  "binary": "/mnt/c/work/es-mister-audit/validation/native/emulationstation: ELF 64-bit LSB pie executable, x86-64, version 1 (GNU/Linux), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=d6c3fc48d5d202c7eddbf333183cfa494ba8db15, for GNU/Linux 3.2.0, with debug_info, not stripped",
+  "binary_sha256": "12fb9af856b9103e85daf71de9d2a4f1d6b98656ba8bc2805756bfa531f957b1",
+  "native_build_exit": 0,
+  "sanitizers": "address, undefined; leak detection enabled; halt_on_error enabled",
+  "flags": [
+    "MISTER=ON",
+    "CEC=OFF",
+    "USE_SYSTEM_PUGIXML=ON",
+    "CMAKE_BUILD_TYPE=Debug",
+    "CMAKE_POLICY_VERSION_MINIMUM=3.5"
+  ],
+  "hardware_tested": false
+}

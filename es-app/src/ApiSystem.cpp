@@ -30,7 +30,7 @@
 #include <algorithm>
 #include <fstream>
 #include <SDL.h>
-#include <pugixml/src/pugixml.hpp>
+#include "utils/Xml.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/pointer.h>
 
@@ -1488,18 +1488,32 @@ bool ApiSystem::unzipFile(const std::string fileName, const std::string destFold
 		Utils::Zip::ZipFile file;
 		if (file.load(fileName))
 		{
-			for (auto name : file.namelist())
+			const auto names = file.namelist();
+			// Validate directory entries too, before creating anything from the archive.
+			for (const auto& name : names)
+				if (!Utils::Zip::ZipFile::isSafeExtractionPath(name, destFolder))
+				{
+					LOG(LogError) << "Unsafe ZIP entry: " << name;
+					return false;
+				}
+
+			for (const auto& name : names)
 			{
 				if (Utils::String::endsWith(name, "/"))
 				{
-					Utils::FileSystem::createDirectory(Utils::FileSystem::combine(destFolder, name.substr(0, name.length() - 1)));
+					if (!Utils::FileSystem::createDirectory(Utils::FileSystem::combine(destFolder, name.substr(0, name.length() - 1))))
+						return false;
 					continue;
 				}
 
 				if (shouldExtract != nullptr && !shouldExtract(Utils::FileSystem::combine(destFolder, name)))
 					continue;
 
-				file.extract(name, destFolder);
+				if (!file.extract(name, destFolder))
+				{
+					LOG(LogError) << "Cannot extract ZIP entry: " << name;
+					return false;
+				}
 			}
 
 			LOG(LogDebug) << "unzipFile << OK";

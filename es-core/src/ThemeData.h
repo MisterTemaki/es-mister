@@ -13,7 +13,7 @@
 #include <mutex>
 #include <sstream>
 #include <vector>
-#include <pugixml/src/pugixml.hpp>
+#include "utils/Xml.h"
 #include "utils/MathExpr.h"
 #include "renderers/Renderer.h"
 #include "ThemeVariables.h"

@@ -1,0 +1,64 @@
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 38302)
+Traceback (most recent call last):
+  File "/usr/lib/python3.14/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/http/server.py", line 496, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/http/server.py", line 464, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/usr/lib/python3.14/socket.py", line 725, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+  File "/usr/lib/python3.14/ssl.py", line 1304, in recv_into
+    return self.read(nbytes, buffer)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/ssl.py", line 1138, in read
+    return self._sslobj.read(len, buffer)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+ConnectionResetError: [Errno 104] Connection reset by peer
+----------------------------------------
+CASE 1 header http://127.0.0.1:39579 exit 0
+PASS header
+CASE 2 header-reset http://127.0.0.1:39579 exit 0
+PASS header-reset
+CASE 3 custom-headers http://127.0.0.1:39579 exit 0
+PASS custom-headers
+CASE 4 write-count http://127.0.0.1:39579 exit 0
+PASS write-count
+CASE 5 download-preserve http://127.0.0.1:39579 exit 0
+PASS download-preserve
+CASE 6 flush-error http://127.0.0.1:39579 exit 0
+PASS flush-error
+CASE 7 download-ok http://127.0.0.1:39579 exit 0
+PASS download-ok
+CASE 8 download-fail http://127.0.0.1:39579/missing exit 0
+PASS download-fail
+CASE 9 download-fail http://127.0.0.1:39579/partial exit 0
+PASS download-fail
+CASE 10 tls-reject https://127.0.0.1:37775/ exit 0
+PASS tls-reject
+CASE 11 tls-trusted https://127.0.0.1:37775/ /tmp/es-audit-hg_k6ra7/cert.pem exit 0
+PASS tls-trusted
+CASE 12 zip-list /tmp/es-audit-hg_k6ra7/cp437.zip exit 0
+PASS zip-list
+CASE 13 zip-reload /tmp/es-audit-hg_k6ra7/cp437.zip /tmp/es-audit-hg_k6ra7/utf8.zip exit 0
+PASS zip-reload
+CASE 14 zip-traversal /tmp/es-audit-hg_k6ra7/unsafe.zip /tmp/es-audit-hg_k6ra7/extract exit 0
+PASS zip-traversal
+CASE 15 zip-nested /tmp/es-audit-hg_k6ra7/nested.zip /tmp/es-audit-hg_k6ra7/extract exit 0
+PASS zip-nested
+CASE 16 rename-contracts /tmp/es-audit-hg_k6ra7/rename-source.bin exit 0
+PASS rename-contracts
+CASE cross-filesystem rename exit 0
+PASS rename-fail
+17/17 cases passed

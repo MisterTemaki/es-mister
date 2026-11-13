@@ -4,9 +4,10 @@
 #include "Log.h"
 #include "Scripting.h"
 #include "utils/Platform.h"
-#include <pugixml/src/pugixml.hpp>
+#include "utils/Xml.h"
 #include <algorithm>
 #include <vector>
+#include <fstream>
 #include "utils/StringUtil.h"
 #include "Paths.h"
 
@@ -450,8 +451,6 @@ bool Settings::saveFile()
 	if (!mWasChanged)
 		return false;
 
-	mWasChanged = false;
-
 	LOG(LogDebug) << "Settings::saveFile() : Saving Settings to file.";
 
 	const std::string path = Paths::getUserEmulationStationPath() + "/es_settings.cfg";
@@ -485,7 +484,24 @@ bool Settings::saveFile()
 		node.append_attribute("value").set_value(iter->second.c_str());
 	}
 
-	doc.save_file(WINSTRINGW(path).c_str());
+	const std::string temporaryPath = path + ".tmp";
+	std::ofstream output(WINSTRINGW(temporaryPath), std::ios::binary | std::ios::trunc);
+	if (!output.is_open())
+	{
+		LOG(LogError) << "Cannot create temporary settings file: " << temporaryPath;
+		return false;
+	}
+	doc.save(output);
+	output.flush();
+	const bool written = output.good();
+	output.close();
+	if (!written || output.fail() || !Utils::FileSystem::renameFile(temporaryPath, path))
+	{
+		Utils::FileSystem::removeFile(temporaryPath);
+		LOG(LogError) << "Cannot save settings to: " << path;
+		return false;
+	}
+	mWasChanged = false;
 
 	Scripting::fireEvent("config-changed");
 	Scripting::fireEvent("settings-changed");

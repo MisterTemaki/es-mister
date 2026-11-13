@@ -11,8 +11,13 @@
 #include <iostream>
 #include <cstring>
 #include <string>
+#include <cerrno>
+#include <sys/stat.h>
+// Use miniz's portable bytewise loads; archive headers need not be aligned.
+#define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 0
 #include "zip_file.hpp"
 #include "FileSystemUtil.h"
+#include "StringUtil.h"
 #include "md5.h"
 #include "Log.h"
 
@@ -116,7 +121,7 @@ namespace Utils
 			utf8buf[buflen - 1] = 0;			
 
 			std::string ret = (char*)utf8buf;
-			delete utf8buf;
+			delete[] utf8buf;
 
 			return ret;
 		}
@@ -138,6 +143,8 @@ namespace Utils
 
 		bool ZipFile::load(const std::string &filename)
 		{
+			mUtfTo437Names.clear();
+			mUtfTableBuilt = false;
 			try
 			{
 				if (mZipFile != nullptr)
@@ -255,8 +262,53 @@ namespace Utils
 			if (mZipFile == nullptr)
 				return false;
 
-			auto fullPath = join_path({ path, member });
-			return mz_zip_reader_extract_file_to_file(mZipArchive, getInternalFilename(member).c_str(), (pathIsFullPath ? path : fullPath).c_str(), 0);
+			if (!pathIsFullPath && !isSafeExtractionPath(member, path))
+				return false;
+
+			const auto fullPath = pathIsFullPath ? path : join_path({ path, member });
+			const auto parent = Utils::FileSystem::getParent(fullPath);
+			if (!parent.empty() && !Utils::FileSystem::createDirectory(parent))
+				return false;
+			return mz_zip_reader_extract_file_to_file(mZipArchive, getInternalFilename(member).c_str(), fullPath.c_str(), 0);
+		}
+
+		bool ZipFile::isSafeExtractionPath(const std::string& member, const std::string& path)
+		{
+			if (path.empty() || member.empty() || member.front() == '/' ||
+				member.find_first_of("\\:") != std::string::npos || member.find('\0') != std::string::npos)
+				return false;
+
+			std::string target = path;
+			for (size_t start = 0; start < member.size();)
+			{
+				const auto end = member.find('/', start);
+				const auto part = member.substr(start, end == std::string::npos ? end : end - start);
+				if (part.empty() || part == "." || part == ".." || part.back() == '.' || part.back() == ' ')
+					return false;
+				target += "/" + part;
+#if WIN32
+				const auto stem = Utils::String::toUpper(part.substr(0, part.find('.')));
+				if (stem == "CON" || stem == "PRN" || stem == "AUX" || stem == "NUL" ||
+					(stem.size() == 4 && (stem.substr(0, 3) == "COM" || stem.substr(0, 3) == "LPT") && stem[3] >= '1' && stem[3] <= '9'))
+					return false;
+				const DWORD attributes = GetFileAttributesW(Utils::String::convertToWideString(target).c_str());
+				if (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_REPARSE_POINT))
+					return false;
+#else
+				struct stat info;
+				if (lstat(target.c_str(), &info) == 0)
+				{
+					if (S_ISLNK(info.st_mode))
+						return false;
+				}
+				else if (errno != ENOENT)
+					return false;
+#endif
+				if (end == std::string::npos)
+					break;
+				start = end + 1;
+			}
+			return true;
 		}
 
 		struct OpaqueWrapper

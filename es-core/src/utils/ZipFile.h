@@ -27,6 +27,7 @@ namespace Utils
 
 			bool load(const std::string &filename);
 			bool extract(const std::string &member, const std::string &path, bool pathIsFullPath = false);
+			static bool isSafeExtractionPath(const std::string& member, const std::string& path);
 
 			bool readBuffered(const std::string &name, zip_callback pCallback, void* pOpaque);
 

@@ -1,0 +1,25 @@
+EmulationStation, a graphical front-end for ROM browsing.
+Written by Alec "Aloshi" Lofquist.
+Version 42, built Nov 13 2026 - 19:14:52
+
+Command line arguments:
+--resolution [width] [height]	try and force a particular resolution
+--gamelist-only			skip automatic game search, only read from gamelist.xml
+--ignore-gamelist		ignore the gamelist (useful for troubleshooting)
+--draw-framerate		display the framerate
+--no-exit			don't show the exit option in the menu
+--no-splash			don't show the splash screen
+--debug				more logging, show console on Windows
+--windowed			not fullscreen, should be used with --resolution
+--vsync [1/on or 0/off]		turn vsync on or off (default is on)
+--max-vram [size]		Max VRAM to use in Mb before swapping. 0 for unlimited
+--anti-aliasing [0, 2 or 4]	set MSAA anti-aliasing to disabled, 2x or 4x
+--force-kid		Force the UI mode to be Kid
+--force-kiosk		Force the UI mode to be Kiosk
+--force-disable-filters		Force the UI to ignore applied filters in gamelist
+--home [path]		Directory to use as home path
+--help, -h			summon a sentient, angry tuba
+
+--monitor [index]			monitor index
+
+More information available in README.md.

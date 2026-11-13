@@ -1,0 +1,42 @@
+[
+  {
+    "file": "emulationstation.sh",
+    "exit": 0,
+    "stderr": ""
+  },
+  {
+    "file": "getPoFromWebsite.sh",
+    "exit": 0,
+    "stderr": ""
+  },
+  {
+    "file": "locale/checkLocale.sh",
+    "exit": 0,
+    "stderr": ""
+  },
+  {
+    "file": "mister/build.sh",
+    "exit": 0,
+    "stderr": ""
+  },
+  {
+    "file": "mister/package.sh",
+    "exit": 0,
+    "stderr": ""
+  },
+  {
+    "file": "mister/scripts/emulationstation.sh",
+    "exit": 0,
+    "stderr": ""
+  },
+  {
+    "file": "mister/scripts/es-mister.sh",
+    "exit": 0,
+    "stderr": ""
+  },
+  {
+    "file": "mister/scripts/mister-launch.sh",
+    "exit": 0,
+    "stderr": ""
+  }
+]

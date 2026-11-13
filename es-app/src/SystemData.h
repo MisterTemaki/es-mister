@@ -9,7 +9,7 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <pugixml/src/pugixml.hpp>
+#include "utils/Xml.h"
 #include <unordered_map>
 #include <unordered_set>
 #include "FileFilterIndex.h"

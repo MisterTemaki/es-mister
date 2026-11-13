@@ -393,6 +393,7 @@ endif()
 if(USE_SYSTEM_PUGIXML)
   MESSAGE("Use system pugixml")
   find_package(pugixml REQUIRED)
+  add_definitions(-DES_USE_SYSTEM_PUGIXML)
 endif()
 
 #add libCEC_INCLUDE_DIR
@@ -608,7 +609,7 @@ add_subdirectory("external")
 add_subdirectory("es-core")
 add_subdirectory("es-app")
 
-if(MSGFMT_EXECUTABLE AND MSGMERGE_EXECUTABLE AND XGETTEXT_EXECUTABLE AND Intl_FOUND)
+if(NOT MISTER AND MSGFMT_EXECUTABLE AND MSGMERGE_EXECUTABLE AND XGETTEXT_EXECUTABLE AND Intl_FOUND)
   add_subdirectory (locale)
 endif()
 

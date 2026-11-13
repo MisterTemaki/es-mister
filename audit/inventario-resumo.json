@@ -1,0 +1,12 @@
+{
+  "arquivos_originais": 1008,
+  "bytes_originais": 46509260,
+  "status": {
+    "Não analisado": 764,
+    "Parcialmente analisado": 228,
+    "Analisado": 16
+  },
+  "fontes_principais": 434,
+  "linhas_fontes_principais": 168365,
+  "sha256_zip": "f87ee31502c598e3e6e5c526df0a2e770a8d7bf79ca9fb967ad329826669863a"
+}

@@ -138,6 +138,7 @@ private:
 	void onError(const char* msg);
 
 	CURL* mHandle;
+	curl_slist* mRequestHeaders = nullptr;
 
 	Status mStatus;
 

@@ -171,12 +171,19 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 
 	if (options != nullptr && options->customHeaders.size() > 0)
 	{
-		struct curl_slist *hs = nullptr;
-
 		for (auto header : options->customHeaders)
-			hs = curl_slist_append(hs, header.c_str());
+		{
+			auto headers = curl_slist_append(mRequestHeaders, header.c_str());
+			if (headers == nullptr)
+			{
+				mStatus = REQ_IO_ERROR;
+				onError("Cannot allocate request headers");
+				return;
+			}
+			mRequestHeaders = headers;
+		}
 
-		curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, hs);
+		curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, mRequestHeaders);
 	}
 
 	//set curl to handle redirects
@@ -188,8 +195,7 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 		return;
 	}
 
-	// Ignore expired SSL certificates
-	curl_easy_setopt(mHandle, CURLOPT_SSL_VERIFYPEER, 0L);
+	// Keep libcurl's certificate and hostname verification enabled.
 
 	//set curl to connection timeout
 	err = curl_easy_setopt(mHandle, CURLOPT_CONNECTTIMEOUT_MS, options != nullptr ? options->connectTimeout : 10000L);
@@ -323,7 +329,6 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 		}
 
 		mPosition = 0;
-		Utils::FileSystem::removeFile(outputFilename);
 	}
 
 	//add the handle to our multi
@@ -344,9 +349,14 @@ void HttpReq::closeStream()
 {
 	if (mFile)
 	{
-		fflush(mFile);
-		fclose(mFile);
+		const int flushed = fflush(mFile);
+		const int closed = fclose(mFile);
 		mFile = nullptr;
+		if (flushed != 0 || closed != 0)
+		{
+			mStatus = REQ_FILESTREAM_ERROR;
+			mErrorMsg = "IO ERROR (DISK FULL?)";
+		}
 	}
 }
 
@@ -370,6 +380,7 @@ HttpReq::~HttpReq()
 
 		curl_easy_cleanup(mHandle);
 	}
+	curl_slist_free_all(mRequestHeaders);
 }
 
 HttpReq::Status HttpReq::status()
@@ -411,7 +422,7 @@ HttpReq::Status HttpReq::status()
 				}
 				else if (msg->data.result == CURLE_OK)
 				{
-					int http_status_code;
+					long http_status_code = 0;
 					curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &http_status_code);					
 
 					if (http_status_code < 200 || http_status_code > 299)
@@ -476,14 +487,6 @@ HttpReq::Status HttpReq::status()
 								}
 							}
 #endif
-							if (!renamed)
-							{
-								// Strange behaviour on Windows : sometimes std::rename fails if it's done too early after closing stream
-								// Copy file instead & try to delete it
-								if (Utils::FileSystem::copyFile(req->mTempStreamPath, req->mFilePath))
-									renamed = true;
-							}
-
 							if (renamed)
 								req->mStatus = REQ_SUCCESS;
 							else
@@ -517,11 +520,12 @@ std::string HttpReq::getContent()
 	{
 		closeStream();
 
-		if (!Utils::FileSystem::exists(mTempStreamPath))
+		const auto& contentPath = mStatus == REQ_SUCCESS ? mFilePath : mTempStreamPath;
+		if (!Utils::FileSystem::exists(contentPath))
 			return "";
 
-		std::ifstream ifs(mTempStreamPath, std::ios_base::in | std::ios_base::binary);
-		if (ifs.bad())
+		std::ifstream ifs(contentPath, std::ios_base::in | std::ios_base::binary);
+		if (!ifs.is_open())
 			return "";
 
 		std::stringstream ofs;
@@ -562,7 +566,9 @@ size_t HttpReq::header_callback(char *buffer, size_t size, size_t nitems, void *
 {
 	HttpReq* request = ((HttpReq*)userdata);
 
-	std::string data = Utils::String::trim(buffer);
+	std::string data = Utils::String::trim(std::string(buffer, size * nitems));
+	if (Utils::String::startsWith(data, "HTTP/"))
+		request->mResponseHeaders.clear();
 	if (!data.empty() && !Utils::String::startsWith(data, "HTTP/"))
 	{
 		auto splitPost = data.find(":");
@@ -593,8 +599,8 @@ size_t HttpReq::write_content(void* buff, size_t size, size_t nmemb, void* req_p
 		return 0;
 
 	size_t rs = size * nmemb;
-	fwrite(buff, 1, rs, file);
-	if (ferror(file))
+	const size_t written = fwrite(buff, 1, rs, file);
+	if (written != rs || ferror(file))
 	{
 		request->closeStream();			
 		request->mStatus = REQ_FILESTREAM_ERROR;
@@ -614,7 +620,7 @@ size_t HttpReq::write_content(void* buff, size_t size, size_t nmemb, void* req_p
 			request->mPercent = (int)(request->mPosition * 100LL / cl);
 	}
 
-	return nmemb;
+	return rs;
 }
 
 bool HttpReq::wait()

@@ -1,0 +1,29 @@
+MiSTer FPGA build
+-- The C compiler identification is GNU 15.2.0
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+Kodi disabled
+-- Graphics API: Software
+-- No graphics API selected; using Software. Pass -DGLES3=ON for the OpenGL ES 3.0 renderer.
+-- Software renderer: no OpenGL
+-- Found Freetype: /usr/lib/x86_64-linux-gnu/libfreetype.so (found version "2.14.2")
+-- Found SDLMIXER: /usr/include/SDL2  
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found SDL2: /usr/lib/x86_64-linux-gnu/libSDL2main.a;/usr/lib/x86_64-linux-gnu/libSDL2.so  
+-- Found CURL: /usr/lib/x86_64-linux-gnu/libcurl.so (found version "8.18.0")
+CMake Error at CMakeLists.txt:226 (find_path):
+  Could not find VLC_INCLUDE_DIR using the following files: vlc/vlc.h
+
+
+-- Configuring incomplete, errors occurred!

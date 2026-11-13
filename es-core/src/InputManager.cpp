@@ -6,7 +6,7 @@
 #include "utils/Platform.h"
 #include "Scripting.h"
 #include "Window.h"
-#include <pugixml/src/pugixml.hpp>
+#include "utils/Xml.h"
 #include <SDL.h>
 #include <iostream>
 #include <assert.h>

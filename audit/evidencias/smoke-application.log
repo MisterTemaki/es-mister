@@ -1,0 +1,71 @@
+2026-11-13 19:28:56	[4458]	INFO	EmulationStation - v42, built Nov 13 2026 - 19:14:52
+2026-11-13 19:28:56	[4468]	DEBUG	ApiSystem::getIpAddress
+2026-11-13 19:28:56	[4468]	INFO	Parsing XML file "/mnt/c/work/es-mister-audit/validation/native/resources/genres.xml"...
+2026-11-13 19:28:56	[4458]	DEBUG	TextureData::load :/scroll_gradient.png
+2026-11-13 19:28:56	[4458]	DEBUG	ImageIO::loadFromMemoryRGBA32
+2026-11-13 19:28:56	[4458]	INFO	Window::init
+2026-11-13 19:28:56	[4458]	INFO	Creating window...
+2026-11-13 19:28:56	[4458]	INFO	SoftRenderer: output memory 640x360
+2026-11-13 19:28:56	[4458]	INFO	SoftRenderer: running the test script /tmp/es-smoke-00lo7ayq/smoke.txt (6 commands)
+2026-11-13 19:28:56	[4458]	INFO	SoftRenderer: drawing 640x360 in software
+2026-11-13 19:28:56	[4458]	DEBUG	ImageIO::loadFromMemoryRGBA32
+2026-11-13 19:28:56	[4470]	INFO	Parsing XML file "/mnt/c/work/es-mister-audit/validation/native/resources/arcaderoms.xml"...
+2026-11-13 19:28:56	[4470]	INFO	Parsing XML file "/mnt/c/work/es-mister-audit/validation/native/resources/gamesdb.xml
+2026-11-13 19:28:57	[4458]	DEBUG	WatchersManager : Starting
+2026-11-13 19:28:57	[4458]	DEBUG	Resource path not found: :/auto_en_US.svg
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::load :/frame.png
+2026-11-13 19:28:57	[4458]	DEBUG	ImageIO::loadFromMemoryRGBA32
+2026-11-13 19:28:57	[4458]	DEBUG	fireEvent: start   
+2026-11-13 19:28:57	[4458]	INFO	Loading system config file /tmp/es-smoke-00lo7ayq/.emulationstation/es_systems.cfg...
+2026-11-13 19:28:57	[4472]	ERROR	HttpReq::onError (3) : Could not connect to server
+2026-11-13 19:28:57	[4458]	DEBUG	loadSystemConfigFile : 34ms
+2026-11-13 19:28:57	[4458]	INFO	INFO: device syspath for  is 
+
+2026-11-13 19:28:57	[4458]	INFO	INFO: device syspath for  is 
+
+2026-11-13 19:28:57	[4458]	INFO	INFO: device syspath for  is 
+
+2026-11-13 19:28:57	[4458]	DEBUG	NetworkThread : Starting
+2026-11-13 19:28:57	[4458]	DEBUG	HttpServerThread : Starting
+2026-11-13 19:28:57	[4458]	DEBUG	SystemView::getViewElements()
+2026-11-13 19:28:57	[4458]	DEBUG	fireEvent: system-selected nes  
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::load :/help/button_start.svg
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::initSVGFromMemory :/help/button_start.svg rasterized at 64x64 (intrinsic 64x64, maxSize 0x0)
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::load :/help/button_y.svg
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::initSVGFromMemory :/help/button_y.svg rasterized at 64x64 (intrinsic 64x64, maxSize 0x0)
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::load :/help/button_x.svg
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::initSVGFromMemory :/help/button_x.svg rasterized at 64x64 (intrinsic 64x64, maxSize 0x0)
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::load :/help/button_b.svg
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::initSVGFromMemory :/help/button_b.svg rasterized at 64x64 (intrinsic 64x64, maxSize 0x0)
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::load :/help/dpad_leftright.svg
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::initSVGFromMemory :/help/dpad_leftright.svg rasterized at 64x64 (intrinsic 64x64, maxSize 0x0)
+2026-11-13 19:28:57	[4458]	INFO	SDL AUDIO Initialized
+2026-11-13 19:28:57	[4458]	INFO	SoftRenderer: drawing in 2 threads
+2026-11-13 19:28:57	[4458]	INFO	SoftRenderer: screenshot /tmp/es-smoke-00lo7ayq/initial.png at 579 ms
+2026-11-13 19:28:57	[4458]	DEBUG	VolumeControl::init() - Opened ALSA mixer
+2026-11-13 19:28:57	[4458]	ERROR	VolumeControl::init() - Failed to attach to default card!
+2026-11-13 19:28:57	[4458]	DEBUG	fireEvent: game-selected nes /tmp/es-smoke-00lo7ayq/games/Audit.nes Audit
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::load :/help/button_select.svg
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::initSVGFromMemory :/help/button_select.svg rasterized at 64x64 (intrinsic 64x64, maxSize 0x0)
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::load :/help/button_a.svg
+2026-11-13 19:28:57	[4458]	DEBUG	TextureData::initSVGFromMemory :/help/button_a.svg rasterized at 64x64 (intrinsic 64x64, maxSize 0x0)
+2026-11-13 19:28:57	[4458]	INFO	SoftRenderer: screenshot /tmp/es-smoke-00lo7ayq/navigation.png at 1138 ms
+2026-11-13 19:28:57	[4458]	DEBUG	WatchersManager : Exit
+2026-11-13 19:28:57	[4458]	DEBUG	Settings::saveFile() : Saving Settings to file.
+2026-11-13 19:28:57	[4458]	DEBUG	fireEvent: config-changed   
+2026-11-13 19:28:57	[4458]	DEBUG	fireEvent: settings-changed   
+2026-11-13 19:28:57	[4458]	INFO	SoftRenderer: 18 frames, 16 drawn; frame 31.2 ms (max 403.7), ES before a drawn frame 26.8 ms (max 402.6), drawing 0.4 ms (max 1.3), 2 threads (first two 0.2 / 0.3 ms, line at row 96), copy 0.00 ms, 96 k pixels copied, 428 vertices, 32 k pixels, 55 quads, 0 triangles a drawn frame, 13 drawn in part, 42% of the screen drawn again a drawn frame; k pixels: fill 13, copy 0, colour 16, picture 1:1 2, nearest 0, bilinear 1, triangles 0; 2 of 16 drawn frames over 16.7 ms; 1 presses answered in 20 ms (median), 20 ms (99%), 20 ms (longest)
+2026-11-13 19:28:58	[4458]	DEBUG	fireEvent: quit   
+2026-11-13 19:28:58	[4458]	INFO	EmulationStation cleanly shutting down.
+2026-11-13 19:28:58	[4458]	DEBUG	HttpServerThread : Exit
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource
+2026-11-13 19:28:58	[4458]	DEBUG	WatchersManager : Starting
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource
+2026-11-13 19:28:58	[4458]	DEBUG	~TextureResource

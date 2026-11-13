@@ -1,0 +1,353 @@
+CASE 1 header http://127.0.0.1:34569 exit 1
+=================================================================
+==1365==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x786bbfef7d42 at pc 0x7c3bc2a89cf8 bp 0x7ffd7f23b770 sp 0x7ffd7f23af28
+READ of size 19 at 0x786bbfef7d42 thread T0
+    #0 0x7c3bc2a89cf7 in strlen ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:425
+    #1 0x650bf1ab883c in std::char_traits<char>::length(char const*) /usr/include/c++/15/bits/char_traits.h:393
+    #2 0x650bf1abcabd in std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&) /usr/include/c++/15/bits/basic_string.h:713
+    #3 0x650bf1acf030 in HttpReq::header_callback(char*, unsigned long, unsigned long, void*) /mnt/c/work/es-mister-audit/es-mister/es-core/src/HttpReq.cpp:565
+    #4 0x650bf1ab9091 in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:34
+    #5 0x7c3bc1a2a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #6 0x7c3bc1a2a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #7 0x650bf1ab8344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+0x786bbfef7d42 is located 0 bytes after 18-byte region [0x786bbfef7d30,0x786bbfef7d42)
+allocated by thread T0 here:
+    #0 0x7c3bc2b2c8cf in operator new[](unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:111
+    #1 0x650bf1ab8fcd in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:32
+    #2 0x7c3bc1a2a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #3 0x7c3bc1a2a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #4 0x650bf1ab8344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /mnt/c/work/es-mister-audit/es-mister/es-core/src/HttpReq.cpp:565 in HttpReq::header_callback(char*, unsigned long, unsigned long, void*)
+Shadow bytes around the buggy address:
+  0x786bbfef7a80: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa 00 00
+  0x786bbfef7b00: 07 fa fa fa 00 00 00 07 fa fa 00 00 07 fa fa fa
+  0x786bbfef7b80: 00 00 07 fa fa fa fd fd fd fd fa fa fd fd fd fd
+  0x786bbfef7c00: fa fa fd fd fd fd fa fa fd fd fd fd fa fa fd fd
+  0x786bbfef7c80: fd fd fa fa 00 00 00 fa fa fa fd fd fd fd fa fa
+=>0x786bbfef7d00: 00 00 03 fa fa fa 00 00[02]fa fa fa fa fa fa fa
+  0x786bbfef7d80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x786bbfef7e00: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x786bbfef7e80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x786bbfef7f00: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x786bbfef7f80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==1365==ABORTING
+CASE 2 write-count http://127.0.0.1:34569 exit 1
+FAIL: write callback must return bytes
+CASE 3 download-preserve http://127.0.0.1:34569 exit 1
+FAIL: destination removed before transfer
+CASE 4 flush-error http://127.0.0.1:34569 exit 1
+FAIL: buffered flush error ignored
+CASE 5 download-ok http://127.0.0.1:34569 exit 1
+FAIL: download content unavailable after commit
+CASE 6 download-fail http://127.0.0.1:34569/missing exit 1
+FAIL: download damaged destination
+CASE 7 download-fail http://127.0.0.1:34569/partial exit 1
+FAIL: download damaged destination
+CASE 8 tls-reject https://127.0.0.1:46853/ exit 1
+FAIL: unexpected request result
+CASE 9 zip-list /tmp/es-audit-7ythm1q8/cp437.zip exit 1
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5006:25: runtime error: load of misaligned address 0x7436ac7f408b for type 'const mz_uint32', which requires 4 byte alignment
+0x7436ac7f408b: note: pointer points here
+ 00  00 26 00 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5181:36: runtime error: load of misaligned address 0x7496ad5e17ea for type 'const mz_uint32', which requires 4 byte alignment
+0x7496ad5e17ea: note: pointer points here
+ 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5256:28: runtime error: load of misaligned address 0x7496ad5e17ca for type 'const mz_uint32', which requires 4 byte alignment
+0x7496ad5e17ca: note: pointer points here
+ 14 00  00 00 00 00 8b 99 6d 5d  c2 41 24 35 03 00 00 00  03 00 00 00 05 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5266:37: runtime error: load of misaligned address 0x7496ad5e17ea for type 'const mz_uint32', which requires 4 byte alignment
+0x7496ad5e17ea: note: pointer points here
+ 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5640:34: runtime error: load of misaligned address 0x7496ad5e17e6 for type 'const mz_uint32', which requires 4 byte alignment
+0x7496ad5e17e6: note: pointer points here
+ 00 00 00 00 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5641:37: runtime error: load of misaligned address 0x7496ad5e17ea for type 'const mz_uint32', which requires 4 byte alignment
+0x7496ad5e17ea: note: pointer points here
+ 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5605:23: runtime error: load of misaligned address 0x7496ad5e17e6 for type 'const mz_uint32', which requires 4 byte alignment
+0x7496ad5e17e6: note: pointer points here
+ 00 00 00 00 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00
+             ^ 
+=================================================================
+==1394==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new [] vs operator delete) on 0x7456ad5e6a50
+    #0 0x7836b012d89f in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:190
+    #1 0x59be4c41ab9b in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:119
+    #2 0x59be4c41c2d8 in Utils::Zip::ZipFile::infolist() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:209
+    #3 0x59be4c41ce00 in Utils::Zip::ZipFile::namelist[abi:cxx11]() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:232
+    #4 0x59be4c3882a3 in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:71
+    #5 0x7836af02a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #6 0x7836af02a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #7 0x59be4c386344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+0x7456ad5e6a50 is located 0 bytes inside of 7-byte region [0x7456ad5e6a50,0x7456ad5e6a57)
+allocated by thread T0 here:
+    #0 0x7836b012c8cf in operator new[](unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:111
+    #1 0x59be4c41a7cc in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:110
+    #2 0x59be4c41c2d8 in Utils::Zip::ZipFile::infolist() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:209
+    #3 0x59be4c41ce00 in Utils::Zip::ZipFile::namelist[abi:cxx11]() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:232
+    #4 0x59be4c3882a3 in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:71
+    #5 0x7836af02a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #6 0x7836af02a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #7 0x59be4c386344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+SUMMARY: AddressSanitizer: alloc-dealloc-mismatch /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:119 in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+==1394==HINT: if you don't care about these errors you may set ASAN_OPTIONS=alloc_dealloc_mismatch=0
+==1394==ABORTING
+CASE 10 zip-reload /tmp/es-audit-7ythm1q8/cp437.zip /tmp/es-audit-7ythm1q8/utf8.zip exit 1
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5006:25: runtime error: load of misaligned address 0x7b35bedf408b for type 'const mz_uint32', which requires 4 byte alignment
+0x7b35bedf408b: note: pointer points here
+ 00  00 26 00 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5181:36: runtime error: load of misaligned address 0x7b95bfbe17ea for type 'const mz_uint32', which requires 4 byte alignment
+0x7b95bfbe17ea: note: pointer points here
+ 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5256:28: runtime error: load of misaligned address 0x7b95bfbe17ca for type 'const mz_uint32', which requires 4 byte alignment
+0x7b95bfbe17ca: note: pointer points here
+ 14 00  00 00 00 00 8b 99 6d 5d  c2 41 24 35 03 00 00 00  03 00 00 00 05 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5266:37: runtime error: load of misaligned address 0x7b95bfbe17ea for type 'const mz_uint32', which requires 4 byte alignment
+0x7b95bfbe17ea: note: pointer points here
+ 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5640:34: runtime error: load of misaligned address 0x7b95bfbe17e6 for type 'const mz_uint32', which requires 4 byte alignment
+0x7b95bfbe17e6: note: pointer points here
+ 00 00 00 00 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5641:37: runtime error: load of misaligned address 0x7b95bfbe17ea for type 'const mz_uint32', which requires 4 byte alignment
+0x7b95bfbe17ea: note: pointer points here
+ 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5605:23: runtime error: load of misaligned address 0x7b95bfbe17e6 for type 'const mz_uint32', which requires 4 byte alignment
+0x7b95bfbe17e6: note: pointer points here
+ 00 00 00 00 00 00  80 01 00 00 00 00 82 2e  74 78 74 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00
+             ^ 
+=================================================================
+==1399==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new [] vs operator delete) on 0x7b55bfbe6a50
+    #0 0x7f35c272d89f in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:190
+    #1 0x55d42e16eb9b in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:119
+    #2 0x55d42e1702d8 in Utils::Zip::ZipFile::infolist() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:209
+    #3 0x55d42e170e00 in Utils::Zip::ZipFile::namelist[abi:cxx11]() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:232
+    #4 0x55d42e0dc2a3 in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:71
+    #5 0x7f35c162a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #6 0x7f35c162a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #7 0x55d42e0da344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+0x7b55bfbe6a50 is located 0 bytes inside of 7-byte region [0x7b55bfbe6a50,0x7b55bfbe6a57)
+allocated by thread T0 here:
+    #0 0x7f35c272c8cf in operator new[](unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:111
+    #1 0x55d42e16e7cc in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:110
+    #2 0x55d42e1702d8 in Utils::Zip::ZipFile::infolist() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:209
+    #3 0x55d42e170e00 in Utils::Zip::ZipFile::namelist[abi:cxx11]() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:232
+    #4 0x55d42e0dc2a3 in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:71
+    #5 0x7f35c162a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #6 0x7f35c162a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #7 0x55d42e0da344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+SUMMARY: AddressSanitizer: alloc-dealloc-mismatch /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:119 in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+==1399==HINT: if you don't care about these errors you may set ASAN_OPTIONS=alloc_dealloc_mismatch=0
+==1399==ABORTING
+CASE 11 zip-traversal /tmp/es-audit-7ythm1q8/unsafe.zip /tmp/es-audit-7ythm1q8/extract exit 1
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5006:25: runtime error: load of misaligned address 0x76f1739f42c3 for type 'const mz_uint32', which requires 4 byte alignment
+0x76f1739f42c3: note: pointer points here
+ 01  00 00 22 01 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5181:36: runtime error: load of misaligned address 0x7821747e006a for type 'const mz_uint32', which requires 4 byte alignment
+0x7821747e006a: note: pointer points here
+ 00 00  80 01 00 00 00 00 2e 2e  2f 65 73 63 61 70 65 2e  74 78 74 50 4b 01 02 14  03 14 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5256:28: runtime error: load of misaligned address 0x7821747e004a for type 'const mz_uint32', which requires 4 byte alignment
+0x7821747e004a: note: pointer points here
+ 14 00  00 00 00 00 8b 99 6d 5d  c2 41 24 35 03 00 00 00  03 00 00 00 0d 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5266:37: runtime error: load of misaligned address 0x7821747e006a for type 'const mz_uint32', which requires 4 byte alignment
+0x7821747e006a: note: pointer points here
+ 00 00  80 01 00 00 00 00 2e 2e  2f 65 73 63 61 70 65 2e  74 78 74 50 4b 01 02 14  03 14 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5170:62: runtime error: load of misaligned address 0x7821747e007b for type 'const mz_uint32', which requires 4 byte alignment
+0x7821747e007b: note: pointer points here
+ 2e  74 78 74 50 4b 01 02 14  03 14 00 00 00 00 00 8b  99 6d 5d c2 41 24 35 03  00 00 00 03 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5179:29: runtime error: load of misaligned address 0x7821747e008f for type 'const mz_uint32', which requires 4 byte alignment
+0x7821747e008f: note: pointer points here
+ c2 41 24 35 03  00 00 00 03 00 00 00 15  00 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5180:31: runtime error: load of misaligned address 0x7821747e0093 for type 'const mz_uint32', which requires 4 byte alignment
+0x7821747e0093: note: pointer points here
+ 03  00 00 00 03 00 00 00 15  00 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69 72 2f 2e 2e
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5182:33: runtime error: load of misaligned address 0x7821747e0097 for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e0097: note: pointer points here
+ 03 00 00 00 15  00 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69 72 2f 2e 2e 2f  2e 2e 2f
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5183:33: runtime error: load of misaligned address 0x7821747e0099 for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e0099: note: pointer points here
+ 00 00 15  00 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69 72 2f 2e 2e 2f  2e 2e 2f 65 73
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5260:30: runtime error: load of misaligned address 0x7821747e009d for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e009d: note: pointer points here
+ 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69 72 2f 2e 2e 2f  2e 2e 2f 65 73 63 61 70  65
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5270:29: runtime error: load of misaligned address 0x7821747e0083 for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e0083: note: pointer points here
+ 14  03 14 00 00 00 00 00 8b  99 6d 5d c2 41 24 35 03  00 00 00 03 00 00 00 15  00 00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5274:75: runtime error: load of misaligned address 0x7821747e0097 for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e0097: note: pointer points here
+ 03 00 00 00 15  00 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69 72 2f 2e 2e 2f  2e 2e 2f
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5275:42: runtime error: load of misaligned address 0x7821747e0099 for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e0099: note: pointer points here
+ 00 00 15  00 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69 72 2f 2e 2e 2f  2e 2e 2f 65 73
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5275:87: runtime error: load of misaligned address 0x7821747e009b for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e009b: note: pointer points here
+ 15  00 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69 72 2f 2e 2e 2f  2e 2e 2f 65 73 63 61
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:4907:81: runtime error: load of misaligned address 0x7821747e018f for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e018f: note: pointer points here
+ 03 00 00 00 0f  00 00 00 00 00 00 00 00  00 00 00 80 01 f2 00 00  00 6c 69 6e 6b 2f 65 73  63 61 70
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:4907:25: runtime error: load of misaligned address 0x7821747e0115 for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e0115: note: pointer points here
+ 03 00 00 00 0c 00 00  00 00 00 00 00 00 00 00  00 80 01 92 00 00 00 43  3a 2f 64 72 69 76 65 2e  74
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:4907:81: runtime error: load of misaligned address 0x7821747e014f for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e014f: note: pointer points here
+ 03 00 00 00 12  00 00 00 00 00 00 00 00  00 00 00 80 01 bf 00 00  00 64 69 72 5c 2e 2e 5c  65 73 63
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:4907:25: runtime error: load of misaligned address 0x7821747e0097 for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e0097: note: pointer points here
+ 03 00 00 00 15  00 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69 72 2f 2e 2e 2f  2e 2e 2f
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:4907:25: runtime error: load of misaligned address 0x7821747e014f for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e014f: note: pointer points here
+ 03 00 00 00 12  00 00 00 00 00 00 00 00  00 00 00 80 01 bf 00 00  00 64 69 72 5c 2e 2e 5c  65 73 63
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:4907:81: runtime error: load of misaligned address 0x7821747e014f for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e014f: note: pointer points here
+ 03 00 00 00 12  00 00 00 00 00 00 00 00  00 00 00 80 01 bf 00 00  00 64 69 72 5c 2e 2e 5c  65 73 63
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:4907:81: runtime error: load of misaligned address 0x7821747e0097 for type 'const mz_uint16', which requires 2 byte alignment
+0x7821747e0097: note: pointer points here
+ 03 00 00 00 15  00 00 00 00 00 00 00 00  00 00 00 80 01 2e 00 00  00 64 69 72 2f 2e 2e 2f  2e 2e 2f
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5640:34: runtime error: load of misaligned address 0x7821747e0066 for type 'const mz_uint32', which requires 4 byte alignment
+0x7821747e0066: note: pointer points here
+ 00 00 00 00 00 00  80 01 00 00 00 00 2e 2e  2f 65 73 63 61 70 65 2e  74 78 74 50 4b 01 02 14  03 14
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5641:37: runtime error: load of misaligned address 0x7821747e006a for type 'const mz_uint32', which requires 4 byte alignment
+0x7821747e006a: note: pointer points here
+ 00 00  80 01 00 00 00 00 2e 2e  2f 65 73 63 61 70 65 2e  74 78 74 50 4b 01 02 14  03 14 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5605:23: runtime error: load of misaligned address 0x7821747e0066 for type 'const mz_uint32', which requires 4 byte alignment
+0x7821747e0066: note: pointer points here
+ 00 00 00 00 00 00  80 01 00 00 00 00 2e 2e  2f 65 73 63 61 70 65 2e  74 78 74 50 4b 01 02 14  03 14
+             ^ 
+=================================================================
+==1401==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new [] vs operator delete) on 0x7711747e6a10
+    #0 0x7af17752d89f in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:190
+    #1 0x63e8a5923b9b in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:119
+    #2 0x63e8a59252d8 in Utils::Zip::ZipFile::infolist() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:209
+    #3 0x63e8a5925e00 in Utils::Zip::ZipFile::namelist[abi:cxx11]() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:232
+    #4 0x63e8a58912a3 in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:71
+    #5 0x7af17642a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #6 0x7af17642a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #7 0x63e8a588f344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+0x7711747e6a10 is located 0 bytes inside of 14-byte region [0x7711747e6a10,0x7711747e6a1e)
+allocated by thread T0 here:
+    #0 0x7af17752c8cf in operator new[](unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:111
+    #1 0x63e8a59237cc in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:110
+    #2 0x63e8a59252d8 in Utils::Zip::ZipFile::infolist() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:209
+    #3 0x63e8a5925e00 in Utils::Zip::ZipFile::namelist[abi:cxx11]() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:232
+    #4 0x63e8a58912a3 in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:71
+    #5 0x7af17642a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #6 0x7af17642a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #7 0x63e8a588f344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+SUMMARY: AddressSanitizer: alloc-dealloc-mismatch /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:119 in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+==1401==HINT: if you don't care about these errors you may set ASAN_OPTIONS=alloc_dealloc_mismatch=0
+==1401==ABORTING
+CASE 12 zip-nested /tmp/es-audit-7ythm1q8/nested.zip /tmp/es-audit-7ythm1q8/extract exit 1
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5006:25: runtime error: load of misaligned address 0x789ec97f409f for type 'const mz_uint32', which requires 4 byte alignment
+0x789ec97f409f: note: pointer points here
+ 00 00 30 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  00 00 00
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5181:36: runtime error: load of misaligned address 0x78feca5e17ea for type 'const mz_uint32', which requires 4 byte alignment
+0x78feca5e17ea: note: pointer points here
+ 00 00  80 01 00 00 00 00 6e 65  73 74 65 64 2f 66 69 6c  65 2e 74 78 74 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5256:28: runtime error: load of misaligned address 0x78feca5e17ca for type 'const mz_uint32', which requires 4 byte alignment
+0x78feca5e17ca: note: pointer points here
+ 14 00  00 00 00 00 8b 99 6d 5d  c2 41 24 35 03 00 00 00  03 00 00 00 0f 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5266:37: runtime error: load of misaligned address 0x78feca5e17ea for type 'const mz_uint32', which requires 4 byte alignment
+0x78feca5e17ea: note: pointer points here
+ 00 00  80 01 00 00 00 00 6e 65  73 74 65 64 2f 66 69 6c  65 2e 74 78 74 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5640:34: runtime error: load of misaligned address 0x78feca5e17e6 for type 'const mz_uint32', which requires 4 byte alignment
+0x78feca5e17e6: note: pointer points here
+ 00 00 00 00 00 00  80 01 00 00 00 00 6e 65  73 74 65 64 2f 66 69 6c  65 2e 74 78 74 00 00 00  00 00
+             ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5641:37: runtime error: load of misaligned address 0x78feca5e17ea for type 'const mz_uint32', which requires 4 byte alignment
+0x78feca5e17ea: note: pointer points here
+ 00 00  80 01 00 00 00 00 6e 65  73 74 65 64 2f 66 69 6c  65 2e 74 78 74 00 00 00  00 00 00 00 00 00
+              ^ 
+/mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/zip_file.hpp:5605:23: runtime error: load of misaligned address 0x78feca5e17e6 for type 'const mz_uint32', which requires 4 byte alignment
+0x78feca5e17e6: note: pointer points here
+ 00 00 00 00 00 00  80 01 00 00 00 00 6e 65  73 74 65 64 2f 66 69 6c  65 2e 74 78 74 00 00 00  00 00
+             ^ 
+=================================================================
+==1402==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new [] vs operator delete) on 0x78beca5e6a50
+    #0 0x7c9ecd32d89f in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:190
+    #1 0x64bfc468fb9b in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:119
+    #2 0x64bfc46912d8 in Utils::Zip::ZipFile::infolist() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:209
+    #3 0x64bfc4691e00 in Utils::Zip::ZipFile::namelist[abi:cxx11]() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:232
+    #4 0x64bfc45fd2a3 in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:71
+    #5 0x7c9ecc22a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #6 0x7c9ecc22a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #7 0x64bfc45fb344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+0x78beca5e6a50 is located 0 bytes inside of 16-byte region [0x78beca5e6a50,0x78beca5e6a60)
+allocated by thread T0 here:
+    #0 0x7c9ecd32c8cf in operator new[](unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:111
+    #1 0x64bfc468f7cc in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:110
+    #2 0x64bfc46912d8 in Utils::Zip::ZipFile::infolist() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:209
+    #3 0x64bfc4691e00 in Utils::Zip::ZipFile::namelist[abi:cxx11]() /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:232
+    #4 0x64bfc45fd2a3 in main /mnt/c/work/es-mister-audit/es-mister/tests/audit/regressions.cpp:71
+    #5 0x7c9ecc22a600  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a600) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #6 0x7c9ecc22a717 in __libc_start_main (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a717) (BuildId: 9851d79b1f32e900a27f8d0a68e29d750303f0c6)
+    #7 0x64bfc45fb344 in _start (/mnt/c/work/es-mister-audit/validation/audit_regressions-baseline+0x2e5344) (BuildId: 6aafa40b2e4a78eca45668c08bc316406f4560ca)
+
+SUMMARY: AddressSanitizer: alloc-dealloc-mismatch /mnt/c/work/es-mister-audit/es-mister/es-core/src/utils/ZipFile.cpp:119 in Utils::Zip::cp437_to_utf8(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+==1402==HINT: if you don't care about these errors you may set ASAN_OPTIONS=alloc_dealloc_mismatch=0
+==1402==ABORTING
+0/12 cases passed

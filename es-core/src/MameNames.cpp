@@ -3,7 +3,7 @@
 #include "resources/ResourceManager.h"
 #include "utils/FileSystemUtil.h"
 #include "Log.h"
-#include <pugixml/src/pugixml.hpp>
+#include "utils/Xml.h"
 #include "utils/StringUtil.h"
 #include <string.h>
 
