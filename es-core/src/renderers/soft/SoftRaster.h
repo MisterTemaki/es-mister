@@ -26,7 +26,14 @@ namespace Renderer
 			bool opaque = false;  // every texel's alpha is 255: drawn 1:1 with no colour, its rows are copied
 			uint64_t generation = 0; // bumped at each change, for the frame's hash
 			std::vector<uint32_t> pixels; // 0xAARRGGBB; row 0 is v = 0, as uploaded
+			// its rows' runs of clear texels (alpha 0, 32 or more), which a picture drawn 1:1 over the frame
+			// leaves as they are: row y's are clear[clearAt[y]] to clear[clearAt[y + 1]], first and last + 1
+			// texel by turns (none: no runs)
+			std::vector<uint32_t> clearAt, clear;
 		};
+
+		// A texture's clear runs (Texture::clear), after a whole upload
+		void findClearRuns(Texture& texture);
 
 		// A vertex in target pixels (top left origin) with its texture coordinates and colour (0xAARRGGBB)
 		struct SVertex
@@ -87,6 +94,8 @@ namespace Renderer
 
 			// Clears its rows (all of them, or its band's)
 			void clear(uint32_t color);
+			// Clears a box of its rows (x1, y1 not in it)
+			void clearBox(int x0, int y0, int x1, int y1, uint32_t color);
 
 			void draw(const SVertex* vertices, int count, Topology topology, const DrawState& state);
 
@@ -111,7 +120,18 @@ namespace Renderer
 			int mBandY0 = 0, mBandY1 = 0;  // the rows it draws
 			Clip mStencilBox = { 0, 0, 0, 0 }; // where the mask may be set, to clear only that
 			RasterStats mStats;
+
+			// a picture's rows sampled once (drawQuad): two texture rows, the frame row, and the columns'
+			// texels and weights
+			std::vector<uint32_t> mRowA, mRowB, mRowOut;
+			std::vector<int32_t> mColX0, mColX1;
+			std::vector<uint16_t> mColFx;
 		};
+
+		// Big pictures drawn scaled keep their scaled pixels (ES_SOFT_SCALED_MB, default 40; 0: none): after
+		// each drawn frame, those not drawn for a while are let go of
+		void scaledFrame();
+		size_t scaledBytes();
 	}
 }
 

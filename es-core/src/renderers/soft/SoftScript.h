@@ -14,6 +14,7 @@
 //   hold NAME MS    the key down for MS milliseconds
 //   shot NAME       the frame as NAME.png
 //   log TEXT        a line in ES's log
+//   stats           the renderer's numbers since the last ones written now (ES_SOFT_STATS_FILE), and begun again
 //   quit            ES closes
 
 #include <cstdint>
@@ -31,6 +32,10 @@ namespace Renderer
 			bool active() const { return mNext < mLines.size() || !mReleases.empty(); }
 			// After each frame shown: drewNew tells whether it drew anything new
 			void frame(const uint32_t* pixels, int width, int height, bool drewNew);
+			// "dump NAME": the file the next drawn frame's commands are written to, once ("" when none)
+			std::string takeDump() { std::string path; path.swap(mDump); return path; }
+			// "stats": whether the renderer's numbers are to be written now (once)
+			bool takeStats() { const bool wanted = mStats; mStats = false; return wanted; }
 
 		private:
 			struct Release { int key; uint32_t at; };
@@ -45,6 +50,8 @@ namespace Renderer
 			bool mSettling = false;
 			std::vector<Release> mReleases;
 			std::string mShots;
+			std::string mDump;
+			bool mStats = false;
 		};
 	}
 }

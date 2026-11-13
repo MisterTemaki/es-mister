@@ -1,9 +1,11 @@
 #include "SoftRaster.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <mutex>
 
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
 #include <arm_neon.h>
@@ -112,6 +114,30 @@ namespace Renderer
 					out |= (v > 255 ? 255 : v) << shift;
 				}
 				return out;
+			}
+
+			// out = lerp8(top, bottom, w) for n pixels: a bilinear sample's last step, on two rows already
+			// interpolated across
+			inline void lerpRows(uint32_t* out, const uint32_t* top, const uint32_t* bottom, uint32_t w, int n)
+			{
+				if (w == 0)
+				{
+					memcpy(out, top, (size_t)n * 4);
+					return;
+				}
+				int i = 0;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+				const uint16x8_t wv = vdupq_n_u16((uint16_t)w), iwv = vdupq_n_u16((uint16_t)(256 - w));
+				for (; i + 4 <= n; i += 4)
+				{
+					const uint8x16_t a = vld1q_u8((const uint8_t*)(top + i)), b = vld1q_u8((const uint8_t*)(bottom + i));
+					const uint16x8_t lo = vmlaq_u16(vmulq_u16(vmovl_u8(vget_low_u8(a)), iwv), vmovl_u8(vget_low_u8(b)), wv);
+					const uint16x8_t hi = vmlaq_u16(vmulq_u16(vmovl_u8(vget_high_u8(a)), iwv), vmovl_u8(vget_high_u8(b)), wv);
+					vst1q_u8((uint8_t*)(out + i), vcombine_u8(vshrn_n_u16(lo, 8), vshrn_n_u16(hi, 8)));
+				}
+#endif
+				for (; i < n; i++)
+					out[i] = lerp8(top[i], bottom[i], w);
 			}
 
 			struct Tex
@@ -476,6 +502,193 @@ namespace Renderer
 				return (int)std::floor(f);
 			}
 
+			// Whether every texel a quad samples (columns from u, rows from v, as the samplers step them; the
+			// next column and row too, for bilinear) is the same, and which: a picture's flat part stretched
+			inline bool uniformTexels(const Tex& tex, bool linear, int uFirst, int du, int columns, int vFirst, int vLast, uint32_t& texel)
+			{
+				const int uLast = uFirst + (columns - 1) * du;
+				const int x0 = std::min(uFirst, uLast) >> 16, x1 = (std::max(uFirst, uLast) >> 16) + (linear ? 1 : 0);
+				const int y0 = std::min(vFirst, vLast) >> 16, y1 = (std::max(vFirst, vLast) >> 16) + (linear ? 1 : 0);
+				if ((int64_t)(x1 - x0 + 1) * (y1 - y0 + 1) > 4096)
+					return false;
+				texel = tex.px[wrapCoord(y0, tex.h, tex.repeat) * tex.w + wrapCoord(x0, tex.w, tex.repeat)];
+				for (int y = y0; y <= y1; y++)
+				{
+					const uint32_t* row = tex.px + (size_t)wrapCoord(y, tex.h, tex.repeat) * tex.w;
+					for (int x = x0; x <= x1; x++)
+						if (row[wrapCoord(x, tex.w, tex.repeat)] != texel)
+							return false;
+				}
+				return true;
+			}
+
+			// A big picture drawn scaled and smoothed (a background stretched to the screen): sampled on its own
+			// grid, as if the quad started on a whole pixel (one at a fraction of a pixel draws the same pixels as
+			// at the pixel it starts on, wherever it moves, as in a slide), and those pixels kept: a row sampled the
+			// first time a frame needs it, then the next frames draw it 1:1.
+			struct Scaled
+			{
+				unsigned int id = 0;
+				uint64_t generation = 0;
+				int w = 0, h = 0;             // its size in pixels: the quad's, rounded
+				float u0 = 0, u1 = 0, t0 = 0, t1 = 0;
+				// a column and a row more than w x h, for a quad that covers one more
+				std::vector<int32_t> x0s, x1s;
+				std::vector<uint16_t> fxs;
+				int vStart = 0, dv = 0;       // 16.16
+				std::unique_ptr<uint32_t[]> px; // (w + 1) x (h + 1), kept (none: sampled each time, into the caller's row)
+				std::unique_ptr<std::atomic<uint8_t>[]> state; // a row: 0 not sampled, 1 being sampled, 2 sampled
+				uint64_t used = 0;            // the frame it was last drawn in
+				size_t bytes() const { return px ? (size_t)(w + 1) * (h + 1) * 4 : 0; }
+			};
+
+			struct ScaledCache
+			{
+				std::mutex lock;
+				std::vector<std::shared_ptr<Scaled>> entries;
+				size_t bytes = 0;
+				size_t budget = 0;
+				std::atomic<uint64_t> frame{ 1 };
+				bool ready = false;
+			};
+
+			ScaledCache& scaledCache()
+			{
+				static ScaledCache cache;
+				return cache;
+			}
+
+			// texture rows sampled for a scaled picture's rows, a thread's own (the bands sample at once)
+			struct ScaledScratch
+			{
+				std::vector<uint32_t> a, b, out;
+				const Scaled* owner = nullptr;
+				int keyA = -1, keyB = -1;
+			};
+
+			// the picture's columns and rows: as drawQuad would sample them for a quad on whole pixels
+			void setGrid(Scaled& sc, const Texture* t)
+			{
+				const int columns = sc.w + 1;
+				const int du = toFixed((sc.u1 - sc.u0) * t->width / sc.w);
+				const int uStart = toFixed((sc.u0 + 0.5f * (sc.u1 - sc.u0) / sc.w) * t->width - 0.5f);
+				sc.x0s.resize(columns);
+				sc.x1s.resize(columns);
+				sc.fxs.resize(columns);
+				for (int i = 0; i < columns; i++)
+				{
+					const int u = (int)((int64_t)uStart + (int64_t)i * du);
+					sc.x0s[i] = wrapCoord(u >> 16, t->width, t->repeat);
+					sc.x1s[i] = wrapCoord((u >> 16) + 1, t->width, t->repeat);
+					sc.fxs[i] = (uint16_t)(((uint32_t)u >> 8) & 0xFF);
+				}
+				sc.dv = toFixed((sc.t1 - sc.t0) * t->height / sc.h);
+				sc.vStart = toFixed((sc.t0 + 0.5f * (sc.t1 - sc.t0) / sc.h) * t->height - 0.5f);
+			}
+
+			// the scaled picture of a quad: kept, or (no room) one whose rows are sampled each time
+			std::shared_ptr<Scaled> scaledFor(const Texture* t, int w, int h, float u0, float u1, float t0, float t1)
+			{
+				ScaledCache& cache = scaledCache();
+				std::lock_guard<std::mutex> guard(cache.lock);
+				if (!cache.ready)
+				{
+					cache.ready = true;
+					const char* mb = getenv("ES_SOFT_SCALED_MB");
+					cache.budget = (size_t)(mb ? std::max(0, atoi(mb)) : 40) << 20;
+				}
+				const uint64_t frame = cache.frame.load();
+				for (auto& entry : cache.entries)
+					if (entry->id == t->id && entry->generation == t->generation && entry->w == w && entry->h == h &&
+						entry->u0 == u0 && entry->u1 == u1 && entry->t0 == t0 && entry->t1 == t1)
+					{
+						entry->used = frame;
+						return entry;
+					}
+
+				std::shared_ptr<Scaled> sc = std::make_shared<Scaled>();
+				sc->id = t->id; sc->generation = t->generation;
+				sc->w = w; sc->h = h;
+				sc->u0 = u0; sc->u1 = u1; sc->t0 = t0; sc->t1 = t1;
+				sc->used = frame;
+				setGrid(*sc, t);
+
+				// room: the pictures not drawn in this frame, the least lately drawn first
+				const size_t bytes = (size_t)(w + 1) * (h + 1) * 4;
+				if (bytes > cache.budget)
+					return sc; // not kept
+				while (cache.bytes + bytes > cache.budget)
+				{
+					auto oldest = cache.entries.end();
+					for (auto it = cache.entries.begin(); it != cache.entries.end(); ++it)
+						if ((*it)->used != frame && (oldest == cache.entries.end() || (*it)->used < (*oldest)->used))
+							oldest = it;
+					if (oldest == cache.entries.end())
+						return sc; // not kept
+					cache.bytes -= (*oldest)->bytes();
+					cache.entries.erase(oldest);
+				}
+				sc->px.reset(new (std::nothrow) uint32_t[(size_t)(w + 1) * (h + 1)]);
+				if (!sc->px)
+					return sc;
+				sc->state.reset(new std::atomic<uint8_t>[h + 1]());
+				cache.bytes += bytes;
+				cache.entries.push_back(sc);
+				return sc;
+			}
+
+			// row r of a scaled picture: kept, or sampled now (into the scratch's row)
+			const uint32_t* scaledRow(Scaled& sc, const Texture* t, int r, ScaledScratch& scratch)
+			{
+				const int columns = sc.w + 1;
+				uint32_t* keep = nullptr;
+				if (sc.px)
+				{
+					uint32_t* row = sc.px.get() + (size_t)r * columns;
+					uint8_t state = sc.state[r].load(std::memory_order_acquire);
+					if (state == 2)
+						return row;
+					// not sampled: this thread samples it (another sampling it now: sampled here too, not kept)
+					if (state == 0 && sc.state[r].compare_exchange_strong(state, 1, std::memory_order_acq_rel))
+						keep = row;
+				}
+
+				if (scratch.owner != &sc || (int)scratch.out.size() < columns)
+				{
+					scratch.owner = &sc;
+					scratch.keyA = scratch.keyB = -1;
+					if ((int)scratch.out.size() < columns)
+					{
+						scratch.a.resize(columns); scratch.b.resize(columns); scratch.out.resize(columns);
+					}
+				}
+				auto sample = [&](int y, uint32_t* into)
+				{
+					const uint32_t* src = t->pixels.data() + (size_t)y * t->width;
+					const int32_t* x0s = sc.x0s.data();
+					const int32_t* x1s = sc.x1s.data();
+					const uint16_t* fxs = sc.fxs.data();
+					for (int i = 0; i < columns; i++)
+						into[i] = lerp8(src[x0s[i]], src[x1s[i]], fxs[i]);
+				};
+				auto rowOf = [&](int y, int other) -> const uint32_t*
+				{
+					if (scratch.keyA == y) return scratch.a.data();
+					if (scratch.keyB == y) return scratch.b.data();
+					if (scratch.keyA != other) { sample(y, scratch.a.data()); scratch.keyA = y; return scratch.a.data(); }
+					sample(y, scratch.b.data()); scratch.keyB = y; return scratch.b.data();
+				};
+				const int v = (int)((int64_t)sc.vStart + (int64_t)r * sc.dv);
+				const int r0 = wrapCoord(v >> 16, t->height, t->repeat), r1 = wrapCoord((v >> 16) + 1, t->height, t->repeat);
+				const uint32_t* top = rowOf(r0, r1);
+				const uint32_t* bottom = rowOf(r1, r0);
+				uint32_t* out = keep ? keep : scratch.out.data();
+				lerpRows(out, top, bottom, ((uint32_t)v >> 8) & 0xFF, columns);
+				if (keep)
+					sc.state[r].store(2, std::memory_order_release);
+				return out;
+			}
+
 			struct ColorF { float r, g, b, a; };
 
 			inline ColorF unpack(uint32_t c)
@@ -526,10 +739,11 @@ namespace Renderer
 					}
 
 					const float left = std::min(xl, xs), right = std::max(xl, xs);
-					const int x0 = std::max(cx0, (int)std::ceil(left - 0.5f));
+					const int first = (int)std::ceil(left - 0.5f); // the row's first column, before the clip
+					const int x0 = std::max(cx0, first);
 					const int x1 = std::min(cx1, (int)std::ceil(right - 0.5f));
 					if (x0 < x1)
-						f(y, x0, x1);
+						f(y, x0, x1, first);
 				}
 			}
 		}
@@ -572,6 +786,16 @@ namespace Renderer
 		void Raster::clear(uint32_t color)
 		{
 			std::fill(mPx + (size_t)mBandY0 * mWidth, mPx + (size_t)mBandY1 * mWidth, color);
+		}
+
+		void Raster::clearBox(int x0, int y0, int x1, int y1, uint32_t color)
+		{
+			x0 = std::max(0, x0); x1 = std::min(mWidth, x1);
+			y0 = std::max(mBandY0, y0); y1 = std::min(mBandY1, y1);
+			if (x0 >= x1)
+				return;
+			for (int y = y0; y < y1; y++)
+				std::fill_n(mPx + (size_t)y * mWidth + x0, x1 - x0, color);
 		}
 
 		Raster::Clip Raster::clipOf(const DrawState& state) const
@@ -649,8 +873,11 @@ namespace Renderer
 				std::swap(c00, c01); std::swap(c10, c11);
 			}
 
-			const int qy0 = (int)std::ceil(y0 - 0.5f); // its first row, unclipped: the texture rows count from it
-			const int px0 = std::max(clip.x0, (int)std::ceil(x0 - 0.5f));
+			// its first row and column, unclipped: texels and colours count from them, so a pixel is the same
+			// whatever clips the quad (a band's rows, a scissor, the part of the frame drawn again)
+			const int qy0 = (int)std::ceil(y0 - 0.5f);
+			const int qx0 = (int)std::ceil(x0 - 0.5f);
+			const int px0 = std::max(clip.x0, qx0);
 			const int px1 = std::min(clip.x1, (int)std::ceil(x1 - 0.5f));
 			const int py0 = std::max(clip.y0, qy0);
 			const int py1 = std::min(clip.y1, (int)std::ceil(y1 - 0.5f));
@@ -671,7 +898,8 @@ namespace Renderer
 
 			Tex tex;
 			int texMode = TEX_NONE;
-			float texelU0 = 0, texelDu = 0, texelV0 = 0, texelDv = 0; // at the first pixel's centre, per pixel
+			float texelU0 = 0, texelDu = 0, texelV0 = 0, texelDv = 0; // at the quad's first pixel's centre, per pixel
+			const int skip = px0 - qx0; // the quad's columns left of the clip
 			if (state.texture != nullptr && !state.texture->pixels.empty())
 			{
 				const Texture* t = state.texture;
@@ -682,7 +910,7 @@ namespace Renderer
 
 				texelDu = (u1 - u0) * t->width / w;
 				texelDv = (t1 - t0) * t->height / h;
-				texelU0 = (u0 + (px0 + 0.5f - x0) * (u1 - u0) / w) * t->width;
+				texelU0 = (u0 + (qx0 + 0.5f - x0) * (u1 - u0) / w) * t->width;
 				texelV0 = (t0 + (qy0 + 0.5f - y0) * (t1 - t0) / h) * t->height;
 
 				const float su = std::fabs(texelDu), sv = std::fabs(texelDv);
@@ -696,7 +924,7 @@ namespace Renderer
 					texelDv = texelDv > 0 ? 1.0f : -1.0f;
 					// runs of a texture row read straight, left to right, with no wrapping (the rows may go either way:
 					// images are uploaded bottom up)
-					const int ux = (int)std::floor(texelU0);
+					const int ux = (int)std::floor(texelU0) + skip;
 					const int ulast = ux + (px1 - px0 - 1);
 					const int vfirst = (int)std::floor(texelV0 + (py0 - qy0) * texelDv);
 					const int vlast = (int)std::floor(texelV0 + (py1 - 1 - qy0) * texelDv);
@@ -713,6 +941,11 @@ namespace Renderer
 				}
 			}
 
+			const int du = toFixed(texelDu);
+			// the first drawn column's texel, in 16.16: the quad's first, and a step a column skipped
+			const int uStart = (int)((int64_t)toFixed(texelU0) + (int64_t)skip * du);
+			const int uxStart = (int)std::floor(texelU0) + skip; // the same, 1:1
+
 			int mod = MOD_VARY;
 			if (sameColor)
 			{
@@ -720,6 +953,33 @@ namespace Renderer
 				s.color = v[0].color;
 				if (texMode == TEX_NONE && (s.color >> 24) == 0 && blend == BLEND_NORMAL)
 					return; // transparent: nothing to draw
+			}
+
+			// a big picture scaled and smoothed (a quarter of the frame or more, by its own size, not the part
+			// drawn: the same choice in every band and part): its scaled picture, kept (Scaled)
+			std::shared_ptr<Scaled> scaled;
+			static const int scaledOn = getenv("ES_SOFT_SCALED_MB") == nullptr || atoi(getenv("ES_SOFT_SCALED_MB")) > 0 ? 1 : 0;
+			if (scaledOn && texMode == TEX_LINEAR && !state.texture->pixels.empty())
+			{
+				const int sw = (int)std::lround(w), sh = (int)std::lround(h);
+				if (sw >= 8 && sh >= 8 && (int64_t)sw * sh * 4 >= (int64_t)mWidth * mHeight && (int64_t)(sw + 1) * (sh + 1) <= (int64_t)1 << 24)
+					scaled = scaledFor(state.texture, sw, sh, u0, u1, t0, t1);
+			}
+
+			// a picture's flat part stretched (the middle of a frame drawn in nine parts, a white square): every
+			// pixel samples the same texel, so the quad is that colour (desaturated and tinted as a texel is)
+			uint32_t flat;
+			if (!scaled && (texMode == TEX_LINEAR || texMode == TEX_NEAREST) && mod != MOD_VARY &&
+				uniformTexels(tex, texMode == TEX_LINEAR, uStart, du, px1 - px0,
+					toFixed(texelV0 + (py0 - qy0) * texelDv), toFixed(texelV0 + (py1 - 1 - qy0) * texelDv), flat))
+			{
+				if (s.saturation < 256)
+					flat = desaturate(flat, s.saturation);
+				s.color = mod == MOD_CONST ? modulate(flat, s.color) : flat;
+				mod = MOD_CONST;
+				texMode = TEX_NONE;
+				if ((s.color >> 24) == 0 && blend == BLEND_NORMAL)
+					return;
 			}
 
 			const uint8_t* stencil = state.stencil != StencilTest::Off ? mSt : nullptr;
@@ -738,7 +998,7 @@ namespace Renderer
 			// an opaque picture drawn as it is: its rows copied
 			if (texMode == TEX_DIRECT && mod == MOD_NONE && blend == BLEND_NORMAL && state.texture->opaque && s.saturation == 256 && maskTest == 0)
 			{
-				const int ux = (int)std::floor(texelU0);
+				const int ux = uxStart;
 				for (int y = py0; y < py1; y++)
 				{
 					const int vy = (int)std::floor(texelV0 + (y - qy0) * texelDv);
@@ -750,44 +1010,238 @@ namespace Renderer
 			}
 
 			const int rowMod = (mod == MOD_VARY && rowColor) ? MOD_CONST : mod;
+
+			// the row's colour (or colours, from left to right) when they vary from top to bottom
+			auto rowColors = [&](int y)
+			{
+				const float ty = (y + 0.5f - y0) / h;
+				const ColorF left = mixColor(c00, c01, ty);
+				if (rowColor)
+				{
+					s.color = ((uint32_t)(left.a + 0.5f) << 24) | ((uint32_t)(left.r + 0.5f) << 16) | ((uint32_t)(left.g + 0.5f) << 8) | (uint32_t)(left.b + 0.5f);
+					return;
+				}
+				const ColorF right = mixColor(c10, c11, ty);
+				const float tx = (qx0 + 0.5f - x0) / w;
+				const ColorF start = mixColor(left, right, tx);
+				s.dr = toFixed((right.r - left.r) / w); s.dg = toFixed((right.g - left.g) / w);
+				s.db = toFixed((right.b - left.b) / w); s.da = toFixed((right.a - left.a) / w);
+				s.r = toFixed(start.r) + skip * s.dr; s.g = toFixed(start.g) + skip * s.dg;
+				s.b = toFixed(start.b) + skip * s.db; s.a = toFixed(start.a) + skip * s.da;
+			};
+
+			// the scaled picture's rows, from the quad's first row and column, drawn 1:1
+			if (scaled)
+			{
+				thread_local ScaledScratch scratch;
+				scratch.owner = nullptr; // its texture rows are another picture's (one let go of may have had this address)
+				// the picture's column at the first drawn one (it has a column more than the quad's rounded
+				// width, for the one more a quad on a fraction of a pixel may cover)
+				const int c0 = skip;
+				const int columns = std::min(px1 - px0, scaled->w + 1 - c0);
+				if (columns <= 0)
+					return;
+				const bool copy = state.texture->opaque && mod == MOD_NONE && blend == BLEND_NORMAL && s.saturation == 256 && maskTest == 0;
+				const SpanFn finish = pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest == 0 && s.saturation == 256);
+				Tex row;
+				row.w = columns;
+				row.h = 1;
+				for (int y = py0; y < py1; y++)
+				{
+					const int r = std::min(y - qy0, scaled->h);
+					const uint32_t* sampled = scaledRow(*scaled, state.texture, r, scratch) + c0;
+					const size_t offset = (size_t)y * mWidth + px0;
+					if (copy)
+					{
+						memcpy(mPx + offset, sampled, (size_t)columns * 4);
+						continue;
+					}
+					if (mod == MOD_VARY)
+						rowColors(y);
+					Span fs = s;
+					fs.u = 0; fs.du = 1 << 16;
+					fs.v = 0; fs.dv = 0;
+					row.px = sampled;
+					finish(mPx + offset, stencil ? stencil + offset : nullptr, maskTest, columns, row, fs);
+				}
+				mStats.pixels += (uint64_t)columns * (py1 - py0);
+				mStats.kinds[PX_TEX_LINEAR] += (uint64_t)columns * (py1 - py0);
+				return;
+			}
+
+			// A picture sampled (bilinear or nearest) and not made smaller: every row of the quad reads the same
+			// texture columns, so the columns' texels and weights are worked out once, each texture row is
+			// sampled once, and the frame rows that fall on it reuse it; then the row is drawn as a 1:1 picture.
+			// The pixels are fetchLinear's and fetchNearest's.
+			static const bool rowsSampled = getenv("ES_SOFT_ROWS") == nullptr || strcmp(getenv("ES_SOFT_ROWS"), "0") != 0; // 0: per pixel, to compare
+			if (rowsSampled && (texMode == TEX_LINEAR || texMode == TEX_NEAREST) && px1 - px0 >= 8 && std::fabs(texelDv) < 1.0f)
+			{
+				const int n = px1 - px0;
+				const bool linear = texMode == TEX_LINEAR;
+				if ((int)mRowOut.size() < n)
+				{
+					mRowA.resize(n); mRowB.resize(n); mRowOut.resize(n);
+					mColX0.resize(n); mColX1.resize(n); mColFx.resize(n);
+				}
+
+				for (int i = 0; i < n; i++)
+				{
+					const int u = uStart + i * du;
+					mColX0[i] = wrapCoord(u >> 16, tex.w, tex.repeat);
+					if (linear)
+					{
+						mColX1[i] = wrapCoord((u >> 16) + 1, tex.w, tex.repeat);
+						mColFx[i] = (uint16_t)(((uint32_t)u >> 8) & 0xFF);
+					}
+				}
+
+				uint32_t* rowA = mRowA.data();
+				uint32_t* rowB = mRowB.data();
+				uint32_t* out = mRowOut.data();
+				int keyA = -1, keyB = -1;
+				auto sample = [&](int r, uint32_t* into)
+				{
+					const uint32_t* src = tex.px + (size_t)r * tex.w;
+					const int32_t* x0s = mColX0.data();
+					if (linear)
+					{
+						const int32_t* x1s = mColX1.data();
+						const uint16_t* fxs = mColFx.data();
+						for (int i = 0; i < n; i++)
+							into[i] = lerp8(src[x0s[i]], src[x1s[i]], fxs[i]);
+					}
+					else
+						for (int i = 0; i < n; i++)
+							into[i] = src[x0s[i]];
+				};
+				// row r sampled, in a slot that does not hold row keep
+				auto rowOf = [&](int r, int keep) -> const uint32_t*
+				{
+					if (keyA == r) return rowA;
+					if (keyB == r) return rowB;
+					if (keyA != keep) { sample(r, rowA); keyA = r; return rowA; }
+					sample(r, rowB); keyB = r; return rowB;
+				};
+
+				// opaque, untinted, plain: the sampled row is the frame's row
+				const bool copy = state.texture->opaque && mod == MOD_NONE && blend == BLEND_NORMAL && s.saturation == 256 && maskTest == 0;
+				// opaque and covering what is under it (a tint at full alpha): a frame row that samples the same
+				// texture row as the one above is the same as it
+				const bool covers = state.texture->opaque && blend == BLEND_NORMAL && maskTest == 0 &&
+					(mod == MOD_NONE || (mod == MOD_CONST && (s.color >> 24) == 255));
+				const SpanFn finish = pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest == 0 && s.saturation == 256);
+				Tex row;
+				row.w = n;
+				row.h = 1;
+				int lastKey = -1; // the texture row (nearest) the row above drew
+
+				for (int y = py0; y < py1; y++)
+				{
+					const int v = toFixed(texelV0 + (y - qy0) * texelDv);
+					if (!linear && covers)
+					{
+						const int key = wrapCoord(v >> 16, tex.h, tex.repeat);
+						if (key == lastKey)
+						{
+							memcpy(mPx + (size_t)y * mWidth + px0, mPx + (size_t)(y - 1) * mWidth + px0, (size_t)n * 4);
+							continue;
+						}
+						lastKey = key;
+					}
+					const uint32_t* sampled;
+					if (!linear)
+						sampled = rowOf(wrapCoord(v >> 16, tex.h, tex.repeat), -1);
+					else
+					{
+						const int r0 = wrapCoord(v >> 16, tex.h, tex.repeat), r1 = wrapCoord((v >> 16) + 1, tex.h, tex.repeat);
+						const uint32_t* top = rowOf(r0, r1);
+						const uint32_t* bottom = rowOf(r1, r0);
+						lerpRows(out, top, bottom, ((uint32_t)v >> 8) & 0xFF, n);
+						sampled = out;
+					}
+
+					const size_t offset = (size_t)y * mWidth + px0;
+					if (copy)
+					{
+						memcpy(mPx + offset, sampled, (size_t)n * 4);
+						continue;
+					}
+					if (mod == MOD_VARY)
+						rowColors(y);
+					Span fs = s;
+					fs.u = 0; fs.du = 1 << 16; // the row read 1:1
+					fs.v = 0; fs.dv = 0;
+					row.px = sampled;
+					finish(mPx + offset, stencil ? stencil + offset : nullptr, maskTest, n, row, fs);
+				}
+
+				mStats.pixels += (uint64_t)n * (py1 - py0);
+				mStats.kinds[linear ? PX_TEX_LINEAR : PX_TEX_NEAREST] += (uint64_t)n * (py1 - py0);
+				return;
+			}
+
 			const SpanFn fn = pickSpanFor(texMode, rowMod, blend, maskTest == 0 && s.saturation == 256);
-			const int du = toFixed(texelDu);
+
+			// a picture 1:1 with clear runs (an overlay that leaves much of the frame as it is): drawn
+			// between them (blending a clear texel leaves the pixel as it was)
+			if (texMode == TEX_DIRECT && blend == BLEND_NORMAL && mod != MOD_VARY && !state.texture->clearAt.empty())
+			{
+				const Texture* t = state.texture;
+				const int n = px1 - px0;
+				uint64_t drawn = 0;
+				for (int y = py0; y < py1; y++)
+				{
+					const int vy = (int)std::floor(texelV0 + (y - qy0) * texelDv);
+					const size_t offset = (size_t)y * mWidth + px0;
+					s.v = vy << 16;
+					s.du = du;
+					s.dv = 0;
+					// the row's columns [ux, ux + n), drawn up to each clear run in it, then after it
+					const int ux = uxStart;
+					int at = 0;
+					auto draw = [&](int from, int to)
+					{
+						if (to <= from)
+							return;
+						s.u = (ux + from) << 16;
+						fn(mPx + offset + from, stencil ? stencil + offset + from : nullptr, maskTest, to - from, tex, s);
+						drawn += (uint64_t)(to - from);
+					};
+					for (uint32_t r = t->clearAt[vy]; r < t->clearAt[vy + 1]; r += 2)
+					{
+						const int c0 = (int)t->clear[r] - ux, c1 = (int)t->clear[r + 1] - ux;
+						if (c1 <= at)
+							continue;
+						if (c0 >= n)
+							break;
+						draw(at, std::max(at, c0));
+						at = std::min(n, c1);
+					}
+					draw(at, n);
+				}
+				mStats.pixels += drawn;
+				mStats.kinds[PX_TEX_1TO1] += drawn;
+				return;
+			}
 
 			for (int y = py0; y < py1; y++)
 			{
-				const float ty = (y + 0.5f - y0) / h;
-
 				if (texMode != TEX_NONE)
 				{
 					const float tv = texelV0 + (y - qy0) * texelDv;
-					s.u = toFixed(texelU0);
+					s.u = uStart;
 					s.du = du;
 					s.v = toFixed(tv);
 					s.dv = 0;
 					if (texMode == TEX_DIRECT)
 					{
-						s.u = (int)std::floor(texelU0) << 16;
+						s.u = uxStart << 16;
 						s.v = (int)std::floor(tv) << 16;
 					}
 				}
 
 				if (mod == MOD_VARY)
-				{
-					const ColorF left = mixColor(c00, c01, ty);
-					if (rowColor)
-					{
-						s.color = ((uint32_t)(left.a + 0.5f) << 24) | ((uint32_t)(left.r + 0.5f) << 16) | ((uint32_t)(left.g + 0.5f) << 8) | (uint32_t)(left.b + 0.5f);
-					}
-					else
-					{
-						const ColorF right = mixColor(c10, c11, ty);
-						const float tx = (px0 + 0.5f - x0) / w;
-						const ColorF start = mixColor(left, right, tx);
-						s.r = toFixed(start.r); s.g = toFixed(start.g); s.b = toFixed(start.b); s.a = toFixed(start.a);
-						s.dr = toFixed((right.r - left.r) / w); s.dg = toFixed((right.g - left.g) / w);
-						s.db = toFixed((right.b - left.b) / w); s.da = toFixed((right.a - left.a) / w);
-					}
-				}
+					rowColors(y);
 
 				const size_t offset = (size_t)y * mWidth + px0;
 				fn(mPx + offset, stencil ? stencil + offset : nullptr, maskTest, px1 - px0, tex, s);
@@ -867,22 +1321,25 @@ namespace Renderer
 			const int maskTest = state.stencil == StencilTest::Inside ? 1 : (state.stencil == StencilTest::Outside ? 2 : 0);
 			const SpanFn fn = pickSpanFor(texMode, mod, blend, maskTest == 0 && s.saturation == 256);
 
-			coverTriangle(a, b, c, clip.x0, clip.y0, clip.x1, clip.y1, [&](int y, int x0, int x1)
+			// each row's values at its own first column, then a step a column the clip left out, so a pixel is
+			// the same however the triangle is clipped
+			coverTriangle(a, b, c, clip.x0, clip.y0, clip.x1, clip.y1, [&](int y, int x0, int x1, int first)
 			{
-				const float dx = x0 + 0.5f - a.x, dy = y + 0.5f - a.y;
+				const float dx = first + 0.5f - a.x, dy = y + 0.5f - a.y;
+				const int skipped = x0 - first;
 				if (texMode != TEX_NONE)
 				{
-					s.u = toFixed(uA + uDx * dx + uDy * dy);
-					s.v = toFixed(vA + vDx * dx + vDy * dy);
 					s.du = toFixed(uDx);
 					s.dv = toFixed(vDx);
+					s.u = toFixed(uA + uDx * dx + uDy * dy) + skipped * s.du;
+					s.v = toFixed(vA + vDx * dx + vDy * dy) + skipped * s.dv;
 				}
 				if (mod == MOD_VARY)
 				{
-					s.r = toFixed(ca.r + rDx * dx + rDy * dy); s.dr = toFixed(rDx);
-					s.g = toFixed(ca.g + gDx * dx + gDy * dy); s.dg = toFixed(gDx);
-					s.b = toFixed(ca.b + bDx * dx + bDy * dy); s.db = toFixed(bDx);
-					s.a = toFixed(ca.a + aDx * dx + aDy * dy); s.da = toFixed(aDx);
+					s.dr = toFixed(rDx); s.r = toFixed(ca.r + rDx * dx + rDy * dy) + skipped * s.dr;
+					s.dg = toFixed(gDx); s.g = toFixed(ca.g + gDx * dx + gDy * dy) + skipped * s.dg;
+					s.db = toFixed(bDx); s.b = toFixed(ca.b + bDx * dx + bDy * dy) + skipped * s.db;
+					s.da = toFixed(aDx); s.a = toFixed(ca.a + aDx * dx + aDy * dy) + skipped * s.da;
 				}
 				const size_t offset = (size_t)y * mWidth + x0;
 				fn(mPx + offset, stencil ? stencil + offset : nullptr, maskTest, x1 - x0, tex, s);
@@ -926,7 +1383,7 @@ namespace Renderer
 			Clip box = { clip.x1, clip.y1, clip.x0, clip.y0 };
 			for (int i = 1; i + 1 < count; i++)
 			{
-				coverTriangle(vertices[0], vertices[i], vertices[i + 1], clip.x0, clip.y0, clip.x1, clip.y1, [&](int y, int x0, int x1)
+				coverTriangle(vertices[0], vertices[i], vertices[i + 1], clip.x0, clip.y0, clip.x1, clip.y1, [&](int y, int x0, int x1, int)
 				{
 					std::memset(mSt + (size_t)y * mWidth + x0, 1, x1 - x0);
 					box.x0 = std::min(box.x0, x0); box.x1 = std::max(box.x1, x1);
@@ -934,6 +1391,71 @@ namespace Renderer
 				});
 			}
 			mStencilBox = box.x0 < box.x1 ? box : Clip{ 0, 0, 0, 0 };
+		}
+
+		void findClearRuns(Texture& texture)
+		{
+			texture.clearAt.clear();
+			texture.clear.clear();
+			const int w = texture.width, h = texture.height;
+			if (texture.opaque || w < 64 || h < 1 || texture.pixels.size() < (size_t)w * h)
+				return;
+			std::vector<uint32_t> at, runs;
+			at.reserve(h + 1);
+			for (int y = 0; y < h; y++)
+			{
+				at.push_back((uint32_t)runs.size());
+				const uint32_t* row = texture.pixels.data() + (size_t)y * w;
+				for (int x = 0; x < w;)
+				{
+					if (row[x] >> 24)
+					{
+						x++;
+						continue;
+					}
+					int end = x;
+					while (end < w && (row[end] >> 24) == 0)
+						end++;
+					if (end - x >= 32)
+					{
+						runs.push_back((uint32_t)x);
+						runs.push_back((uint32_t)end);
+					}
+					x = end;
+				}
+			}
+			at.push_back((uint32_t)runs.size());
+			// worth it only when the runs are much of the picture
+			uint64_t clear = 0;
+			for (size_t i = 0; i < runs.size(); i += 2)
+				clear += runs[i + 1] - runs[i];
+			if (clear * 8 < (uint64_t)w * h)
+				return;
+			texture.clearAt.swap(at);
+			texture.clear.swap(runs);
+		}
+
+		void scaledFrame()
+		{
+			ScaledCache& cache = scaledCache();
+			const uint64_t frame = cache.frame.fetch_add(1) + 1;
+			// pictures not drawn for a while (600 drawn frames) let go of
+			std::lock_guard<std::mutex> guard(cache.lock);
+			for (auto it = cache.entries.begin(); it != cache.entries.end();)
+				if (frame - (*it)->used > 600)
+				{
+					cache.bytes -= (*it)->bytes();
+					it = cache.entries.erase(it);
+				}
+				else
+					++it;
+		}
+
+		size_t scaledBytes()
+		{
+			ScaledCache& cache = scaledCache();
+			std::lock_guard<std::mutex> guard(cache.lock);
+			return cache.bytes;
 		}
 	}
 }

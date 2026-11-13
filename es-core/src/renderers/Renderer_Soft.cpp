@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -56,6 +57,14 @@ namespace Renderer
 			return (hash ^ (uint32_t)(value >> 32)) * kHashPrime;
 		}
 
+		// a part of the frame, in pixels, half-open
+		struct Box
+		{
+			int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+			bool empty() const { return x0 >= x1 || y0 >= y1; }
+			bool meets(const Box& o) const { return x0 < o.x1 && o.x0 < x1 && y0 < o.y1 && o.y0 < y1; }
+		};
+
 		struct Command
 		{
 			bool stencil = false;  // the stencil shape, not a draw
@@ -63,6 +72,15 @@ namespace Renderer
 			uint32_t first = 0, count = 0;
 			DrawState state;
 			std::shared_ptr<Soft::Texture> texture;
+			uint64_t sig = 0;      // all that makes what it draws: two draws with the same draw the same pixels
+			Box box;               // where it may draw (none for a stencil shape)
+		};
+
+		// a draw of the last frame drawn, to see what changed
+		struct Drawn
+		{
+			uint64_t sig;
+			Box box;
 		};
 
 		struct Stats
@@ -76,6 +94,9 @@ namespace Renderer
 			uint32_t quads = 0, triangles = 0;
 			double bandMs[2] = { 0, 0 }; // the first two bands' drawing, to see the balance
 			uint64_t kinds[Soft::PX_KINDS] = {};
+			int partial = 0;             // frames drawn in part (what changed)
+			uint64_t redrawn = 0;        // pixels drawn again
+			int checked = 0, wrong = 0;  // ES_SOFT_DIRTY_CHECK: frames drawn in part checked against whole ones
 		};
 
 		// The frame drawn in horizontal bands, one a thread: the first by the thread that swaps, the others
@@ -89,6 +110,7 @@ namespace Renderer
 			std::vector<int> copied;          // the rows it copied
 			bool present = false;             // the bands copy their rows to the output
 			int split = 0;                    // the first band's last row + 1, when there are two
+			int fullSplit = 0;                // that line for a whole frame, moved toward balance after each
 			bool attached = false;
 
 			std::mutex lock;
@@ -139,6 +161,18 @@ namespace Renderer
 			uint64_t hash = kHashSeed;
 			uint64_t lastHash = 0;
 			bool forceRedraw = true;
+			uint64_t stencilSig = 0;          // the stencil shape the frame being recorded draws with
+
+			// Only what changed drawn again (ES_SOFT_DIRTY=0: every frame whole): the raster keeps the last
+			// frame drawn, and the parts of it where this frame's draws are not the last one's are drawn again
+			bool dirty = true;
+			bool dirtyCheck = false;          // ES_SOFT_DIRTY_CHECK=1: each part-drawn frame checked against a whole one
+			bool lastValid = false;           // the raster holds the frame of lastDrawn
+			std::vector<Drawn> lastDrawn;
+			std::vector<Box> rects;           // this frame's parts to draw (when drawn in part)
+			bool partial = false;
+			std::vector<uint8_t> tiles;
+			std::vector<uint16_t> lcs;
 
 			bool vsync = true;
 			double interval = 1.0 / 60.0;
@@ -148,6 +182,8 @@ namespace Renderer
 
 			Script script;
 			bool scriptLoaded = false;
+			std::string pendingDump; // the file the next drawn frame's commands go to
+			bool statsNow = false;    // the test script's "stats"
 
 			int statsEvery = 600;
 			bool bench = false; // ES_SOFT_BENCH: every frame drawn, even the same as the last
@@ -251,7 +287,7 @@ namespace Renderer
 				s.vertices.push_back(sv);
 			}
 
-			uint64_t h = s.hash;
+			uint64_t h = kHashSeed;
 			h = hashValue(h, ((uint64_t)stencil << 40) | ((uint64_t)topology << 32) | count);
 			h = hashValue(h, ((uint64_t)command.state.srcBlend << 16) | ((uint64_t)command.state.dstBlend << 8) | (uint64_t)command.state.stencil);
 			if (command.state.scissor)
@@ -265,28 +301,134 @@ namespace Renderer
 			if (command.texture)
 				h = hashValue(hashValue(h, command.texture->id), command.texture->generation);
 			h = hashWords(h, &s.vertices[command.first], sizeof(SVertex) * count);
-			s.hash = h;
+			// a draw tested against the stencil draws what the shape lets through: the shape is part of it
+			if (stencil)
+				s.stencilSig = h;
+			else if (command.state.stencil != StencilTest::Off)
+				h = hashValue(h, s.stencilSig);
+			command.sig = h;
+			s.hash = hashValue(s.hash, h);
+
+			// where it may draw: its vertices' box (a pixel's centre is inside the shape: a pixel more each
+			// side for the rounding, two for lines), in the scissor and the frame
+			if (!stencil)
+			{
+				Box box = { 0, 0, s.width, s.height };
+				const SVertex* v = &s.vertices[command.first];
+				float x0 = v[0].x, y0 = v[0].y, x1 = v[0].x, y1 = v[0].y;
+				bool finite = true;
+				for (unsigned int i = 0; i < count; i++)
+				{
+					finite = finite && std::isfinite(v[i].x) && std::isfinite(v[i].y);
+					x0 = std::min(x0, v[i].x); x1 = std::max(x1, v[i].x);
+					y0 = std::min(y0, v[i].y); y1 = std::max(y1, v[i].y);
+				}
+				if (finite)
+				{
+					const int margin = topology == Topology::Lines ? 2 : 1;
+					auto limit = [](float value, int size) { return std::max(-8.0f, std::min((float)size + 8.0f, value)); };
+					box.x0 = std::max(box.x0, (int)std::floor(limit(x0, s.width)) - margin);
+					box.y0 = std::max(box.y0, (int)std::floor(limit(y0, s.height)) - margin);
+					box.x1 = std::min(box.x1, (int)std::ceil(limit(x1, s.width)) + margin);
+					box.y1 = std::min(box.y1, (int)std::ceil(limit(y1, s.height)) + margin);
+				}
+				if (command.state.scissor)
+				{
+					box.x0 = std::max(box.x0, command.state.sx0);
+					box.y0 = std::max(box.y0, command.state.sy0);
+					box.x1 = std::min(box.x1, command.state.sx1);
+					box.y1 = std::min(box.y1, command.state.sy1);
+				}
+				command.box = box.empty() ? Box() : box;
+			}
 
 			s.commands.push_back(std::move(command));
 		}
 
-		// the frame's commands, in one band
+		// the frame's commands, in one band: all of it, or (drawn in part) each part, cleared then drawn by
+		// the commands that reach it, clipped to it
 		void executeBand(Raster& raster)
 		{
 			SoftState& s = S();
-			raster.clear(0);
-			for (const Command& command : s.commands)
+			if (!s.partial)
 			{
-				const SVertex* vertices = s.vertices.data() + command.first;
-				if (command.stencil)
+				raster.clear(0);
+				for (const Command& command : s.commands)
 				{
-					raster.setStencil(vertices, (int)command.count, command.state);
-					continue;
+					const SVertex* vertices = s.vertices.data() + command.first;
+					if (command.stencil)
+					{
+						raster.setStencil(vertices, (int)command.count, command.state);
+						continue;
+					}
+					DrawState state = command.state;
+					state.texture = command.texture.get();
+					raster.draw(vertices, (int)command.count, command.topology, state);
 				}
-				DrawState state = command.state;
-				state.texture = command.texture.get();
-				raster.draw(vertices, (int)command.count, command.topology, state);
+				return;
 			}
+
+			for (const Box& whole : s.rects)
+			{
+				Box part = whole;
+				part.y0 = std::max(part.y0, raster.bandTop());
+				part.y1 = std::min(part.y1, raster.bandBottom());
+				if (part.empty())
+					continue;
+				raster.clearBox(part.x0, part.y0, part.x1, part.y1, 0);
+				for (const Command& command : s.commands)
+				{
+					// a stencil shape is always set: it also clears the last one
+					if (!command.stencil && !command.box.meets(part))
+						continue;
+					DrawState state = command.state;
+					if (state.scissor)
+					{
+						state.sx0 = std::max(state.sx0, part.x0); state.sy0 = std::max(state.sy0, part.y0);
+						state.sx1 = std::min(state.sx1, part.x1); state.sy1 = std::min(state.sy1, part.y1);
+					}
+					else
+					{
+						state.scissor = true;
+						state.sx0 = part.x0; state.sy0 = part.y0; state.sx1 = part.x1; state.sy1 = part.y1;
+					}
+					const SVertex* vertices = s.vertices.data() + command.first;
+					if (command.stencil)
+						raster.setStencil(vertices, (int)command.count, state);
+					else
+					{
+						state.texture = command.texture.get();
+						raster.draw(vertices, (int)command.count, command.topology, state);
+					}
+				}
+			}
+		}
+
+		// the rows a band shows again: all of them, or (drawn in part) its parts' rows
+		int presentBand(Raster& raster)
+		{
+			SoftState& s = S();
+			const int top = raster.bandTop(), bottom = raster.bandBottom();
+			if (!s.partial)
+				return s.output->presentRows(s.raster.pixels(), s.raster.width(), s.raster.height(), top, bottom);
+
+			std::vector<std::pair<int, int>> spans;
+			for (const Box& r : s.rects)
+			{
+				const int y0 = std::max(r.y0, top), y1 = std::min(r.y1, bottom);
+				if (y0 < y1)
+					spans.push_back({ y0, y1 });
+			}
+			std::sort(spans.begin(), spans.end());
+			int copied = 0;
+			for (size_t i = 0; i < spans.size();)
+			{
+				int y0 = spans[i].first, y1 = spans[i].second;
+				for (i++; i < spans.size() && spans[i].first <= y1; i++)
+					y1 = std::max(y1, spans[i].second);
+				copied += s.output->presentRows(s.raster.pixels(), s.raster.width(), s.raster.height(), y0, y1);
+			}
+			return copied;
 		}
 
 		void timedBand(int index)
@@ -305,7 +447,7 @@ namespace Renderer
 			b.copyMs[index] = 0;
 			if (b.present)
 			{
-				b.copied[index] = s.output->presentRows(s.raster.pixels(), s.raster.width(), s.raster.height(), raster.bandTop(), raster.bandBottom());
+				b.copied[index] = presentBand(raster);
 				b.copyMs[index] = std::chrono::duration<double, std::milli>(Clock::now() - drawn).count();
 			}
 		}
@@ -368,24 +510,38 @@ namespace Renderer
 			b.quit = false;
 		}
 
-		// the bands' rows: equal, then the line between the first two moved a few rows a frame toward balance
+		// the bands' rows. A whole frame: equal, then the line between the first two moved a few rows a frame
+		// toward balance (balanceBands). A frame drawn in part: the line where half its parts' pixels are.
 		void placeBands()
 		{
 			SoftState& s = S();
 			Bands& b = s.bands;
 			const int height = s.raster.height();
-			int split = b.split;
-			if (!b.attached || split <= 0 || split >= height)
-				split = height / b.count;
-			else if (b.count == 2)
+			if (b.fullSplit <= 0 || b.fullSplit >= height)
+				b.fullSplit = height / b.count;
+			int split = b.fullSplit;
+			if (s.partial && b.count == 2)
 			{
-				const double a = b.ms[0], c = b.ms[1];
-				const int step = std::max(2, height / 90);
-				if (a > c * 1.15 && a - c > 0.5)
-					split -= step;
-				else if (c > a * 1.15 && c - a > 0.5)
-					split += step;
-				split = std::max(height / 8, std::min(height - height / 8, split));
+				std::vector<int64_t> change(height + 1, 0);
+				int64_t total = 0;
+				for (const Box& r : s.rects)
+				{
+					change[r.y0] += r.x1 - r.x0;
+					change[r.y1] -= r.x1 - r.x0;
+					total += (int64_t)(r.x1 - r.x0) * (r.y1 - r.y0);
+				}
+				int64_t width = 0, sum = 0;
+				for (int y = 0; y < height; y++)
+				{
+					width += change[y];
+					sum += width;
+					if (sum * 2 >= total)
+					{
+						split = y + 1;
+						break;
+					}
+				}
+				split = std::max(1, std::min(height - 1, split));
 			}
 			if (b.attached && split == b.split)
 				return;
@@ -401,6 +557,237 @@ namespace Renderer
 			}
 			b.split = split;
 			b.attached = true;
+		}
+
+		// after a whole frame: its line toward the band that took less
+		void balanceBands()
+		{
+			SoftState& s = S();
+			Bands& b = s.bands;
+			if (b.count != 2 || s.partial)
+				return;
+			const int height = s.raster.height();
+			const double a = b.ms[0], c = b.ms[1];
+			const int step = std::max(2, height / 90);
+			int split = b.split;
+			if (a > c * 1.15 && a - c > 0.5)
+				split -= step;
+			else if (c > a * 1.15 && c - a > 0.5)
+				split += step;
+			b.fullSplit = std::max(height / 8, std::min(height - height / 8, split));
+		}
+
+		// Which parts of the frame to draw again: the draws of this frame and of the last one drawn are matched
+		// in order (the longest common run of their signatures, after the same first and last ones), and the
+		// boxes of those not matched, the last frame's and this one's, mark tiles of 32x32 pixels; the marked
+		// tiles, in rectangles, are the parts. A pixel no unmatched draw reaches is drawn by the same draws, in
+		// the same order, as in the last frame: it is the same. False: draw the frame whole.
+		bool findParts()
+		{
+			SoftState& s = S();
+			s.rects.clear();
+			std::vector<const Command*> now;
+			now.reserve(s.commands.size());
+			for (const Command& command : s.commands)
+				if (!command.stencil)
+					now.push_back(&command);
+			const std::vector<Drawn>& old = s.lastDrawn;
+
+			const int tile = 32;
+			const int tilesX = (s.width + tile - 1) / tile, tilesY = (s.height + tile - 1) / tile;
+			s.tiles.assign((size_t)tilesX * tilesY, 0);
+			int marked = 0;
+			auto mark = [&](const Box& box)
+			{
+				if (box.empty())
+					return;
+				const int tx1 = (box.x1 - 1) / tile, ty1 = (box.y1 - 1) / tile;
+				for (int ty = box.y0 / tile; ty <= ty1; ty++)
+					for (int tx = box.x0 / tile; tx <= tx1; tx++)
+					{
+						uint8_t& t = s.tiles[(size_t)ty * tilesX + tx];
+						marked += t == 0;
+						t = 1;
+					}
+			};
+
+			const size_t n = old.size(), m = now.size();
+			size_t first = 0, last = 0;
+			while (first < n && first < m && old[first].sig == now[first]->sig)
+				first++;
+			while (last < n - first && last < m - first && old[n - 1 - last].sig == now[m - 1 - last]->sig)
+				last++;
+			const size_t a = n - first - last, b = m - first - last;
+			std::vector<char> keptOld(a, 0), keptNow(b, 0);
+			if (a > 0 && b > 0 && a * b <= (1u << 20) && a < 65535 && b < 65535)
+			{
+				// the longest common subsequence, table from the end
+				std::vector<uint16_t>& t = s.lcs;
+				t.assign((a + 1) * (b + 1), 0);
+				for (size_t i = a; i-- > 0;)
+					for (size_t j = b; j-- > 0;)
+						t[i * (b + 1) + j] = old[first + i].sig == now[first + j]->sig ? t[(i + 1) * (b + 1) + j + 1] + 1 :
+							std::max(t[(i + 1) * (b + 1) + j], t[i * (b + 1) + j + 1]);
+				for (size_t i = 0, j = 0; i < a && j < b;)
+				{
+					if (old[first + i].sig == now[first + j]->sig)
+					{
+						keptOld[i++] = 1;
+						keptNow[j++] = 1;
+					}
+					else if (t[(i + 1) * (b + 1) + j] >= t[i * (b + 1) + j + 1])
+						i++;
+					else
+						j++;
+				}
+			}
+			for (size_t i = 0; i < a; i++)
+				if (!keptOld[i])
+					mark(old[first + i].box);
+			for (size_t j = 0; j < b; j++)
+				if (!keptNow[j])
+					mark(now[first + j]->box);
+
+			// most of it changed: drawn whole, with less to do a pixel
+			if (marked * 10 > tilesX * tilesY * 7)
+				return false;
+
+			// runs of marked tiles in each row of tiles, joined to the same run of the row above
+			std::vector<Box> open;
+			for (int ty = 0; ty <= tilesY; ty++)
+			{
+				std::vector<Box> next;
+				for (int tx = 0; ty < tilesY && tx < tilesX;)
+				{
+					if (!s.tiles[(size_t)ty * tilesX + tx])
+					{
+						tx++;
+						continue;
+					}
+					int end = tx;
+					while (end < tilesX && s.tiles[(size_t)ty * tilesX + end])
+						end++;
+					Box run = { tx * tile, ty * tile, std::min(s.width, end * tile), std::min(s.height, (ty + 1) * tile) };
+					for (auto it = open.begin(); it != open.end(); ++it)
+						if (it->x0 == run.x0 && it->x1 == run.x1)
+						{
+							run.y0 = it->y0;
+							open.erase(it);
+							break;
+						}
+					next.push_back(run);
+					tx = end;
+				}
+				for (const Box& done : open)
+					s.rects.push_back(done);
+				open.swap(next);
+			}
+			return true;
+		}
+
+		// ES_SOFT_DIRTY_CHECK: the frame drawn in part against the same drawn whole, on this thread
+		void checkParts()
+		{
+			SoftState& s = S();
+			Raster whole;
+			whole.resize(s.raster.width(), s.raster.height());
+			whole.clear(0);
+			for (const Command& command : s.commands)
+			{
+				const SVertex* vertices = s.vertices.data() + command.first;
+				if (command.stencil)
+				{
+					whole.setStencil(vertices, (int)command.count, command.state);
+					continue;
+				}
+				DrawState state = command.state;
+				state.texture = command.texture.get();
+				whole.draw(vertices, (int)command.count, command.topology, state);
+			}
+			const int w = s.raster.width(), h = s.raster.height();
+			const uint32_t* drawn = s.raster.pixels();
+			const uint32_t* right = whole.pixels();
+			int count = 0;
+			Box at = { w, h, 0, 0 };
+			for (int y = 0; y < h; y++)
+				for (int x = 0; x < w; x++)
+					if (drawn[(size_t)y * w + x] != right[(size_t)y * w + x])
+					{
+						count++;
+						at.x0 = std::min(at.x0, x); at.x1 = std::max(at.x1, x + 1);
+						at.y0 = std::min(at.y0, y); at.y1 = std::max(at.y1, y + 1);
+					}
+			s.stats.checked++;
+			if (count == 0)
+				return;
+			s.stats.wrong++;
+			LOG(LogError) << "SoftRenderer: drawn in part, " << count << " pixels differ from the whole frame, in "
+				<< at.x0 << "," << at.y0 << " " << (at.x1 - at.x0) << "x" << (at.y1 - at.y0) << " (" << s.rects.size() << " parts)";
+			// the next frames checked on their own
+			memcpy(s.raster.pixels(), right, (size_t)w * h * 4);
+		}
+
+		// ES_SOFT_DUMP=FILE: the commands of the drawn frame ES_SOFT_DUMP_FRAME (default 100), each with what
+		// it drew and its time, drawn again alone on one thread, for tuning
+		// (or the test script's "dump NAME")
+		void dumpCommands(const std::string& requested)
+		{
+			static int drawnFrames = 0;
+			std::string path = requested;
+			if (path.empty())
+			{
+				const char* env = getenv("ES_SOFT_DUMP");
+				const char* at = getenv("ES_SOFT_DUMP_FRAME");
+				if (env == nullptr || *env == 0 || ++drawnFrames != (at ? atoi(at) : 100))
+					return;
+				path = env;
+			}
+
+			SoftState& s = S();
+			FILE* out = fopen(path.c_str(), "w");
+			if (out == nullptr)
+				return;
+			Raster raster;
+			raster.resize(s.raster.width(), s.raster.height());
+			raster.clear(0);
+			const char* kindNames[Soft::PX_KINDS] = { "fill", "copy", "colour", "1:1", "nearest", "bilinear", "triangle" };
+			double totalMs = 0;
+			int index = 0;
+			for (const Command& command : s.commands)
+			{
+				const SVertex* v = s.vertices.data() + command.first;
+				float x0 = v[0].x, y0 = v[0].y, x1 = v[0].x, y1 = v[0].y;
+				for (uint32_t i = 1; i < command.count; i++)
+				{
+					x0 = std::min(x0, v[i].x); x1 = std::max(x1, v[i].x);
+					y0 = std::min(y0, v[i].y); y1 = std::max(y1, v[i].y);
+				}
+				raster.stats() = RasterStats();
+				const Clock::time_point start = Clock::now();
+				if (command.stencil)
+					raster.setStencil(v, (int)command.count, command.state);
+				else
+				{
+					DrawState state = command.state;
+					state.texture = command.texture.get();
+					raster.draw(v, (int)command.count, command.topology, state);
+				}
+				const double ms = std::chrono::duration<double, std::milli>(Clock::now() - start).count();
+				totalMs += ms;
+				std::string kinds;
+				for (int k = 0; k < Soft::PX_KINDS; k++)
+					if (raster.stats().kinds[k])
+						kinds += std::string(kinds.empty() ? "" : " ") + kindNames[k] + " " + std::to_string(raster.stats().kinds[k] / 1000) + "k";
+				const Soft::Texture* t = command.texture.get();
+				fprintf(out, "%4d %7.3f ms %s %3u vertices, box %.0f,%.0f %.0fx%.0f, texture %s, blend %d/%d%s%s, colour %08x: %s\n",
+					index++, ms, command.stencil ? "stencil" : (command.topology == Topology::Strip ? "strip" : (command.topology == Topology::Fan ? "fan" : "lines")),
+					command.count, x0, y0, x1 - x0, y1 - y0,
+					t ? (std::to_string(t->width) + "x" + std::to_string(t->height) + (t->opaque ? " opaque" : "") + (t->linear ? "" : " nearest")).c_str() : "-",
+					command.state.srcBlend, command.state.dstBlend, command.state.scissor ? " scissor" : "",
+					command.state.stencil != StencilTest::Off ? " stencil-tested" : "", v[0].color, kinds.empty() ? "nothing" : kinds.c_str());
+			}
+			fprintf(out, "total %.3f ms on one thread, %d commands\n", totalMs, index);
+			fclose(out);
 		}
 
 		void execute()
@@ -434,6 +821,8 @@ namespace Renderer
 				s.output->finishFrame(copied);
 			}
 
+			balanceBands();
+
 			RasterStats& total = s.raster.stats();
 			total = RasterStats();
 			for (auto& raster : b.rasters)
@@ -463,13 +852,18 @@ namespace Renderer
 				snprintf(bands, sizeof(bands), ", %d threads (first two %.1f / %.1f ms, line at row %d)",
 					s.bands.count, st.bandMs[0] / drawn, st.bandMs[1] / drawn, s.bands.split);
 			auto kpx = [&](int kind) { return (double)st.kinds[kind] / drawn / 1000.0; };
-			char line[768];
+			char parts[160] = "";
+			if (s.dirty)
+				snprintf(parts, sizeof(parts), ", %d drawn in part, %.0f%% of the screen drawn again a drawn frame%s",
+					st.partial, 100.0 * st.redrawn / drawn / std::max(1, s.width * s.height),
+					st.checked ? (", " + std::to_string(st.wrong) + " of " + std::to_string(st.checked) + " checked wrong").c_str() : "");
+			char line[1024];
 			snprintf(line, sizeof(line),
 				"SoftRenderer: %d frames, %d drawn; frame %.1f ms (max %.1f), ES before a drawn frame %.1f ms (max %.1f), drawing %.1f ms (max %.1f)%s, copy %.2f ms, %.0f rows copied, "
-				"%.0f vertices, %.0f k pixels, %u quads, %u triangles a drawn frame; k pixels: fill %.0f, copy %.0f, colour %.0f, "
+				"%.0f vertices, %.0f k pixels, %u quads, %u triangles a drawn frame%s; k pixels: fill %.0f, copy %.0f, colour %.0f, "
 				"picture 1:1 %.0f, nearest %.0f, bilinear %.0f, triangles %.0f",
 				st.frames, st.drawn, st.frameMs / st.frames, st.frameMax, st.esMs / drawn, st.esMax, st.rasterMs / drawn, st.rasterMax, bands, st.copyMs / drawn,
-				(double)st.rows / drawn, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn,
+				(double)st.rows / drawn, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn, parts,
 				kpx(Soft::PX_FILL), kpx(Soft::PX_COPY), kpx(Soft::PX_COLOR), kpx(Soft::PX_TEX_1TO1), kpx(Soft::PX_TEX_NEAREST), kpx(Soft::PX_TEX_LINEAR), kpx(Soft::PX_TRIANGLE));
 			LOG(LogInfo) << line;
 
@@ -537,7 +931,12 @@ namespace Renderer
 		s.bands.rasters.clear();
 		s.raster.resize(s.width, s.height);
 		s.forceRedraw = true;
+		s.lastValid = false;
 		s.frameStarted = false;
+		const char* dirty = getenv("ES_SOFT_DIRTY");
+		s.dirty = dirty == nullptr || strcmp(dirty, "0") != 0;
+		const char* check = getenv("ES_SOFT_DIRTY_CHECK");
+		s.dirtyCheck = check != nullptr && strcmp(check, "0") != 0;
 
 		const char* stats = getenv("ES_SOFT_STATS");
 		if (stats != nullptr)
@@ -567,6 +966,8 @@ namespace Renderer
 		s.commands.clear();
 		s.vertices.clear();
 		s.hash = kHashSeed;
+		s.stencilSig = 0;
+		s.lastValid = false;
 	}
 
 	void SoftRenderer::resetCache()
@@ -676,6 +1077,14 @@ namespace Renderer
 
 		texture->opaque = opaque;
 		texture->generation++;
+		// its clear runs, for a whole picture (a part updated: a font's glyphs, none)
+		if (whole)
+			Soft::findClearRuns(*texture);
+		else
+		{
+			texture->clearAt.clear();
+			texture->clear.clear();
+		}
 	}
 
 	void SoftRenderer::bindTexture(const unsigned int _texture)
@@ -805,19 +1214,46 @@ namespace Renderer
 		const bool redraw = recorded && (s.forceRedraw || s.bench || s.hash != s.lastHash);
 		if (redraw && s.open)
 		{
-			if (s.frameStarted)
-			{
-				const double esMs = msSince(s.frameStart);
-				s.stats.esMs += esMs;
-				s.stats.esMax = std::max(s.stats.esMax, esMs);
-			}
+			const double esMs = s.frameStarted ? msSince(s.frameStart) : 0;
+			s.stats.esMs += esMs;
+			s.stats.esMax = std::max(s.stats.esMax, esMs);
+			// what changed since the last frame drawn, when it can be drawn in part (a benchmark draws all)
+			s.partial = s.dirty && !s.bench && s.lastValid && !s.forceRedraw && findParts();
 			// drawn and copied to the screen, each band by its thread; the times are the slowest band's
-			execute();
+			if (!s.partial || !s.rects.empty() || s.bands.rasters.empty())
+				execute();
+			else
+			{
+				// the same pixels as the last frame (its draws in another order, apart): nothing to do
+				std::fill(s.bands.ms.begin(), s.bands.ms.end(), 0.0);
+				std::fill(s.bands.copyMs.begin(), s.bands.copyMs.end(), 0.0);
+				if (s.output)
+					s.output->finishFrame(0);
+			}
+			if (s.partial && s.dirtyCheck)
+				checkParts();
+			uint64_t redrawn = 0;
+			if (!s.partial)
+				redrawn = (uint64_t)s.width * s.height;
+			else
+				for (const Box& r : s.rects)
+					redrawn += (uint64_t)(r.x1 - r.x0) * (r.y1 - r.y0);
+			s.stats.redrawn += redrawn;
+			s.stats.partial += s.partial ? 1 : 0;
+			// the raster now holds this frame: its draws, for the next one
+			s.lastDrawn.clear();
+			for (const Command& command : s.commands)
+				if (!command.stencil)
+					s.lastDrawn.push_back({ command.sig, command.box });
+			s.lastValid = true;
+			Soft::scaledFrame();
 			const double rasterMs = *std::max_element(s.bands.ms.begin(), s.bands.ms.end());
 			const double copyMs = *std::max_element(s.bands.copyMs.begin(), s.bands.copyMs.end());
 
 			Stats& st = s.stats;
 			st.drawn++;
+			dumpCommands(s.pendingDump);
+			s.pendingDump.clear();
 			st.rasterMs += rasterMs;
 			st.rasterMax = std::max(st.rasterMax, rasterMs);
 			st.copyMs += copyMs;
@@ -830,10 +1266,26 @@ namespace Renderer
 			st.triangles += s.raster.stats().triangles;
 			for (int k = 0; k < Soft::PX_KINDS; k++)
 				st.kinds[k] += s.raster.stats().kinds[k];
+
+			// a frame that kept the screen still, in the startup trace (with what ES did meanwhile there)
+			if (StartupTrace::enabled() && (esMs >= 150 || rasterMs >= 150))
+			{
+				char detail[96];
+				snprintf(detail, sizeof(detail), "ES %.0f ms before it, drawing %.0f ms (%.0f%% of the screen)", esMs, rasterMs,
+					100.0 * redrawn / std::max(1, s.width * s.height));
+				StartupTrace::mark("slow frame", detail);
+			}
 		}
 
 		if (s.scriptLoaded && s.script.active())
+		{
 			s.script.frame(s.raster.pixels(), s.raster.width(), s.raster.height(), redraw);
+			const std::string dump = s.script.takeDump();
+			if (!dump.empty())
+				s.pendingDump = dump;
+			if (s.script.takeStats())
+				s.statsNow = true;
+		}
 
 		if (recorded)
 		{
@@ -841,6 +1293,7 @@ namespace Renderer
 			s.forceRedraw = false;
 		}
 		s.hash = kHashSeed;
+		s.stencilSig = 0;
 		s.commands.clear();
 		s.vertices.clear();
 
@@ -852,8 +1305,9 @@ namespace Renderer
 			st.frames++;
 			st.frameMs += frameMs;
 			st.frameMax = std::max(st.frameMax, frameMs);
-			if (s.statsEvery > 0 && st.frames >= s.statsEvery)
+			if ((s.statsEvery > 0 && st.frames >= s.statsEvery) || s.statsNow)
 				logStats();
+			s.statsNow = false;
 		}
 
 		// a steady rate in place of the display's vertical sync
@@ -879,7 +1333,7 @@ namespace Renderer
 		size_t total = 0;
 		for (auto& texture : s.textures)
 			total += texture.second->pixels.size() * 4;
-		return total;
+		return total + Soft::scaledBytes();
 	}
 }
 

@@ -143,6 +143,14 @@ namespace Renderer
 					line >> name;
 					savePng(name, pixels, width, height);
 				}
+				else if (command == "dump")
+				{
+					std::string name;
+					line >> name;
+					mDump = (mShots.empty() ? std::string(".") : mShots) + "/" + name + ".txt";
+				}
+				else if (command == "stats")
+					mStats = true;
 				else if (command == "log")
 				{
 					std::string text;
