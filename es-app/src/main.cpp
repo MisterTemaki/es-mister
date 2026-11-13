@@ -46,6 +46,14 @@
 #include <thread>
 #include "ZaparooSupport.h"
 #include "utils/ThreadPool.h"
+#include "utils/StartupTrace.h"
+#include "utils/SampleProfiler.h"
+
+#if defined(MISTER) && defined(__linux__)
+#include <sched.h>
+#include <unistd.h>
+#include <cstring>
+#endif
 
 #ifdef WIN32
 #include <Windows.h>
@@ -466,6 +474,49 @@ void launchStartupGame()
 
 // #include "utils/MathExpr.h"
 
+#if defined(MISTER) && defined(__linux__)
+// A script started from the MiSTer menu inherits Main_MiSTer's affinity: the second processor only.
+// ES would then run on one processor, and believe the machine has one (musl counts the processors
+// from the affinity), loading its systems one after another on the main thread. Allow them all.
+static void useAllProcessors()
+{
+	cpu_set_t before;
+	CPU_ZERO(&before);
+	sched_getaffinity(0, sizeof(before), &before);
+
+	const long count = sysconf(_SC_NPROCESSORS_CONF);
+	cpu_set_t all;
+	CPU_ZERO(&all);
+	for (long i = 0; i < count && i < CPU_SETSIZE; i++)
+		CPU_SET(i, &all);
+
+	// /proc/cpuinfo when sysconf only sees the affinity
+	if (CPU_COUNT(&all) <= 1)
+	{
+		if (FILE* f = fopen("/proc/cpuinfo", "r"))
+		{
+			char line[256];
+			int found = 0;
+			while (fgets(line, sizeof(line), f) != nullptr)
+				if (strncmp(line, "processor", 9) == 0 && found < CPU_SETSIZE)
+					CPU_SET(found++, &all);
+			fclose(f);
+		}
+	}
+
+	if (CPU_EQUAL(&before, &all))
+		return;
+
+	if (sched_setaffinity(0, sizeof(all), &all) == 0)
+	{
+		LOG(LogInfo) << "Processors: " << CPU_COUNT(&before) << " allowed, now " << CPU_COUNT(&all) << " (threads see " << std::thread::hardware_concurrency() << ")";
+		StartupTrace::mark("processors", std::to_string(CPU_COUNT(&before)) + " -> " + std::to_string(CPU_COUNT(&all)));
+	}
+	else
+		LOG(LogWarning) << "Processors: could not allow all " << CPU_COUNT(&all);
+}
+#endif
+
 int main(int argc, char* argv[])
 {
 	// Utils::MathExpr::performUnitTests();
@@ -539,6 +590,12 @@ int main(int argc, char* argv[])
 
 	//start the logger
 	Log::init();	
+	StartupTrace::mark("ES main");
+
+#if defined(MISTER) && defined(__linux__)
+	useAllProcessors();
+#endif
+	SampleProfiler::start();
 
 	LOG(LogInfo) << "EmulationStation - v" << PROGRAM_VERSION_STRING << ", built " << PROGRAM_BUILT_STRING;
 
@@ -557,12 +614,12 @@ int main(int argc, char* argv[])
 
 	// Threaded initializations
 	auto threadPool = new Utils::ThreadPool("main()", -3);
-	auto vlcInit = threadPool->queueWorkItem([] { VideoVlcComponent::init(); });
-	threadPool->queueWorkItem([] { ApiSystem::getInstance()->getIpAddress(); });
-	threadPool->queueWorkItem([] { MetaDataList::initMetadata(); });
-	threadPool->queueWorkItem([] { MameNames::init(); });
-	threadPool->queueWorkItem([] { Genres::init(); });
-	threadPool->queueWorkItem([] { HttpReq::resetCookies(); });
+	auto vlcInit = threadPool->queueWorkItem([] { StartupTrace::Scope trace("video init"); VideoVlcComponent::init(); });
+	threadPool->queueWorkItem([] { StartupTrace::Scope trace("ip address"); ApiSystem::getInstance()->getIpAddress(); });
+	threadPool->queueWorkItem([] { StartupTrace::Scope trace("metadata init"); MetaDataList::initMetadata(); });
+	threadPool->queueWorkItem([] { StartupTrace::Scope trace("mame names"); MameNames::init(); });
+	threadPool->queueWorkItem([] { StartupTrace::Scope trace("genres"); Genres::init(); });
+	threadPool->queueWorkItem([] { StartupTrace::Scope trace("http cookies"); HttpReq::resetCookies(); });
 	threadPool->start();
 
 	Window window;
@@ -570,7 +627,12 @@ int main(int argc, char* argv[])
 
 	window.setReloadGamelistsCallback([&window] { ViewController::reloadAllGames(&window, true, true); });	
 	window.pushGui(ViewController::get());
-	if (!window.init(true, false))
+	bool windowReady;
+	{
+		StartupTrace::Scope trace("window init");
+		windowReady = window.init(true, false);
+	}
+	if (!windowReady)
 	{
 		LOG(LogError) << "Window failed to initialize!";
 		return 1;
@@ -587,7 +649,10 @@ int main(int argc, char* argv[])
 	Scripting::fireEvent("start");
 
 	SystemScreenSaver screensaver(&window);
-	CollectionSystemManager::init(&window);
+	{
+		StartupTrace::Scope trace("collections init");
+		CollectionSystemManager::init(&window);
+	}
 	
 	Zaparoo::checkZaparooEnabledAsync();
 	PowerSaver::init();
@@ -596,10 +661,18 @@ int main(int argc, char* argv[])
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::PDFEXTRACTION))
 		TextureData::PdfHandler = ApiSystem::getInstance();
 	
-	threadPool->waitAllExcept(vlcInit); // Wait for what's necessary for loadSystemConfigFile
+	{
+		StartupTrace::Scope trace("wait for init threads");
+		threadPool->waitAllExcept(vlcInit); // Wait for what's necessary for loadSystemConfigFile
+	}
 
 	const char* errorMsg = NULL;
-	if (!loadSystemConfigFile(splashScreen && splashScreenProgress ? &window : nullptr, &errorMsg))
+	bool systemsLoaded;
+	{
+		StartupTrace::Scope trace("load systems");
+		systemsLoaded = loadSystemConfigFile(splashScreen && splashScreenProgress ? &window : nullptr, &errorMsg);
+	}
+	if (!systemsLoaded)
 	{
 		// something went terribly wrong
 		if (errorMsg == NULL)
@@ -633,10 +706,16 @@ int main(int argc, char* argv[])
 
 	// preload what we can right away instead of waiting for the user to select it
 	// this makes for no delays when accessing content, but a longer startup time
-	ViewController::get()->preload();
+	{
+		StartupTrace::Scope trace("preload views");
+		ViewController::get()->preload();
+	}
 
 	// Initialize input
-	InputManager::getInstance()->init();
+	{
+		StartupTrace::Scope trace("input init");
+		InputManager::getInstance()->init();
+	}
 	SDL_StopTextInput();
 
 	NetworkThread* nthread = new NetworkThread(&window);
@@ -650,10 +729,14 @@ int main(int argc, char* argv[])
 		if (splashScreen)
 			window.renderSplashScreen(_("Loading theme"));
 
+		StartupTrace::Scope trace("go to start");
 		ViewController::get()->goToStart(true);
 	}
 
-	threadPool->wait();
+	{
+		StartupTrace::Scope trace("wait for init threads");
+		threadPool->wait();
+	}
 	delete threadPool;
 
 	window.closeSplashScreen();
@@ -662,7 +745,11 @@ int main(int argc, char* argv[])
 	ApiSystem::getInstance()->setReadyFlag();
 
 	// Play music
-	AudioManager::getInstance()->init();
+	{
+		StartupTrace::Scope trace("audio init");
+		AudioManager::getInstance()->init();
+	}
+	StartupTrace::finish();
 
 	if (ViewController::get()->getState().viewing == ViewController::GAME_LIST || ViewController::get()->getState().viewing == ViewController::SYSTEM_SELECT)
 		AudioManager::getInstance()->changePlaylist(ViewController::get()->getState().getSystem()->getTheme());

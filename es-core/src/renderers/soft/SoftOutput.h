@@ -26,7 +26,14 @@ namespace Renderer
 			virtual bool open(int& width, int& height, std::string& error) = 0;
 			virtual void close() { }
 			// A frame of width x height pixels, 0xAARRGGBB. Only the rows that changed since the last frame need copying.
-			virtual void present(const uint32_t* pixels, int width, int height) = 0;
+			void present(const uint32_t* pixels, int width, int height)
+			{
+				finishFrame(presentRows(pixels, width, height, 0, height));
+			}
+			// Rows y0 to y1 of a frame, the rows copied: bands of a frame may be presented at once by threads
+			// of their own, then finishFrame with the rows they copied.
+			virtual int presentRows(const uint32_t* pixels, int width, int height, int y0, int y1) = 0;
+			virtual void finishFrame(int rowsCopied) { mRowsCopied = rowsCopied; }
 			virtual std::string describe() const = 0;
 			// rows copied by the last present, for the statistics
 			int lastRowsCopied() const { return mRowsCopied; }

@@ -3,6 +3,7 @@
 #include "SystemConf.h"
 #include "utils/FileSystemUtil.h"
 #include "utils/ThreadPool.h"
+#include "utils/StartupTrace.h"
 #include "CollectionSystemManager.h"
 #include "FileFilterIndex.h"
 #include "FileSorts.h"
@@ -20,6 +21,7 @@
 #include "views/ViewController.h"
 #include "ThreadedHasher.h"
 #include <unordered_set>
+#include <chrono>
 #include <algorithm>
 #include <functional>
 #include "SaveStateRepository.h"
@@ -103,7 +105,10 @@ SystemData::SystemData(const SystemMetadata& meta, SystemEnvironmentData* envDat
 		int indexDepth = getIndexDirectoryDepth();
 		if (!Settings::ParseGamelistOnly())
 		{
-			populateFolder(mRootFolder, fileMap, 0, indexDepth);
+			{
+				StartupTrace::Scope trace("read folder", mEnvData->mStartPath);
+				populateFolder(mRootFolder, fileMap, 0, indexDepth);
+			}
 
 			if (!UIModeController::LoadEmptySystems())
 			{
@@ -121,6 +126,7 @@ SystemData::SystemData(const SystemMetadata& meta, SystemEnvironmentData* envDat
 			if (!mHidden && Settings::PackGamelists())
 				packGamelist(this);
 
+			StartupTrace::Scope trace("read gamelist", getName());
 			parseGamelist(this, fileMap);
 		}
 
@@ -141,7 +147,10 @@ SystemData::SystemData(const SystemMetadata& meta, SystemEnvironmentData* envDat
 
 	if (withTheme && (!loadThemeOnlyIfElements || UIModeController::LoadEmptySystems() || mRootFolder->mChildren.size() > 0))
 	{
-		loadTheme();
+		{
+			StartupTrace::Scope trace("load theme", getName());
+			loadTheme();
+		}
 
 		auto defaultView = Settings::getInstance()->getString(getName() + ".defaultView");
 		auto gridSizeOverride = Vector2f::parseString(Settings::getInstance()->getString(getName() + ".gridSize"));
@@ -411,12 +420,47 @@ void SystemData::populateFolder(FolderData* folder, std::unordered_map<std::stri
 			if (mMetadata.name == "vpinball" && fn == "roms")
 				continue;			
 
+#ifdef MISTER
+			// MiSTer's _Arcade: 'cores' holds the cores the .mra files name, 'mame' and 'hbmame' (on older
+			// cards) the ROMs they load, '_Organized' (the Arcade Organizer's) thousands of links to the same
+			// .mra files, sorted by year, maker, genre..., and '_alternatives' thousands of other versions in
+			// hundreds of folders. Reading them from the SD card took ES minutes to start. ES_ARCADE_SKIP
+			// names the folders left out (lower case, space apart).
+			if (mMetadata.name == "arcade" && depth == 0)
+			{
+				static const std::set<std::string> skipped = []
+				{
+					const char* value = getenv("ES_ARCADE_SKIP");
+					std::set<std::string> names;
+					for (auto& name : Utils::String::split(value != nullptr ? value : "cores _organized mame hbmame _alternatives", ' ', true))
+						names.insert(Utils::String::toLower(name));
+					return names;
+				}();
+				if (skipped.find(fn) != skipped.cend())
+					continue;
+			}
+#endif
+
 			// Index subfolder depth limit (maxDepth = 2 -> roms/<system>/<game>/<subfolder>/ is scanned, nothing deeper)
 			if (maxDepth > 0 && depth >= maxDepth)
 				continue;
 
 			FolderData* newFolder = new FolderData(filePath, this);
-			populateFolder(newFolder, fileMap, depth + 1, maxDepth);
+			if (StartupTrace::enabled() && depth < 2)
+			{
+				// a subfolder slow to read, by name in the startup trace
+				const auto start = std::chrono::steady_clock::now();
+				populateFolder(newFolder, fileMap, depth + 1, maxDepth);
+				const double seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+				if (seconds >= 0.3)
+				{
+					char text[64];
+					snprintf(text, sizeof(text), " (%.2f s, %d entries)", seconds, (int)newFolder->getChildren().size());
+					StartupTrace::mark("slow folder", filePath + text);
+				}
+			}
+			else
+				populateFolder(newFolder, fileMap, depth + 1, maxDepth);
 
 			//ignore folders that do not contain games
 			if(newFolder->getChildren().size() == 0)
@@ -956,7 +1000,7 @@ bool SystemData::loadConfig(Window* window)
 		for (int i = 0; i < systemCount; i++)
 			systems[i] = nullptr;
 
-		pThreadPool->queueWorkItem([] { CollectionSystemManager::get()->loadCollectionSystems(); });
+		pThreadPool->queueWorkItem([] { StartupTrace::Scope trace("load collections"); CollectionSystemManager::get()->loadCollectionSystems(); });
 	}
 
 	int processedSystem = 0;
@@ -967,6 +1011,7 @@ bool SystemData::loadConfig(Window* window)
 		{
 			pThreadPool->queueWorkItem([system, currentSystem, systems, &processedSystem]
 			{
+				StartupTrace::Scope trace("load system", system.child("name").text().get());
 				systems[currentSystem] = loadSystem(system);
 				processedSystem++;
 			});
@@ -980,7 +1025,11 @@ bool SystemData::loadConfig(Window* window)
 
 			std::string nm = system.child("name").text().get();
 
-			SystemData* pSystem = loadSystem(system);
+			SystemData* pSystem;
+			{
+				StartupTrace::Scope trace("load system", nm);
+				pSystem = loadSystem(system);
+			}
 			if (pSystem != nullptr)
 				sSystemVector.push_back(pSystem);
 		}
@@ -1020,11 +1069,13 @@ bool SystemData::loadConfig(Window* window)
 		if (window != NULL)
 			window->renderSplashScreen(_("Collections"), systemCount == 0 ? 0 : currentSystem / (float)(systemCount + 1));
 
+		StartupTrace::Scope trace("load collections");
 		CollectionSystemManager::get()->loadCollectionSystems();
 	}
 
 	if (SystemData::sSystemVector.size() > 0)
 	{
+		StartupTrace::Scope trace("group systems and collections");
 		createGroupedSystems();
 
 		// Load features before creating collections

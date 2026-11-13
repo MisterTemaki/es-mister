@@ -55,6 +55,15 @@ FPS=60
 # (logs/es-mister-stats.txt); 0 in normal use
 BENCH=0
 
+# 1: where ES spends the processor, sampled and written to logs/es-profile.txt (for tuning the port,
+# when asked for); 0 in normal use
+PROFILE=0
+
+# Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of
+# other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.
+# Take it out of the list to see them in ES.
+ARCADE_SKIP="cores _organized mame hbmame _alternatives"
+
 # Where games folders are looked for, in order (each system takes the first that has its folder)
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
 EOF
@@ -77,7 +86,7 @@ EOF
 cp "$SRC/batocera.linux/package/batocera/emulationstation/batocera-emulationstation/controllers/es_input.cfg" "$ES/defaults/es_input.cfg"
 
 echo "== theme"
-python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv"
+python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv" 640x360
 
 cp "$ROOT/mister/LEIA-ME.txt" "$ES/"
 cp "$ROOT/LICENSE.md" "$ES/LICENSE-EmulationStation.md"

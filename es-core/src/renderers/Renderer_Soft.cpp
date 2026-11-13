@@ -1,4 +1,5 @@
 #include "Renderer_Soft.h"
+#include "utils/StartupTrace.h"
 
 #ifdef RENDERER_SOFTWARE
 
@@ -19,6 +20,7 @@
 #include <ctime>
 #include <map>
 #include <memory>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 
@@ -69,8 +71,44 @@ namespace Renderer
 			double frameMs = 0, frameMax = 0;
 			double rasterMs = 0, rasterMax = 0;
 			double copyMs = 0;
+			double esMs = 0, esMax = 0;   // ES's own work before a drawn frame (update, render, recording)
 			uint64_t rows = 0, vertices = 0, pixels = 0;
 			uint32_t quads = 0, triangles = 0;
+			double bandMs[2] = { 0, 0 }; // the first two bands' drawing, to see the balance
+			uint64_t kinds[Soft::PX_KINDS] = {};
+		};
+
+		// The frame drawn in horizontal bands, one a thread: the first by the thread that swaps, the others
+		// by workers. The line between the first two moves toward the one that took longer.
+		struct Bands
+		{
+			int count = 1;
+			std::vector<std::unique_ptr<Raster>> rasters;
+			std::vector<double> ms;           // each band's drawing, the last frame
+			std::vector<double> copyMs;       // and its copy to the output
+			std::vector<int> copied;          // the rows it copied
+			bool present = false;             // the bands copy their rows to the output
+			int split = 0;                    // the first band's last row + 1, when there are two
+			bool attached = false;
+
+			std::mutex lock;
+			std::condition_variable wake, finished;
+			uint64_t job = 0;                 // the frame to draw
+			int pending = 0;                  // bands still drawing it
+			bool quit = false;
+			std::vector<std::thread> workers;
+
+			~Bands()
+			{
+				{
+					std::lock_guard<std::mutex> guard(lock);
+					quit = true;
+				}
+				wake.notify_all();
+				for (auto& worker : workers)
+					if (worker.joinable())
+						worker.join();
+			}
 		};
 
 		struct SoftState
@@ -80,6 +118,7 @@ namespace Renderer
 			int width = 0, height = 0;
 
 			Raster raster;
+			Bands bands;
 
 			std::mutex textureLock;
 			std::map<unsigned int, std::shared_ptr<Soft::Texture>> textures;
@@ -231,21 +270,179 @@ namespace Renderer
 			s.commands.push_back(std::move(command));
 		}
 
-		void execute()
+		// the frame's commands, in one band
+		void executeBand(Raster& raster)
 		{
 			SoftState& s = S();
-			s.raster.clear(0);
+			raster.clear(0);
 			for (const Command& command : s.commands)
 			{
 				const SVertex* vertices = s.vertices.data() + command.first;
 				if (command.stencil)
 				{
-					s.raster.setStencil(vertices, (int)command.count, command.state);
+					raster.setStencil(vertices, (int)command.count, command.state);
 					continue;
 				}
 				DrawState state = command.state;
 				state.texture = command.texture.get();
-				s.raster.draw(vertices, (int)command.count, command.topology, state);
+				raster.draw(vertices, (int)command.count, command.topology, state);
+			}
+		}
+
+		void timedBand(int index)
+		{
+			SoftState& s = S();
+			Bands& b = s.bands;
+			Raster& raster = *b.rasters[index];
+			const Clock::time_point start = Clock::now();
+			raster.stats() = RasterStats();
+			executeBand(raster);
+			const Clock::time_point drawn = Clock::now();
+			b.ms[index] = std::chrono::duration<double, std::milli>(drawn - start).count();
+
+			// its rows to the screen at once, while the other bands may still draw theirs
+			b.copied[index] = 0;
+			b.copyMs[index] = 0;
+			if (b.present)
+			{
+				b.copied[index] = s.output->presentRows(s.raster.pixels(), s.raster.width(), s.raster.height(), raster.bandTop(), raster.bandBottom());
+				b.copyMs[index] = std::chrono::duration<double, std::milli>(Clock::now() - drawn).count();
+			}
+		}
+
+		void bandWorker(int index)
+		{
+			Bands& b = S().bands;
+			uint64_t done = 0;
+			for (;;)
+			{
+				{
+					std::unique_lock<std::mutex> guard(b.lock);
+					b.wake.wait(guard, [&] { return b.quit || b.job != done; });
+					if (b.quit)
+						return;
+					done = b.job;
+				}
+				timedBand(index);
+				{
+					std::lock_guard<std::mutex> guard(b.lock);
+					if (--b.pending == 0)
+						b.finished.notify_one();
+				}
+			}
+		}
+
+		// ES_SOFT_THREADS bands, by default one a processor up to two (the DE10-Nano's two)
+		void startBands()
+		{
+			SoftState& s = S();
+			Bands& b = s.bands;
+			int count = std::min(2, (int)std::max(1u, std::thread::hardware_concurrency()));
+			if (const char* value = getenv("ES_SOFT_THREADS"))
+				count = std::max(1, std::min(8, atoi(value)));
+			b.count = count;
+			b.rasters.clear();
+			for (int i = 0; i < count; i++)
+				b.rasters.push_back(std::unique_ptr<Raster>(new Raster()));
+			b.ms.assign(count, 0.0);
+			b.copyMs.assign(count, 0.0);
+			b.copied.assign(count, 0);
+			b.split = 0;
+			b.attached = false;
+			for (int i = 1; i < count; i++)
+				b.workers.push_back(std::thread(bandWorker, i));
+			LOG(LogInfo) << "SoftRenderer: drawing in " << count << (count == 1 ? " thread" : " threads");
+		}
+
+		void stopBands()
+		{
+			Bands& b = S().bands;
+			{
+				std::lock_guard<std::mutex> guard(b.lock);
+				b.quit = true;
+			}
+			b.wake.notify_all();
+			for (auto& worker : b.workers)
+				worker.join();
+			b.workers.clear();
+			b.quit = false;
+		}
+
+		// the bands' rows: equal, then the line between the first two moved a few rows a frame toward balance
+		void placeBands()
+		{
+			SoftState& s = S();
+			Bands& b = s.bands;
+			const int height = s.raster.height();
+			int split = b.split;
+			if (!b.attached || split <= 0 || split >= height)
+				split = height / b.count;
+			else if (b.count == 2)
+			{
+				const double a = b.ms[0], c = b.ms[1];
+				const int step = std::max(2, height / 90);
+				if (a > c * 1.15 && a - c > 0.5)
+					split -= step;
+				else if (c > a * 1.15 && c - a > 0.5)
+					split += step;
+				split = std::max(height / 8, std::min(height - height / 8, split));
+			}
+			if (b.attached && split == b.split)
+				return;
+
+			// a band's stencil rows may become another's: each clears what it marked first
+			for (auto& raster : b.rasters)
+				raster->resetStencil();
+			for (int i = 0; i < b.count; i++)
+			{
+				const int y0 = i == 0 ? 0 : (b.count == 2 ? split : height * i / b.count);
+				const int y1 = i == b.count - 1 ? height : (i == 0 && b.count == 2 ? split : height * (i + 1) / b.count);
+				b.rasters[i]->attach(s.raster, y0, y1);
+			}
+			b.split = split;
+			b.attached = true;
+		}
+
+		void execute()
+		{
+			SoftState& s = S();
+			Bands& b = s.bands;
+			if (b.rasters.empty())
+				startBands();
+			placeBands();
+
+			b.present = s.output != nullptr;
+			if (b.count > 1)
+			{
+				std::lock_guard<std::mutex> guard(b.lock);
+				b.pending = b.count - 1;
+				b.job++;
+			}
+			b.wake.notify_all();
+			timedBand(0);
+			if (b.count > 1)
+			{
+				std::unique_lock<std::mutex> guard(b.lock);
+				b.finished.wait(guard, [&] { return b.pending == 0; });
+			}
+
+			if (b.present)
+			{
+				int copied = 0;
+				for (int rows : b.copied)
+					copied += rows;
+				s.output->finishFrame(copied);
+			}
+
+			RasterStats& total = s.raster.stats();
+			total = RasterStats();
+			for (auto& raster : b.rasters)
+			{
+				total.pixels += raster->stats().pixels;
+				total.quads += raster->stats().quads;
+				total.triangles += raster->stats().triangles;
+				for (int k = 0; k < Soft::PX_KINDS; k++)
+					total.kinds[k] += raster->stats().kinds[k];
 			}
 		}
 
@@ -261,12 +458,19 @@ namespace Renderer
 			if (st.frames == 0)
 				return;
 			const int drawn = std::max(1, st.drawn);
-			char line[512];
+			char bands[96] = "";
+			if (s.bands.count > 1)
+				snprintf(bands, sizeof(bands), ", %d threads (first two %.1f / %.1f ms, line at row %d)",
+					s.bands.count, st.bandMs[0] / drawn, st.bandMs[1] / drawn, s.bands.split);
+			auto kpx = [&](int kind) { return (double)st.kinds[kind] / drawn / 1000.0; };
+			char line[768];
 			snprintf(line, sizeof(line),
-				"SoftRenderer: %d frames, %d drawn; frame %.1f ms (max %.1f), drawing %.1f ms (max %.1f), copy %.2f ms, %.0f rows copied, "
-				"%.0f vertices, %.0f k pixels, %u quads, %u triangles a drawn frame",
-				st.frames, st.drawn, st.frameMs / st.frames, st.frameMax, st.rasterMs / drawn, st.rasterMax, st.copyMs / drawn,
-				(double)st.rows / drawn, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn);
+				"SoftRenderer: %d frames, %d drawn; frame %.1f ms (max %.1f), ES before a drawn frame %.1f ms (max %.1f), drawing %.1f ms (max %.1f)%s, copy %.2f ms, %.0f rows copied, "
+				"%.0f vertices, %.0f k pixels, %u quads, %u triangles a drawn frame; k pixels: fill %.0f, copy %.0f, colour %.0f, "
+				"picture 1:1 %.0f, nearest %.0f, bilinear %.0f, triangles %.0f",
+				st.frames, st.drawn, st.frameMs / st.frames, st.frameMax, st.esMs / drawn, st.esMax, st.rasterMs / drawn, st.rasterMax, bands, st.copyMs / drawn,
+				(double)st.rows / drawn, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn,
+				kpx(Soft::PX_FILL), kpx(Soft::PX_COPY), kpx(Soft::PX_COLOR), kpx(Soft::PX_TEX_1TO1), kpx(Soft::PX_TEX_NEAREST), kpx(Soft::PX_TEX_LINEAR), kpx(Soft::PX_TRIANGLE));
 			LOG(LogInfo) << line;
 
 			// also where it can be read without ES's debug log (ES_SOFT_STATS_FILE), with the time
@@ -328,6 +532,9 @@ namespace Renderer
 			return;
 		}
 
+		// the bands draw into the raster's memory: they start again with it
+		stopBands();
+		s.bands.rasters.clear();
 		s.raster.resize(s.width, s.height);
 		s.forceRedraw = true;
 		s.frameStarted = false;
@@ -352,6 +559,8 @@ namespace Renderer
 	{
 		SoftState& s = S();
 		logStats();
+		stopBands();
+		s.bands.rasters.clear();
 		if (s.output)
 			s.output->close();
 		s.open = false;
@@ -589,31 +798,38 @@ namespace Renderer
 	void SoftRenderer::swapBuffers()
 	{
 		SoftState& s = S();
-		const Clock::time_point swapStart = Clock::now();
+		StartupTrace::frameShown();
 
 		// a frame with nothing drawn (ES swaps while it loads) leaves the last one on screen
 		const bool recorded = !s.commands.empty();
 		const bool redraw = recorded && (s.forceRedraw || s.bench || s.hash != s.lastHash);
 		if (redraw && s.open)
 		{
-			s.raster.stats() = RasterStats();
+			if (s.frameStarted)
+			{
+				const double esMs = msSince(s.frameStart);
+				s.stats.esMs += esMs;
+				s.stats.esMax = std::max(s.stats.esMax, esMs);
+			}
+			// drawn and copied to the screen, each band by its thread; the times are the slowest band's
 			execute();
-			const double rasterMs = msSince(swapStart);
-
-			const Clock::time_point copyStart = Clock::now();
-			if (s.output)
-				s.output->present(s.raster.pixels(), s.raster.width(), s.raster.height());
+			const double rasterMs = *std::max_element(s.bands.ms.begin(), s.bands.ms.end());
+			const double copyMs = *std::max_element(s.bands.copyMs.begin(), s.bands.copyMs.end());
 
 			Stats& st = s.stats;
 			st.drawn++;
 			st.rasterMs += rasterMs;
 			st.rasterMax = std::max(st.rasterMax, rasterMs);
-			st.copyMs += msSince(copyStart);
+			st.copyMs += copyMs;
 			st.rows += s.output ? s.output->lastRowsCopied() : 0;
+			st.bandMs[0] += s.bands.ms.size() > 0 ? s.bands.ms[0] : 0;
+			st.bandMs[1] += s.bands.ms.size() > 1 ? s.bands.ms[1] : 0;
 			st.vertices += s.vertices.size();
 			st.pixels += s.raster.stats().pixels;
 			st.quads += s.raster.stats().quads;
 			st.triangles += s.raster.stats().triangles;
+			for (int k = 0; k < Soft::PX_KINDS; k++)
+				st.kinds[k] += s.raster.stats().kinds[k];
 		}
 
 		if (s.scriptLoaded && s.script.active())

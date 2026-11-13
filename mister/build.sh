@@ -177,9 +177,9 @@ es() {
 		-DUDEV_FOUND=OFF >/dev/null
 	cmake --build "$build" -j "$JOBS" --target emulationstation
 	"$TOOLS/zcc" --version >/dev/null 2>&1 || true
-	# the binary lands in the source folder, as ES's CMake puts it; keep the ARM one apart
+	# the MiSTer build leaves its binary in its build folder
 	mkdir -p "$WORK/out"
-	mv -f "$ROOT/emulationstation" "$WORK/out/emulationstation"
+	cp -f "$build/emulationstation" "$WORK/out/emulationstation"
 	git -C "$ROOT" checkout -q -- locale/ 2>/dev/null || true
 	file "$WORK/out/emulationstation"
 }

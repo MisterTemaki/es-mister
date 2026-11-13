@@ -591,6 +591,9 @@ endif()
 
 if(WIN32)		
 	set(dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_GENERATOR_PLATFORM})
+elseif(MISTER)
+	# a cross build: its binary and libraries stay in its build folder, apart from a native build's
+	set(dir ${CMAKE_BINARY_DIR})
 else()
 	set(dir ${CMAKE_CURRENT_SOURCE_DIR})
 endif()

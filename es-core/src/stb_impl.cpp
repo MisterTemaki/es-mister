@@ -3,6 +3,10 @@
 #if defined(ES_USE_STB_IMAGE) || defined(USE_SOFTWARE_RENDERER)
 
 #define STB_IMAGE_IMPLEMENTATION
+// NEON for JPEG's IDCT and colour conversion: stb_image only turns it on by itself on 64-bit ARM
+#if (defined(__ARM_NEON) || defined(__ARM_NEON__)) && !defined(STBI_NEON)
+#define STBI_NEON
+#endif
 #define STBI_ONLY_JPEG
 #define STBI_ONLY_PNG
 #define STBI_ONLY_BMP

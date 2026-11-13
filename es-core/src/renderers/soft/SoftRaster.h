@@ -56,11 +56,15 @@ namespace Renderer
 			float saturation = 1.0f;
 		};
 
+		// what a frame's pixels were, to see where the drawing time goes
+		enum PixelKind { PX_FILL, PX_COPY, PX_COLOR, PX_TEX_1TO1, PX_TEX_NEAREST, PX_TEX_LINEAR, PX_TRIANGLE, PX_KINDS };
+
 		struct RasterStats
 		{
 			uint64_t pixels = 0;   // pixels written
 			uint32_t quads = 0;    // drawn on the axis-aligned path
 			uint32_t triangles = 0;
+			uint64_t kinds[PX_KINDS] = {}; // pixels by kind: opaque fills, opaque copies, blended colour, textures 1:1, nearest, bilinear, triangles
 		};
 
 		class Raster
@@ -69,9 +73,19 @@ namespace Renderer
 			void resize(int width, int height);
 			int width() const { return mWidth; }
 			int height() const { return mHeight; }
-			uint32_t* pixels() { return mPixels.data(); }
-			const uint32_t* pixels() const { return mPixels.data(); }
+			uint32_t* pixels() { return mPx; }
+			const uint32_t* pixels() const { return mPx; }
 
+			// Draws into another raster's pixels and stencil, in its rows y0 to y1 only: a band of the frame,
+			// drawn while other threads draw the other bands. What it marked in the stencil is cleared first.
+			void attach(Raster& owner, int y0, int y1);
+			int bandTop() const { return mBandY0; }
+			int bandBottom() const { return mBandY1; }
+
+			// Clears the stencil this raster marked
+			void resetStencil();
+
+			// Clears its rows (all of them, or its band's)
 			void clear(uint32_t color);
 
 			void draw(const SVertex* vertices, int count, Topology topology, const DrawState& state);
@@ -90,8 +104,11 @@ namespace Renderer
 			void drawLine(const SVertex& a, const SVertex& b, const DrawState& state, const Clip& clip);
 
 			int mWidth = 0, mHeight = 0;
-			std::vector<uint32_t> mPixels;
+			std::vector<uint32_t> mPixels; // its own, unless attached to another's
 			std::vector<uint8_t> mStencil;
+			uint32_t* mPx = nullptr;       // the pixels and stencil drawn into
+			uint8_t* mSt = nullptr;
+			int mBandY0 = 0, mBandY1 = 0;  // the rows it draws
 			Clip mStencilBox = { 0, 0, 0, 0 }; // where the mask may be set, to clear only that
 			RasterStats mStats;
 		};

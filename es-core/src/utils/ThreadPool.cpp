@@ -7,6 +7,9 @@
 #endif
 
 #include <stdlib.h>
+#if defined(__linux__)
+#include <pthread.h>
+#endif
 #include <algorithm>
 #include <chrono>
 #include "Log.h"
@@ -41,6 +44,9 @@ namespace Utils
 
 			auto mask = (static_cast<DWORD_PTR>(1) << id);
 			SetThreadAffinityMask(GetCurrentThread(), mask);
+#elif defined(__linux__)
+			// the pool's name on the thread, for ps and /proc (at most 15 characters)
+			pthread_setname_np(pthread_self(), ("pool " + mPoolName).substr(0, 15).c_str());
 #endif
 
 			while (mRunning)

@@ -16,6 +16,8 @@ echo "== $(date '+%F %T') es-mister.sh"
 SIZE=640x360
 FPS=60
 BENCH=0
+PROFILE=0
+ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
 [ -f "$ES/es-mister.ini" ] && . "$ES/es-mister.ini"
 
@@ -84,7 +86,13 @@ export SDL_AUDIODRIVER=alsa
 export ES_SOFT_FPS=$FPS
 export ES_SOFT_STATS=600
 export ES_SOFT_STATS_FILE=$LOGS/es-mister-stats.txt
+# how long each step of ES's start takes (the previous start's is kept beside it)
+[ -f "$LOGS/es-startup.log" ] && mv -f "$LOGS/es-startup.log" "$LOGS/es-startup.prev.log"
+export ES_STARTUP_TRACE=$LOGS/es-startup.log
 [ "$BENCH" = 1 ] && export ES_SOFT_BENCH=1
+# where ES spends the processor (logs/es-profile.txt), for the port's tuning
+[ "$PROFILE" = 1 ] && export ES_PROFILE=$LOGS/es-profile.txt
+export ES_ARCADE_SKIP="$ARCADE_SKIP"
 echo "starting ES at $SIZE"
 ./emulationstation
 echo "ES closed ($?)"
