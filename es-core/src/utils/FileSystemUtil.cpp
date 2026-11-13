@@ -723,9 +723,12 @@ namespace Utils
 				return path;
 #endif
 			
-			int indexes[32];
+			// where each folder of the path starts, as deep as it goes (it was 32, and a deeper path wrote past
+			// them, over this function's other variables); the result is never longer than the path
+			std::vector<int> indexes;
 			int index = -1;
-			char fp[4096];
+			std::vector<char> buffer(path.size() + 1);
+			char* fp = buffer.data();
 
 			int pos = 0;
 			int ofs = 0;
@@ -750,12 +753,16 @@ namespace Utils
 					}
 					else if (pointset)
 					{
-						pos = indexes[index] + 1;
+						pos = index >= 0 ? indexes[index] + 1 : 0;
 						pointset = false;
 						continue;
 					}
 					else
-						indexes[++index] = pos;
+					{
+						if (++index >= (int)indexes.size())
+							indexes.resize(index + 1);
+						indexes[index] = pos;
+					}
 
 					fp[pos++] = '/';
 					continue;
