@@ -54,3 +54,4 @@ CPackSourceConfig.cmake
 *.sqlite
 .DS_Store
 main_test
+build-mister/

@@ -3,7 +3,7 @@
 
 #define PACKAGE_LANG "emulationstation2"
 
-#if !defined(WIN32)
+#if !defined(WIN32) && !defined(ES_BUILTIN_TRANSLATIONS)
 
 #include "SystemConf.h"
 
@@ -203,18 +203,18 @@ void EsLocale::checkLocalisationLoaded()
 	mPluralRule = rules[0];
 	mItems.clear();
 
-	for (auto file : { "es-features.po", "emulationstation2.po" })
+	for (auto poFile : { "es-features.po", "emulationstation2.po" })
 	{
 		// batocera could be adapted using this path : "/usr/share/locale"
-		std::string xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + mCurrentLanguage + "/" + file);
+		std::string xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + mCurrentLanguage + "/" + poFile);
 		if (!Utils::FileSystem::exists(xmlpath))
-			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + mCurrentLanguage + "/LC_MESSAGES/" + file);
+			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + mCurrentLanguage + "/LC_MESSAGES/" + poFile);
 
 		if (!Utils::FileSystem::exists(xmlpath))
-			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + mCurrentLanguage + "/" + file);
+			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + mCurrentLanguage + "/" + poFile);
 
 		if (!Utils::FileSystem::exists(xmlpath))
-			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + mCurrentLanguage + "/LC_MESSAGES/" + file);
+			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + mCurrentLanguage + "/LC_MESSAGES/" + poFile);
 
 		if (!Utils::FileSystem::exists(xmlpath))
 		{
@@ -223,26 +223,26 @@ void EsLocale::checkLocalisationLoaded()
 			{
 				auto shortName = mCurrentLanguage.substr(0, shortNameDivider);
 
-				xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + shortName + "/" + file);
+				xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + shortName + "/" + poFile);
 				if (!Utils::FileSystem::exists(xmlpath))
-					xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + shortName + "/LC_MESSAGES/" + file);
+					xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + shortName + "/LC_MESSAGES/" + poFile);
 
 				if (!Utils::FileSystem::exists(xmlpath))
-					xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + shortName + "/" + file);
+					xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + shortName + "/" + poFile);
 
 				if (!Utils::FileSystem::exists(xmlpath))
-					xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + shortName + "/LC_MESSAGES/" + file);
+					xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + shortName + "/LC_MESSAGES/" + poFile);
 			}
 		}
 
 		if (!Utils::FileSystem::exists(xmlpath))
 		{
-			xmlpath = ResourceManager::getInstance()->getResourcePath(":/es_features.locale/" + mCurrentLanguage + "/" + file);
+			xmlpath = ResourceManager::getInstance()->getResourcePath(":/es_features.locale/" + mCurrentLanguage + "/" + poFile);
 			if (!Utils::FileSystem::exists(xmlpath))
 			{
 				auto shortNameDivider = mCurrentLanguage.find("_");
 				if (shortNameDivider != std::string::npos)
-					xmlpath = ResourceManager::getInstance()->getResourcePath(":/es_features.locale/" + mCurrentLanguage.substr(0, shortNameDivider) + "/" + file);
+					xmlpath = ResourceManager::getInstance()->getResourcePath(":/es_features.locale/" + mCurrentLanguage.substr(0, shortNameDivider) + "/" + poFile);
 			}
 		}
 

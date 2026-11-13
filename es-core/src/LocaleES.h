@@ -2,7 +2,7 @@
 #define _LOCALE_H_
 
 
-#if !defined(WIN32)
+#if !defined(WIN32) && !defined(ES_BUILTIN_TRANSLATIONS)
 
 #include <string>
 
@@ -34,14 +34,18 @@ private:
 	static std::string default_LANGUAGE;
 };
 
-#else // WIN32
+#else // WIN32 or ES_BUILTIN_TRANSLATIONS: ES reads the .po files itself (no libintl)
 
 #include <string>
 #include <map>
 #include <functional>
 #include "utils/StringUtil.h"
 
+#if defined(WIN32)
 #define _U(x) Utils::String::convertFromWideString(L ## x)
+#else
+#define _U(x) x
+#endif
 
 struct PluralRule
 {
@@ -72,7 +76,18 @@ private:
 	static PluralRule mPluralRule;
 };
 
+#if defined(WIN32)
 #define _U(x) Utils::String::convertFromWideString(L ## x)
+#else
+#define _U(x) x
+#endif
+
+#if !defined(WIN32) && defined(__has_include)
+#if __has_include(<libintl.h>)
+// the C library's declarations first (glibc's headers bring them in): the macros below would mangle them
+#include <libintl.h>
+#endif
+#endif
 
 #define _(x) EsLocale::getText(x)
 #define ngettext(A, B, C) EsLocale::nGetText(A, B, C).c_str()

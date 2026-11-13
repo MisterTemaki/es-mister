@@ -343,6 +343,8 @@ int setLocale(char * argv1)
 {
 #if WIN32
 	std::locale::global(std::locale("en-US"));
+#elif defined(ES_BUILTIN_TRANSLATIONS)
+	// ES reads its translations itself (LocaleES.cpp), in the language of its settings
 #else
 	if (Utils::FileSystem::exists("./locale/lang")) // for local builds
 		EsLocale::init("", "./locale/lang");	

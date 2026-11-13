@@ -926,7 +926,7 @@ bool ViewController::input(InputConfig* config, Input input)
 		ResourceManager::getInstance()->reloadAll();
 
 		ViewController::get()->reloadAll(mWindow);
-#if WIN32
+#if WIN32 || defined(ES_BUILTIN_TRANSLATIONS)
 		EsLocale::reset();
 #endif
 		mWindow->closeSplashScreen();

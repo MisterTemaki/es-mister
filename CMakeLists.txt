@@ -34,7 +34,9 @@ if(MISTER)
   set(SOFTWARE ON)
   set(CEC OFF)
   set(DISABLE_KODI ON)
-  add_definitions(-DMISTER -DES_USE_STB_IMAGE -DES_NO_VLC)
+  add_definitions(-DMISTER -DES_USE_STB_IMAGE -DES_NO_VLC -DES_BUILTIN_TRANSLATIONS)
+  # musl (the MiSTer binary's libc) names stat64 and the like only with this
+  add_definitions(-D_LARGEFILE64_SOURCE)
   set(STB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/stb" CACHE PATH "stb's headers")
 endif()
 
