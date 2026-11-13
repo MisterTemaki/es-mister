@@ -238,12 +238,26 @@ TextureLoader::~TextureLoader()
 #if WIN32
 #include <Windows.h>
 #endif
+#if defined(__linux__)
+#include <pthread.h>
+#include <sys/resource.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+#endif
 
 void TextureLoader::threadProc()
 {
 #if WIN32
 	if (Utils::Platform::isWindows10())
 		SetThreadDescription(GetCurrentThread(), L"TextureLoader::threadProc");
+#endif
+#if defined(__linux__)
+	pthread_setname_np(pthread_self(), "textures");
+#endif
+#if defined(MISTER) && defined(__linux__)
+	// The MiSTer's two cores draw the frames and run ES: pictures are read and decoded with what they leave
+	// (a lower priority), so that a new picture does not hold up the frames; it shows a little later.
+	setpriority(PRIO_PROCESS, (id_t)syscall(SYS_gettid), 10);
 #endif
 
 	while (true)
