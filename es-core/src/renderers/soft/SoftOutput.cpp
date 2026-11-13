@@ -32,28 +32,7 @@ namespace Renderer
 				return value != nullptr ? value : fallback;
 			}
 
-			// a row's bytes: the same? and copied (64 bytes a step with NEON, the framebuffer's memory takes
-			// wide stores best)
-			inline bool sameBytes(const uint8_t* a, const uint8_t* b, size_t n)
-			{
-#if defined(__ARM_NEON) || defined(__ARM_NEON__)
-				size_t i = 0;
-				for (; i + 64 <= n; i += 64)
-				{
-					uint32x4_t d = veorq_u32(vld1q_u32((const uint32_t*)(a + i)), vld1q_u32((const uint32_t*)(b + i)));
-					d = vorrq_u32(d, veorq_u32(vld1q_u32((const uint32_t*)(a + i + 16)), vld1q_u32((const uint32_t*)(b + i + 16))));
-					d = vorrq_u32(d, veorq_u32(vld1q_u32((const uint32_t*)(a + i + 32)), vld1q_u32((const uint32_t*)(b + i + 32))));
-					d = vorrq_u32(d, veorq_u32(vld1q_u32((const uint32_t*)(a + i + 48)), vld1q_u32((const uint32_t*)(b + i + 48))));
-					const uint32x2_t h = vorr_u32(vget_low_u32(d), vget_high_u32(d));
-					if ((vget_lane_u32(h, 0) | vget_lane_u32(h, 1)) != 0)
-						return false;
-				}
-				return memcmp(a + i, b + i, n - i) == 0;
-#else
-				return memcmp(a, b, n) == 0;
-#endif
-			}
-
+			// a row's bytes copied (64 bytes a step with NEON: the framebuffer's memory takes wide stores best)
 			inline void copyBytes(uint8_t* to, const uint8_t* from, size_t n)
 			{
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
@@ -92,7 +71,12 @@ namespace Renderer
 					return true;
 				}
 
-				int presentRows(const uint32_t*, int, int, int y0, int y1) override { return y1 - y0; }
+				int64_t presentRect(const uint32_t*, int width, int height, int x0, int y0, int x1, int y1) override
+				{
+					x0 = std::max(0, x0); y0 = std::max(0, y0);
+					x1 = std::min(width, x1); y1 = std::min(height, y1);
+					return x0 < x1 && y0 < y1 ? (int64_t)(x1 - x0) * (y1 - y0) : 0;
+				}
 
 				std::string describe() const override { return "memory " + std::to_string(mWidth) + "x" + std::to_string(mHeight); }
 
@@ -154,9 +138,6 @@ namespace Renderer
 					// the same as ours (0xAARRGGBB in a 32-bit word): rows are copied as they are
 					mNative = mBpp == 32 && mRed.offset == 16 && mGreen.offset == 8 && mBlue.offset == 0 && mRed.length == 8 && mGreen.length == 8 && mBlue.length == 8;
 
-					mFront.assign((size_t)mPitch * mHeight, 0);
-					mFirstFrame = true;
-
 					// the console stops drawing (its text and its cursor) over the frames
 					const std::string tty = env("ES_SOFT_TTY", "/dev/tty0");
 					if (tty != "none")
@@ -194,46 +175,37 @@ namespace Renderer
 					}
 				}
 
-				int presentRows(const uint32_t* pixels, int width, int height, int y0, int y1) override
+				// Straight to the framebuffer: the renderer gives only what changed, so no copy of the screen is
+				// kept to compare rows with (that read and wrote each row twice more)
+				int64_t presentRect(const uint32_t* pixels, int width, int height, int x0, int y0, int x1, int y1) override
 				{
 					if (mMap == nullptr)
 						return 0;
+					x0 = std::max(0, x0); y0 = std::max(0, y0);
+					x1 = std::min(std::min(width, mWidth), x1);
+					y1 = std::min(std::min(height, mHeight), y1);
+					if (x0 >= x1 || y0 >= y1)
+						return 0;
 
-					const int rows = std::min(std::min(height, mHeight), y1);
-					const int cols = width < mWidth ? width : mWidth;
-					const size_t rowBytes = (size_t)cols * (mBpp / 8);
+					const int cols = x1 - x0;
+					const int bytes = mBpp / 8;
+					const size_t rowBytes = (size_t)cols * bytes;
 					thread_local std::vector<uint8_t> converted; // each band's thread its own
 					if (!mNative && converted.size() < rowBytes)
 						converted.resize(rowBytes);
 
-					int copied = 0;
-					for (int y = std::max(0, y0); y < rows; y++)
+					for (int y = y0; y < y1; y++)
 					{
-						const uint32_t* src = pixels + (size_t)y * width;
-						const uint8_t* row;
-						if (mNative)
-							row = (const uint8_t*)src;
-						else
+						const uint32_t* src = pixels + (size_t)y * width + x0;
+						const uint8_t* row = (const uint8_t*)src;
+						if (!mNative)
 						{
 							convertRow(src, converted.data(), cols);
 							row = converted.data();
 						}
-
-						uint8_t* front = mFront.data() + (size_t)y * mPitch;
-						if (!mFirstFrame && sameBytes(front, row, rowBytes))
-							continue;
-
-						copyBytes(front, row, rowBytes);
-						copyBytes(mMap + (size_t)y * mPitch, row, rowBytes);
-						copied++;
+						copyBytes(mMap + (size_t)y * mPitch + (size_t)x0 * bytes, row, rowBytes);
 					}
-					return copied;
-				}
-
-				void finishFrame(int rowsCopied) override
-				{
-					mRowsCopied = rowsCopied;
-					mFirstFrame = false;
+					return (int64_t)cols * (y1 - y0);
 				}
 
 				std::string describe() const override
@@ -277,8 +249,7 @@ namespace Renderer
 				size_t mSize = 0;
 				int mWidth = 0, mHeight = 0, mBpp = 0, mPitch = 0;
 				fb_bitfield mRed = {}, mGreen = {}, mBlue = {}, mAlpha = {};
-				bool mNative = false, mFirstFrame = true;
-				std::vector<uint8_t> mFront;
+				bool mNative = false;
 			};
 #endif
 		}

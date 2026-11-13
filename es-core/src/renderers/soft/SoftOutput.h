@@ -25,21 +25,23 @@ namespace Renderer
 			// Opens the output; its size in width and height. False, with the reason, when it cannot.
 			virtual bool open(int& width, int& height, std::string& error) = 0;
 			virtual void close() { }
-			// A frame of width x height pixels, 0xAARRGGBB. Only the rows that changed since the last frame need copying.
+			// A whole frame of width x height pixels, 0xAARRGGBB.
 			void present(const uint32_t* pixels, int width, int height)
 			{
-				finishFrame(presentRows(pixels, width, height, 0, height));
+				finishFrame(presentRect(pixels, width, height, 0, 0, width, height));
 			}
-			// Rows y0 to y1 of a frame, the rows copied: bands of a frame may be presented at once by threads
-			// of their own, then finishFrame with the rows they copied.
-			virtual int presentRows(const uint32_t* pixels, int width, int height, int y0, int y1) = 0;
-			virtual void finishFrame(int rowsCopied) { mRowsCopied = rowsCopied; }
+			// A part of a frame (width x height pixels): columns x0 to x1 of rows y0 to y1 (x1 and y1 not in
+			// it), copied as they are to the screen, which keeps the rest; the pixels copied. Parts that do not
+			// overlap may be presented at once by threads of their own (a frame's bands), then finishFrame with
+			// the pixels they copied.
+			virtual int64_t presentRect(const uint32_t* pixels, int width, int height, int x0, int y0, int x1, int y1) = 0;
+			virtual void finishFrame(int64_t pixelsCopied) { mCopied = pixelsCopied; }
 			virtual std::string describe() const = 0;
-			// rows copied by the last present, for the statistics
-			int lastRowsCopied() const { return mRowsCopied; }
+			// pixels copied by the last frame, for the statistics
+			int64_t lastPixelsCopied() const { return mCopied; }
 
 		protected:
-			int mRowsCopied = 0;
+			int64_t mCopied = 0;
 		};
 
 		std::unique_ptr<Output> createOutput();

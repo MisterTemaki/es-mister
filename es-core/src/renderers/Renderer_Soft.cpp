@@ -90,7 +90,7 @@ namespace Renderer
 			double rasterMs = 0, rasterMax = 0;
 			double copyMs = 0;
 			double esMs = 0, esMax = 0;   // ES's own work before a drawn frame (update, render, recording)
-			uint64_t rows = 0, vertices = 0, pixels = 0;
+			uint64_t copied = 0, vertices = 0, pixels = 0; // copied: pixels to the screen
 			uint32_t quads = 0, triangles = 0;
 			double bandMs[2] = { 0, 0 }; // the first two bands' drawing, to see the balance
 			uint64_t kinds[Soft::PX_KINDS] = {};
@@ -107,7 +107,7 @@ namespace Renderer
 			std::vector<std::unique_ptr<Raster>> rasters;
 			std::vector<double> ms;           // each band's drawing, the last frame
 			std::vector<double> copyMs;       // and its copy to the output
-			std::vector<int> copied;          // the rows it copied
+			std::vector<int64_t> copied;      // the pixels it copied to the screen
 			bool present = false;             // the bands copy their rows to the output
 			int split = 0;                    // the first band's last row + 1, when there are two
 			int fullSplit = 0;                // that line for a whole frame, moved toward balance after each
@@ -404,29 +404,22 @@ namespace Renderer
 			}
 		}
 
-		// the rows a band shows again: all of them, or (drawn in part) its parts' rows
-		int presentBand(Raster& raster)
+		// what a band shows again: all its rows, or (drawn in part) its parts (which do not overlap); the
+		// pixels copied
+		int64_t presentBand(Raster& raster)
 		{
 			SoftState& s = S();
 			const int top = raster.bandTop(), bottom = raster.bandBottom();
+			const int w = s.raster.width(), h = s.raster.height();
 			if (!s.partial)
-				return s.output->presentRows(s.raster.pixels(), s.raster.width(), s.raster.height(), top, bottom);
+				return s.output->presentRect(s.raster.pixels(), w, h, 0, top, w, bottom);
 
-			std::vector<std::pair<int, int>> spans;
+			int64_t copied = 0;
 			for (const Box& r : s.rects)
 			{
 				const int y0 = std::max(r.y0, top), y1 = std::min(r.y1, bottom);
 				if (y0 < y1)
-					spans.push_back({ y0, y1 });
-			}
-			std::sort(spans.begin(), spans.end());
-			int copied = 0;
-			for (size_t i = 0; i < spans.size();)
-			{
-				int y0 = spans[i].first, y1 = spans[i].second;
-				for (i++; i < spans.size() && spans[i].first <= y1; i++)
-					y1 = std::max(y1, spans[i].second);
-				copied += s.output->presentRows(s.raster.pixels(), s.raster.width(), s.raster.height(), y0, y1);
+					copied += s.output->presentRect(s.raster.pixels(), w, h, r.x0, y0, r.x1, y1);
 			}
 			return copied;
 		}
@@ -730,7 +723,7 @@ namespace Renderer
 		// ES_SOFT_DUMP=FILE: the commands of the drawn frame ES_SOFT_DUMP_FRAME (default 100), each with what
 		// it drew and its time, drawn again alone on one thread, for tuning
 		// (or the test script's "dump NAME")
-		void dumpCommands(const std::string& requested)
+		void dumpCommands(const std::string& requested, const std::string& header = "")
 		{
 			static int drawnFrames = 0;
 			std::string path = requested;
@@ -747,6 +740,8 @@ namespace Renderer
 			FILE* out = fopen(path.c_str(), "w");
 			if (out == nullptr)
 				return;
+			if (!header.empty())
+				fprintf(out, "%s\n", header.c_str());
 			Raster raster;
 			raster.resize(s.raster.width(), s.raster.height());
 			raster.clear(0);
@@ -815,9 +810,9 @@ namespace Renderer
 
 			if (b.present)
 			{
-				int copied = 0;
-				for (int rows : b.copied)
-					copied += rows;
+				int64_t copied = 0;
+				for (int64_t pixels : b.copied)
+					copied += pixels;
 				s.output->finishFrame(copied);
 			}
 
@@ -859,11 +854,11 @@ namespace Renderer
 					st.checked ? (", " + std::to_string(st.wrong) + " of " + std::to_string(st.checked) + " checked wrong").c_str() : "");
 			char line[1024];
 			snprintf(line, sizeof(line),
-				"SoftRenderer: %d frames, %d drawn; frame %.1f ms (max %.1f), ES before a drawn frame %.1f ms (max %.1f), drawing %.1f ms (max %.1f)%s, copy %.2f ms, %.0f rows copied, "
+				"SoftRenderer: %d frames, %d drawn; frame %.1f ms (max %.1f), ES before a drawn frame %.1f ms (max %.1f), drawing %.1f ms (max %.1f)%s, copy %.2f ms, %.0f k pixels copied, "
 				"%.0f vertices, %.0f k pixels, %u quads, %u triangles a drawn frame%s; k pixels: fill %.0f, copy %.0f, colour %.0f, "
 				"picture 1:1 %.0f, nearest %.0f, bilinear %.0f, triangles %.0f",
 				st.frames, st.drawn, st.frameMs / st.frames, st.frameMax, st.esMs / drawn, st.esMax, st.rasterMs / drawn, st.rasterMax, bands, st.copyMs / drawn,
-				(double)st.rows / drawn, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn, parts,
+				(double)st.copied / drawn / 1000.0, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn, parts,
 				kpx(Soft::PX_FILL), kpx(Soft::PX_COPY), kpx(Soft::PX_COLOR), kpx(Soft::PX_TEX_1TO1), kpx(Soft::PX_TEX_NEAREST), kpx(Soft::PX_TEX_LINEAR), kpx(Soft::PX_TRIANGLE));
 			LOG(LogInfo) << line;
 
@@ -1254,10 +1249,30 @@ namespace Renderer
 			st.drawn++;
 			dumpCommands(s.pendingDump);
 			s.pendingDump.clear();
+
+			// ES_SOFT_SLOW_DUMP=PREFIX: the first frames that took long to draw (ES_SOFT_SLOW_MS, default 120 ms;
+			// ES_SOFT_SLOW_DUMPS of them, default 4), each draw with what it drew and its time on one thread,
+			// in PREFIX1.txt, PREFIX2.txt...: what to make faster, seen on the machine itself
+			static const char* slowPrefix = getenv("ES_SOFT_SLOW_DUMP");
+			if (slowPrefix != nullptr && *slowPrefix != 0)
+			{
+				static const double slowMs = getenv("ES_SOFT_SLOW_MS") ? atof(getenv("ES_SOFT_SLOW_MS")) : 120.0;
+				static const int most = getenv("ES_SOFT_SLOW_DUMPS") ? atoi(getenv("ES_SOFT_SLOW_DUMPS")) : 4;
+				static int written = 0;
+				if (rasterMs >= slowMs && written < most)
+				{
+					char header[256];
+					snprintf(header, sizeof(header), "frame drawn in %.1f ms by %d threads (%s %.0f%% of the screen, %zu parts), "
+						"copy %.1f ms, ES %.1f ms before it, %dx%d", rasterMs, s.bands.count, s.partial ? "in part," : "whole,",
+						100.0 * redrawn / std::max(1, s.width * s.height), s.partial ? s.rects.size() : (size_t)1,
+						copyMs, esMs, s.width, s.height);
+					dumpCommands(std::string(slowPrefix) + std::to_string(++written) + ".txt", header);
+				}
+			}
 			st.rasterMs += rasterMs;
 			st.rasterMax = std::max(st.rasterMax, rasterMs);
 			st.copyMs += copyMs;
-			st.rows += s.output ? s.output->lastRowsCopied() : 0;
+			st.copied += s.output ? (uint64_t)s.output->lastPixelsCopied() : 0;
 			st.bandMs[0] += s.bands.ms.size() > 0 ? s.bands.ms[0] : 0;
 			st.bandMs[1] += s.bands.ms.size() > 1 ? s.bands.ms[1] : 0;
 			st.vertices += s.vertices.size();
