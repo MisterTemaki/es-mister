@@ -675,31 +675,29 @@ namespace Utils
 			// windows escapes stuff by just putting everything in quotes
 			return '"' + getPreferredPath(path) + '"';
 #else // _WIN32
-			// insert a backslash before most characters that would mess up a bash path
-			const char* invalidChars = "\\ '\"!$^&*(){}[]?;<>";
-			const char* invalidChar  = invalidChars;
-
-			while(*invalidChar)
+			// For a shell (the launch command runs through /bin/sh): every character but the plain ones gets a
+			// backslash, so nothing in a file's name is read as shell syntax. Before, a list of characters got
+			// one, without ` and |, and not after a backslash: a game named "Name`reboot`.nes" ran reboot. A
+			// line feed cannot take a backslash: it is put in single quotes. Bytes of UTF-8 characters stay as
+			// they are. Paths with only the plain characters and these come out as before.
+			std::string escaped;
+			escaped.reserve(path.size() + path.size() / 4);
+			for (const char c : path)
 			{
-				size_t start  = 0;
-				size_t offset = 0;
-
-				while((offset = path.find(*invalidChar, start)) != std::string::npos)
+				const unsigned char u = (unsigned char)c;
+				const bool plain = u >= 0x80 || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
+					(c != 0 && strchr("/._-+,:@%=", c) != nullptr);
+				if (plain)
+					escaped += c;
+				else if (c == '\n')
+					escaped += "'\n'";
+				else
 				{
-					start = offset + 1;
-
-					if((offset == 0) || (path[offset - 1] != '\\'))
-					{
-						path.insert(offset, 1, '\\');
-						++start;
-					}
+					escaped += '\\';
+					escaped += c;
 				}
-
-				++invalidChar;
 			}
-
-			// return escaped path
-			return path;
+			return escaped;
 #endif // _WIN32
 
 		}
