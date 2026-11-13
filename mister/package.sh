@@ -61,6 +61,10 @@ BENCH=0
 # when asked for); 0 in normal use
 PROFILE=0
 
+# The first frames that take long to draw (up to this many each start) written with each draw's time to
+# logs/es-slow-frame-N.txt, to see what to make faster; 0: none
+SLOW_DUMPS=4
+
 # Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of
 # other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.
 # Take it out of the list to see them in ES.

@@ -17,6 +17,7 @@ SIZE=auto
 FPS=60
 BENCH=0
 PROFILE=0
+SLOW_DUMPS=4
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
@@ -113,6 +114,11 @@ export ES_STARTUP_TRACE=$LOGS/es-startup.log
 # where ES spends the processor (logs/es-profile.txt), for the port's tuning
 [ "$PROFILE" = 1 ] && export ES_PROFILE=$LOGS/es-profile.txt
 export ES_ARCADE_SKIP="$ARCADE_SKIP"
+# the first frames slow to draw, with each draw's time (logs/es-slow-frame-N.txt), to see what to make faster
+if [ "$SLOW_DUMPS" -gt 0 ] 2>/dev/null; then
+	rm -f "$LOGS"/es-slow-frame-*.txt
+	export ES_SOFT_SLOW_DUMP=$LOGS/es-slow-frame- ES_SOFT_SLOW_DUMPS=$SLOW_DUMPS
+fi
 # keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
 echo "starting ES at $DRAWN (SIZE=$SIZE)"
