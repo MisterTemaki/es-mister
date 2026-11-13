@@ -13,8 +13,10 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -266,6 +268,21 @@ namespace Renderer
 				st.frames, st.drawn, st.frameMs / st.frames, st.frameMax, st.rasterMs / drawn, st.rasterMax, st.copyMs / drawn,
 				(double)st.rows / drawn, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn);
 			LOG(LogInfo) << line;
+
+			// also where it can be read without ES's debug log (ES_SOFT_STATS_FILE), with the time
+			const char* file = getenv("ES_SOFT_STATS_FILE");
+			if (file != nullptr && *file)
+			{
+				FILE* out = fopen(file, "a");
+				if (out != nullptr)
+				{
+					time_t now = time(nullptr);
+					char stamp[32];
+					strftime(stamp, sizeof(stamp), "%H:%M:%S", localtime(&now));
+					fprintf(out, "%s %s\n", stamp, line);
+					fclose(out);
+				}
+			}
 			st = Stats();
 		}
 	}

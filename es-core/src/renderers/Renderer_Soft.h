@@ -11,6 +11,7 @@
 //
 //   ES_SOFT_FPS     the most frames a second when VSync is on (default 60; 0: no limit)
 //   ES_SOFT_STATS   frames between the timing lines in the log (default 600; 0: none)
+//   ES_SOFT_STATS_FILE  a file the timing lines are added to as well (ES logs them only with --debug)
 
 #if defined(USE_SOFTWARE_RENDERER)
 
