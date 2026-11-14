@@ -1,0 +1,60 @@
+es-mister-bench: a 1920x1080 frame, 9 repetitions, median (best)
+load: 1.15 0.64 0.26 3/132 1841
+processors: 2
+screen: /dev/fb0 1920x1080 32 bpp (its pixels put back at the end)
+alpha-only fade, the same pixels as the fade: yes
+
+1. memory, a frame (8.3 MB)              1 thread             2 threads
+  read                              11.6 ms   714 MB/s     11.8 ms   700 MB/s
+  read, PLD 256 B                    9.5 ms   878 MB/s      9.8 ms   844 MB/s
+  write (memset)                    12.5 ms   661 MB/s     10.8 ms   771 MB/s
+  copy (memcpy)                     26.6 ms   312 MB/s     27.6 ms   300 MB/s
+  copy (NEON, ES's)                 24.2 ms   343 MB/s     24.9 ms   334 MB/s
+  copy (NEON, PLD 256 B)            21.6 ms   383 MB/s     22.2 ms   374 MB/s
+
+2. one layer over the frame                       1 thread                  2 threads
+  fade (as ES), PLD 0 B                           48.7 ms (best   48.4)     50.3 ms (best   41.4)
+  fade (as ES), PLD 64 B                          29.6 ms (best   29.2)     30.3 ms (best   27.5)
+  fade (as ES), PLD 128 B                         28.7 ms (best   28.2)     29.5 ms (best   26.3)
+  fade (as ES), PLD 256 B                         28.1 ms (best   27.9)     28.9 ms (best   25.8)
+  fade (as ES), PLD 512 B                         28.0 ms (best   27.8)     29.1 ms (best   27.4)
+  fade (as ES), PLD 1024 B                        28.3 ms (best   27.8)     29.2 ms (best   25.8)
+  fade, alpha only, PLD 0 B                       51.8 ms (best   51.5)     51.3 ms (best   40.3)
+  picture with its alpha, PLD 0 B                 46.3 ms (best   46.0)     44.4 ms (best   37.2)
+  fade, alpha only, PLD 256 B                     29.4 ms (best   29.1)     29.8 ms (best   28.1)
+  picture with its alpha, PLD 256 B               25.9 ms (best   25.7)     26.9 ms (best   26.6)
+  PLD for the frames: 256 B (the fastest fade on 2 threads)
+
+3. a carousel frame: clear, 2 fades, a picture, copy  1 thread                  2 threads
+  layer by layer (pkg 16), PLD 0 B               175.3 ms (best  174.5)    155.6 ms (best  141.6)
+  strips of 8 (pkg 17), PLD 0 B                  164.3 ms (best  163.3)    144.3 ms (best  133.5)
+  strips of 16 (pkg 17), PLD 0 B                 166.9 ms (best  166.4)    159.5 ms (best  151.6)
+  strips of 32 (pkg 17), PLD 0 B                 174.8 ms (best  174.5)    165.9 ms (best  151.6)
+  strips of 8 shown at once, PLD 0 B             163.5 ms (best  162.5)    143.9 ms (best  134.1)
+  strips of 16 shown at once, PLD 0 B            167.6 ms (best  167.2)    150.0 ms (best  144.4)
+  strips of 32 shown at once, PLD 0 B            173.8 ms (best  172.2)    157.9 ms (best  152.2)
+  strips of 8 apart, shown, PLD 0 B              157.6 ms (best  156.4)    137.8 ms (best  130.8)
+  strips of 16 apart, shown, PLD 0 B             163.1 ms (best  161.9)    151.3 ms (best  141.0)
+  strips of 32 apart, shown, PLD 0 B             169.2 ms (best  168.4)    158.2 ms (best  147.8)
+  layer by layer (pkg 16), PLD 256 B             116.8 ms (best  116.0)    118.6 ms (best  116.4)
+  strips of 8 (pkg 17), PLD 256 B                 96.9 ms (best   96.3)    101.2 ms (best   85.9)
+  strips of 16 (pkg 17), PLD 256 B               101.4 ms (best  100.6)    106.0 ms (best   97.9)
+  strips of 32 (pkg 17), PLD 256 B               108.7 ms (best  107.9)    114.9 ms (best  109.7)
+  strips of 8 shown at once, PLD 256 B            92.9 ms (best   92.5)     96.4 ms (best   82.3)
+  strips of 16 shown at once, PLD 256 B           98.1 ms (best   97.6)    101.5 ms (best   93.4)
+  strips of 32 shown at once, PLD 256 B          106.5 ms (best  105.9)    111.8 ms (best  106.6)
+  strips of 8 apart, shown, PLD 256 B             87.9 ms (best   87.3)     88.4 ms (best   70.7)
+  strips of 16 apart, shown, PLD 256 B            92.3 ms (best   91.3)     92.0 ms (best   83.4)
+  strips of 32 apart, shown, PLD 256 B           102.0 ms (best  101.2)    109.3 ms (best  100.6)
+  strips of 8 apart, alpha-only, PLD 256 B        88.9 ms (best   88.6)     87.3 ms (best   76.3)
+  strips of 16 apart, alpha-only, PLD 256 B       93.0 ms (best   92.7)     91.5 ms (best   89.3)
+  strips of 32 apart, alpha-only, PLD 256 B      103.0 ms (best  101.9)    111.4 ms (best  101.5)
+  layer by layer, alpha-only, PLD 256 B          116.8 ms (best  116.4)    116.1 ms (best  112.3)
+
+4. the copy to the screen                           1 thread              2 threads
+  memcpy                            21.3 ms   389 MB/s     21.9 ms   379 MB/s
+  NEON (ES's)                       20.3 ms   409 MB/s     20.8 ms   399 MB/s
+  NEON, PLD                         16.3 ms   510 MB/s     16.9 ms   492 MB/s
+  NEON, PLD 256 B                   16.4 ms   506 MB/s     16.8 ms   495 MB/s
+
+done

@@ -1,0 +1,3659 @@
+{
+  "slow_frames": [
+    {
+      "time": 1.655,
+      "pid": 1698.0,
+      "es_ms": 1167.0,
+      "drawing_ms": 37.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 2.562,
+      "pid": 1698.0,
+      "es_ms": 495.0,
+      "drawing_ms": 126.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 8.369,
+      "pid": 1698.0,
+      "es_ms": 778.0,
+      "drawing_ms": 10.0,
+      "screen_pct": 4.0
+    },
+    {
+      "time": 9.8,
+      "pid": 1698.0,
+      "es_ms": 1078.0,
+      "drawing_ms": 128.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 10.323,
+      "pid": 1698.0,
+      "es_ms": 121.0,
+      "drawing_ms": 207.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 12.963,
+      "pid": 1698.0,
+      "es_ms": 12.0,
+      "drawing_ms": 190.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 13.527,
+      "pid": 1698.0,
+      "es_ms": 4.0,
+      "drawing_ms": 200.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 14.231,
+      "pid": 1698.0,
+      "es_ms": 11.0,
+      "drawing_ms": 205.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 15.125,
+      "pid": 1698.0,
+      "es_ms": 7.0,
+      "drawing_ms": 190.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 15.95,
+      "pid": 1698.0,
+      "es_ms": 6.0,
+      "drawing_ms": 173.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 16.582,
+      "pid": 1698.0,
+      "es_ms": 60.0,
+      "drawing_ms": 151.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 16.8,
+      "pid": 1698.0,
+      "es_ms": 8.0,
+      "drawing_ms": 178.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 17.631,
+      "pid": 1698.0,
+      "es_ms": 12.0,
+      "drawing_ms": 194.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 18.54,
+      "pid": 1698.0,
+      "es_ms": 8.0,
+      "drawing_ms": 217.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 19.426,
+      "pid": 1698.0,
+      "es_ms": 7.0,
+      "drawing_ms": 196.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 20.489,
+      "pid": 1698.0,
+      "es_ms": 9.0,
+      "drawing_ms": 207.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 21.535,
+      "pid": 1698.0,
+      "es_ms": 13.0,
+      "drawing_ms": 200.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 22.358,
+      "pid": 1698.0,
+      "es_ms": 13.0,
+      "drawing_ms": 201.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 24.994,
+      "pid": 1698.0,
+      "es_ms": 13.0,
+      "drawing_ms": 216.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 26.308,
+      "pid": 1698.0,
+      "es_ms": 9.0,
+      "drawing_ms": 186.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 27.708,
+      "pid": 1698.0,
+      "es_ms": 817.0,
+      "drawing_ms": 45.0,
+      "screen_pct": 9.0
+    },
+    {
+      "time": 27.981,
+      "pid": 1698.0,
+      "es_ms": 39.0,
+      "drawing_ms": 201.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 28.291,
+      "pid": 1698.0,
+      "es_ms": 15.0,
+      "drawing_ms": 264.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 28.613,
+      "pid": 1698.0,
+      "es_ms": 7.0,
+      "drawing_ms": 283.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 28.82,
+      "pid": 1698.0,
+      "es_ms": 5.0,
+      "drawing_ms": 171.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 31.074,
+      "pid": 1698.0,
+      "es_ms": 27.0,
+      "drawing_ms": 213.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 31.332,
+      "pid": 1698.0,
+      "es_ms": 21.0,
+      "drawing_ms": 205.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 31.541,
+      "pid": 1698.0,
+      "es_ms": 5.0,
+      "drawing_ms": 173.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 31.795,
+      "pid": 1698.0,
+      "es_ms": 46.0,
+      "drawing_ms": 178.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 32.003,
+      "pid": 1698.0,
+      "es_ms": 6.0,
+      "drawing_ms": 174.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 32.246,
+      "pid": 1698.0,
+      "es_ms": 38.0,
+      "drawing_ms": 176.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 32.447,
+      "pid": 1698.0,
+      "es_ms": 6.0,
+      "drawing_ms": 165.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 32.648,
+      "pid": 1698.0,
+      "es_ms": 11.0,
+      "drawing_ms": 161.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 32.876,
+      "pid": 1698.0,
+      "es_ms": 32.0,
+      "drawing_ms": 165.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 33.068,
+      "pid": 1698.0,
+      "es_ms": 5.0,
+      "drawing_ms": 158.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 33.301,
+      "pid": 1698.0,
+      "es_ms": 38.0,
+      "drawing_ms": 165.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 33.499,
+      "pid": 1698.0,
+      "es_ms": 5.0,
+      "drawing_ms": 161.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 33.736,
+      "pid": 1698.0,
+      "es_ms": 44.0,
+      "drawing_ms": 164.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 33.931,
+      "pid": 1698.0,
+      "es_ms": 6.0,
+      "drawing_ms": 159.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 34.197,
+      "pid": 1698.0,
+      "es_ms": 45.0,
+      "drawing_ms": 191.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 34.421,
+      "pid": 1698.0,
+      "es_ms": 7.0,
+      "drawing_ms": 187.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 34.688,
+      "pid": 1698.0,
+      "es_ms": 45.0,
+      "drawing_ms": 193.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 34.909,
+      "pid": 1698.0,
+      "es_ms": 8.0,
+      "drawing_ms": 184.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 35.163,
+      "pid": 1698.0,
+      "es_ms": 45.0,
+      "drawing_ms": 180.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 35.409,
+      "pid": 1698.0,
+      "es_ms": 42.0,
+      "drawing_ms": 174.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 35.621,
+      "pid": 1698.0,
+      "es_ms": 14.0,
+      "drawing_ms": 169.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 35.872,
+      "pid": 1698.0,
+      "es_ms": 52.0,
+      "drawing_ms": 170.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 36.107,
+      "pid": 1698.0,
+      "es_ms": 39.0,
+      "drawing_ms": 168.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 36.314,
+      "pid": 1698.0,
+      "es_ms": 14.0,
+      "drawing_ms": 164.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 36.558,
+      "pid": 1698.0,
+      "es_ms": 47.0,
+      "drawing_ms": 169.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 36.804,
+      "pid": 1698.0,
+      "es_ms": 45.0,
+      "drawing_ms": 168.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 37.044,
+      "pid": 1698.0,
+      "es_ms": 47.0,
+      "drawing_ms": 164.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 37.248,
+      "pid": 1698.0,
+      "es_ms": 14.0,
+      "drawing_ms": 161.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 37.488,
+      "pid": 1698.0,
+      "es_ms": 47.0,
+      "drawing_ms": 164.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 37.76,
+      "pid": 1698.0,
+      "es_ms": 75.0,
+      "drawing_ms": 168.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 38.153,
+      "pid": 1698.0,
+      "es_ms": 14.0,
+      "drawing_ms": 157.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 38.391,
+      "pid": 1698.0,
+      "es_ms": 44.0,
+      "drawing_ms": 161.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 38.662,
+      "pid": 1698.0,
+      "es_ms": 77.0,
+      "drawing_ms": 163.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 38.898,
+      "pid": 1698.0,
+      "es_ms": 44.0,
+      "drawing_ms": 160.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 39.173,
+      "pid": 1698.0,
+      "es_ms": 84.0,
+      "drawing_ms": 161.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 39.542,
+      "pid": 1698.0,
+      "es_ms": 45.0,
+      "drawing_ms": 159.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 39.778,
+      "pid": 1698.0,
+      "es_ms": 45.0,
+      "drawing_ms": 161.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 40.057,
+      "pid": 1698.0,
+      "es_ms": 84.0,
+      "drawing_ms": 163.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 40.301,
+      "pid": 1698.0,
+      "es_ms": 51.0,
+      "drawing_ms": 158.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 40.583,
+      "pid": 1698.0,
+      "es_ms": 90.0,
+      "drawing_ms": 163.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 40.82,
+      "pid": 1698.0,
+      "es_ms": 46.0,
+      "drawing_ms": 158.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 41.056,
+      "pid": 1698.0,
+      "es_ms": 44.0,
+      "drawing_ms": 163.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 41.29,
+      "pid": 1698.0,
+      "es_ms": 46.0,
+      "drawing_ms": 159.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 41.551,
+      "pid": 1698.0,
+      "es_ms": 40.0,
+      "drawing_ms": 192.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 41.812,
+      "pid": 1698.0,
+      "es_ms": 40.0,
+      "drawing_ms": 192.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 42.078,
+      "pid": 1698.0,
+      "es_ms": 39.0,
+      "drawing_ms": 197.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 42.329,
+      "pid": 1698.0,
+      "es_ms": 39.0,
+      "drawing_ms": 182.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 42.58,
+      "pid": 1698.0,
+      "es_ms": 53.0,
+      "drawing_ms": 170.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 42.816,
+      "pid": 1698.0,
+      "es_ms": 44.0,
+      "drawing_ms": 164.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 43.139,
+      "pid": 1698.0,
+      "es_ms": 12.0,
+      "drawing_ms": 183.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 43.347,
+      "pid": 1698.0,
+      "es_ms": 13.0,
+      "drawing_ms": 166.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 43.583,
+      "pid": 1698.0,
+      "es_ms": 43.0,
+      "drawing_ms": 164.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 43.776,
+      "pid": 1698.0,
+      "es_ms": 7.0,
+      "drawing_ms": 158.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 43.973,
+      "pid": 1698.0,
+      "es_ms": 13.0,
+      "drawing_ms": 155.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 44.841,
+      "pid": 1698.0,
+      "es_ms": 21.0,
+      "drawing_ms": 154.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 45.045,
+      "pid": 1698.0,
+      "es_ms": 20.0,
+      "drawing_ms": 152.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 45.235,
+      "pid": 1698.0,
+      "es_ms": 5.0,
+      "drawing_ms": 152.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 45.434,
+      "pid": 1698.0,
+      "es_ms": 12.0,
+      "drawing_ms": 154.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 45.665,
+      "pid": 1698.0,
+      "es_ms": 41.0,
+      "drawing_ms": 161.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 45.858,
+      "pid": 1698.0,
+      "es_ms": 6.0,
+      "drawing_ms": 157.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 46.09,
+      "pid": 1698.0,
+      "es_ms": 43.0,
+      "drawing_ms": 160.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 46.282,
+      "pid": 1698.0,
+      "es_ms": 6.0,
+      "drawing_ms": 156.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 46.485,
+      "pid": 1698.0,
+      "es_ms": 13.0,
+      "drawing_ms": 162.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 46.714,
+      "pid": 1698.0,
+      "es_ms": 43.0,
+      "drawing_ms": 158.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 46.91,
+      "pid": 1698.0,
+      "es_ms": 7.0,
+      "drawing_ms": 153.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 47.105,
+      "pid": 1698.0,
+      "es_ms": 13.0,
+      "drawing_ms": 150.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 61.592,
+      "pid": 1698.0,
+      "es_ms": 40.0,
+      "drawing_ms": 164.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 61.926,
+      "pid": 1698.0,
+      "es_ms": 5.0,
+      "drawing_ms": 298.0,
+      "screen_pct": 100.0
+    },
+    {
+      "time": 62.115,
+      "pid": 1698.0,
+      "es_ms": 5.0,
+      "drawing_ms": 160.0,
+      "screen_pct": 41.0
+    }
+  ],
+  "slow_summary": {
+    "count": 94,
+    "full_frames": 91,
+    "drawing_min": 10.0,
+    "drawing_max": 298.0
+  },
+  "stats_windows": [
+    {
+      "frames": 600.0,
+      "drawn": 166.0,
+      "frame_ms": 19.3,
+      "frame_max": 1462.7,
+      "es_ms": 36.2,
+      "es_max": 1435.9,
+      "drawing_ms": 16.3,
+      "drawing_max": 46.9,
+      "copy_ms": 2.38,
+      "timestamp": "11:24:58"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 298.0,
+      "frame_ms": 10.3,
+      "frame_max": 85.5,
+      "es_ms": 1.5,
+      "es_max": 52.5,
+      "drawing_ms": 16.5,
+      "drawing_max": 53.4,
+      "copy_ms": 2.02,
+      "timestamp": "11:25:12"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 292.0,
+      "frame_ms": 13.6,
+      "frame_max": 688.8,
+      "es_ms": 4.5,
+      "es_max": 680.1,
+      "drawing_ms": 20.3,
+      "drawing_max": 37.2,
+      "copy_ms": 2.0,
+      "timestamp": "11:25:29"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 298.0,
+      "frame_ms": 14.8,
+      "frame_max": 46.5,
+      "es_ms": 2.5,
+      "es_max": 24.0,
+      "drawing_ms": 23.9,
+      "drawing_max": 37.2,
+      "copy_ms": 2.06,
+      "timestamp": "11:25:47"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 305.0,
+      "frame_ms": 15.0,
+      "frame_max": 46.5,
+      "es_ms": 2.3,
+      "es_max": 17.3,
+      "drawing_ms": 24.0,
+      "drawing_max": 40.4,
+      "copy_ms": 1.96,
+      "timestamp": "11:26:05"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 302.0,
+      "frame_ms": 15.3,
+      "frame_max": 40.9,
+      "es_ms": 2.2,
+      "es_max": 18.5,
+      "drawing_ms": 25.1,
+      "drawing_max": 37.3,
+      "copy_ms": 1.96,
+      "timestamp": "11:26:24"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 279.0,
+      "frame_ms": 15.4,
+      "frame_max": 116.5,
+      "es_ms": 3.8,
+      "es_max": 112.5,
+      "drawing_ms": 25.6,
+      "drawing_max": 44.8,
+      "copy_ms": 1.99,
+      "timestamp": "11:26:43"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 157.0,
+      "frame_ms": 8.2,
+      "frame_max": 47.5,
+      "es_ms": 2.7,
+      "es_max": 35.9,
+      "drawing_ms": 23.4,
+      "drawing_max": 36.5,
+      "copy_ms": 2.04,
+      "timestamp": "11:26:57"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 2.0,
+      "frame_ms": 1.2,
+      "frame_max": 37.6,
+      "es_ms": 1.2,
+      "es_max": 1.3,
+      "drawing_ms": 34.3,
+      "drawing_max": 34.6,
+      "copy_ms": 1.64,
+      "timestamp": "11:27:07"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 19.9,
+      "frame_max": 44.8,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "11:27:29"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 41.2,
+      "frame_max": 74.8,
+      "es_ms": 41.4,
+      "es_max": 41.4,
+      "drawing_ms": 29.3,
+      "drawing_max": 29.3,
+      "copy_ms": 3.05,
+      "timestamp": "11:28:03"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.1,
+      "frame_max": 43.9,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "11:28:38"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 41.2,
+      "frame_max": 69.6,
+      "es_ms": 41.4,
+      "es_max": 41.4,
+      "drawing_ms": 26.7,
+      "drawing_max": 26.7,
+      "copy_ms": 1.89,
+      "timestamp": "11:29:13"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.1,
+      "frame_max": 44.4,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "11:29:48"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 41.2,
+      "frame_max": 77.4,
+      "es_ms": 41.3,
+      "es_max": 41.3,
+      "drawing_ms": 32.2,
+      "drawing_max": 32.2,
+      "copy_ms": 3.96,
+      "timestamp": "11:30:22"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.1,
+      "frame_max": 43.1,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "11:30:57"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 41.2,
+      "frame_max": 77.4,
+      "es_ms": 41.0,
+      "es_max": 41.0,
+      "drawing_ms": 34.7,
+      "drawing_max": 34.7,
+      "copy_ms": 1.65,
+      "timestamp": "11:31:32"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 79.0,
+      "frame_ms": 40.6,
+      "frame_max": 1653.5,
+      "es_ms": 86.9,
+      "es_max": 1474.2,
+      "drawing_ms": 162.0,
+      "drawing_max": 306.9,
+      "copy_ms": 23.99,
+      "timestamp": "12:22:44"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 13.0,
+      "frame_ms": 7.1,
+      "frame_max": 245.9,
+      "es_ms": 2.9,
+      "es_max": 3.5,
+      "drawing_ms": 214.4,
+      "drawing_max": 230.2,
+      "copy_ms": 13.37,
+      "timestamp": "12:22:57"
+    },
+    {
+      "frames": 236.0,
+      "drawn": 16.0,
+      "frame_ms": 19.3,
+      "frame_max": 570.4,
+      "es_ms": 43.0,
+      "es_max": 491.5,
+      "drawing_ms": 198.5,
+      "drawing_max": 220.7,
+      "copy_ms": 15.22,
+      "timestamp": "12:23:06"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 62.0,
+      "frame_ms": 34.2,
+      "frame_max": 1751.4,
+      "es_ms": 106.3,
+      "es_max": 1549.0,
+      "drawing_ms": 162.2,
+      "drawing_max": 355.9,
+      "copy_ms": 24.97,
+      "timestamp": "12:34:10"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 31.0,
+      "frame_ms": 12.8,
+      "frame_max": 321.3,
+      "es_ms": 12.0,
+      "es_max": 110.8,
+      "drawing_ms": 184.4,
+      "drawing_max": 281.0,
+      "copy_ms": 17.8,
+      "timestamp": "12:34:27"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 39.0,
+      "frame_ms": 16.4,
+      "frame_max": 312.9,
+      "es_ms": 8.6,
+      "es_max": 93.2,
+      "drawing_ms": 201.8,
+      "drawing_max": 255.4,
+      "copy_ms": 16.25,
+      "timestamp": "12:34:45"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 6.0,
+      "frame_ms": 3.5,
+      "frame_max": 180.2,
+      "es_ms": 2.0,
+      "es_max": 2.4,
+      "drawing_ms": 154.7,
+      "drawing_max": 165.9,
+      "copy_ms": 14.86,
+      "timestamp": "12:34:56"
+    },
+    {
+      "frames": 263.0,
+      "drawn": 21.0,
+      "frame_ms": 20.7,
+      "frame_max": 317.5,
+      "es_ms": 9.4,
+      "es_max": 74.2,
+      "drawing_ms": 211.0,
+      "drawing_max": 251.8,
+      "copy_ms": 16.1,
+      "timestamp": "12:35:06"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 121.0,
+      "frame_ms": 59.0,
+      "frame_max": 2042.7,
+      "es_ms": 75.9,
+      "es_max": 1864.9,
+      "drawing_ms": 174.6,
+      "drawing_max": 364.3,
+      "copy_ms": 24.95,
+      "timestamp": "12:47:01"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 26.0,
+      "frame_ms": 11.3,
+      "frame_max": 318.0,
+      "es_ms": 8.8,
+      "es_max": 114.3,
+      "drawing_ms": 190.2,
+      "drawing_max": 288.9,
+      "copy_ms": 20.96,
+      "timestamp": "12:47:16"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 1.8,
+      "frame_max": 3.0,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "12:47:26"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 38.3,
+      "frame_max": 44.0,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "12:47:59"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.1,
+      "frame_max": 219.5,
+      "es_ms": 40.9,
+      "es_max": 40.9,
+      "drawing_ms": 165.7,
+      "drawing_max": 165.7,
+      "copy_ms": 14.1,
+      "timestamp": "12:48:35"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 27.0,
+      "frame_ms": 38.5,
+      "frame_max": 310.1,
+      "es_ms": 9.6,
+      "es_max": 99.3,
+      "drawing_ms": 171.1,
+      "drawing_max": 284.8,
+      "copy_ms": 21.16,
+      "timestamp": "12:49:08"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 7.0,
+      "frame_ms": 7.5,
+      "frame_max": 290.8,
+      "es_ms": 4.0,
+      "es_max": 8.9,
+      "drawing_ms": 178.9,
+      "drawing_max": 257.9,
+      "copy_ms": 22.75,
+      "timestamp": "12:49:21"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 9.0,
+      "frame_ms": 4.9,
+      "frame_max": 287.1,
+      "es_ms": 3.2,
+      "es_max": 7.8,
+      "drawing_ms": 185.6,
+      "drawing_max": 260.3,
+      "copy_ms": 21.09,
+      "timestamp": "12:49:33"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 6.0,
+      "frame_ms": 24.4,
+      "frame_max": 301.1,
+      "es_ms": 4.7,
+      "es_max": 19.0,
+      "drawing_ms": 178.9,
+      "drawing_max": 275.8,
+      "copy_ms": 18.84,
+      "timestamp": "12:49:57"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 15.0,
+      "frame_max": 175.8,
+      "es_ms": 1.8,
+      "es_max": 1.8,
+      "drawing_ms": 160.4,
+      "drawing_max": 160.4,
+      "copy_ms": 16.72,
+      "timestamp": "12:50:16"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 21.0,
+      "frame_ms": 13.8,
+      "frame_max": 292.9,
+      "es_ms": 3.6,
+      "es_max": 18.9,
+      "drawing_ms": 189.5,
+      "drawing_max": 270.7,
+      "copy_ms": 21.55,
+      "timestamp": "12:50:33"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 2.2,
+      "frame_max": 42.0,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "12:50:43"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.1,
+      "frame_max": 204.7,
+      "es_ms": 42.1,
+      "es_max": 42.1,
+      "drawing_ms": 147.7,
+      "drawing_max": 147.7,
+      "copy_ms": 16.14,
+      "timestamp": "12:51:19"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.8,
+      "frame_max": 43.4,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "12:51:54"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.0,
+      "frame_max": 199.4,
+      "es_ms": 41.3,
+      "es_max": 41.3,
+      "drawing_ms": 142.8,
+      "drawing_max": 142.8,
+      "copy_ms": 16.36,
+      "timestamp": "12:52:29"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.1,
+      "frame_max": 217.2,
+      "es_ms": 41.5,
+      "es_max": 41.5,
+      "drawing_ms": 161.4,
+      "drawing_max": 161.4,
+      "copy_ms": 14.21,
+      "timestamp": "12:53:04"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.8,
+      "frame_max": 44.0,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "12:53:39"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 40.0,
+      "frame_max": 202.4,
+      "es_ms": 42.0,
+      "es_max": 42.0,
+      "drawing_ms": 147.5,
+      "drawing_max": 147.5,
+      "copy_ms": 15.28,
+      "timestamp": "12:54:14"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 3.8,
+      "frame_max": 43.2,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "12:54:25"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 2.9,
+      "frame_max": 42.8,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "12:54:36"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 40.9,
+      "frame_max": 217.2,
+      "es_ms": 41.5,
+      "es_max": 41.5,
+      "drawing_ms": 161.9,
+      "drawing_max": 161.9,
+      "copy_ms": 13.99,
+      "timestamp": "12:55:10"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 87.0,
+      "frame_ms": 45.8,
+      "frame_max": 1948.2,
+      "es_ms": 82.9,
+      "es_max": 1809.0,
+      "drawing_ms": 173.5,
+      "drawing_max": 316.6,
+      "copy_ms": 22.63,
+      "timestamp": "12:59:42"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 14.3,
+      "frame_max": 205.8,
+      "es_ms": 42.1,
+      "es_max": 42.1,
+      "drawing_ms": 147.4,
+      "drawing_max": 147.4,
+      "copy_ms": 16.2,
+      "timestamp": "13:00:00"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.8,
+      "frame_max": 43.7,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:00:36"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.1,
+      "frame_max": 230.2,
+      "es_ms": 42.2,
+      "es_max": 42.2,
+      "drawing_ms": 174.3,
+      "drawing_max": 174.3,
+      "copy_ms": 16.02,
+      "timestamp": "13:01:11"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 20.0,
+      "frame_ms": 32.1,
+      "frame_max": 361.9,
+      "es_ms": 9.0,
+      "es_max": 110.1,
+      "drawing_ms": 212.3,
+      "drawing_max": 338.2,
+      "copy_ms": 22.77,
+      "timestamp": "13:01:40"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 89.0,
+      "frame_ms": 46.4,
+      "frame_max": 1782.4,
+      "es_ms": 83.8,
+      "es_max": 1637.1,
+      "drawing_ms": 177.2,
+      "drawing_max": 310.1,
+      "copy_ms": 24.87,
+      "timestamp": "13:03:21"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.7,
+      "frame_max": 42.5,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:03:33"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 24.0,
+      "frame_ms": 13.6,
+      "frame_max": 349.2,
+      "es_ms": 7.9,
+      "es_max": 122.3,
+      "drawing_ms": 197.4,
+      "drawing_max": 319.3,
+      "copy_ms": 19.8,
+      "timestamp": "13:03:50"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 4.1,
+      "frame_max": 221.4,
+      "es_ms": 43.0,
+      "es_max": 43.0,
+      "drawing_ms": 163.9,
+      "drawing_max": 163.9,
+      "copy_ms": 14.86,
+      "timestamp": "13:04:01"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 9.0,
+      "frame_ms": 8.7,
+      "frame_max": 302.6,
+      "es_ms": 4.0,
+      "es_max": 19.5,
+      "drawing_ms": 201.3,
+      "drawing_max": 278.6,
+      "copy_ms": 18.64,
+      "timestamp": "13:04:16"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 36.5,
+      "frame_max": 44.6,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:04:48"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.0,
+      "frame_max": 224.1,
+      "es_ms": 41.4,
+      "es_max": 41.4,
+      "drawing_ms": 169.3,
+      "drawing_max": 169.3,
+      "copy_ms": 14.33,
+      "timestamp": "13:05:23"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.7,
+      "frame_max": 44.1,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:05:58"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.0,
+      "frame_max": 222.1,
+      "es_ms": 42.6,
+      "es_max": 42.6,
+      "drawing_ms": 166.0,
+      "drawing_max": 166.0,
+      "copy_ms": 13.96,
+      "timestamp": "13:06:33"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.0,
+      "frame_max": 210.0,
+      "es_ms": 41.1,
+      "es_max": 41.1,
+      "drawing_ms": 157.7,
+      "drawing_max": 157.7,
+      "copy_ms": 13.28,
+      "timestamp": "13:07:09"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.7,
+      "frame_max": 44.2,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:07:44"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 337.0,
+      "frame_ms": 145.2,
+      "frame_max": 2218.3,
+      "es_ms": 27.4,
+      "es_max": 2030.6,
+      "drawing_ms": 204.4,
+      "drawing_max": 552.6,
+      "copy_ms": 19.81,
+      "timestamp": "13:10:43"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.2,
+      "frame_max": 28.9,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:10:53"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 4.9,
+      "frame_max": 548.2,
+      "es_ms": 4.1,
+      "es_max": 4.1,
+      "drawing_ms": 530.3,
+      "drawing_max": 530.3,
+      "copy_ms": 14.46,
+      "timestamp": "13:11:03"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.1,
+      "frame_max": 11.6,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:11:13"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.1,
+      "frame_max": 12.6,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:11:23"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.1,
+      "frame_max": 13.1,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:11:33"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.2,
+      "frame_max": 13.4,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:11:43"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.1,
+      "frame_max": 27.7,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:11:53"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 4.8,
+      "frame_max": 434.2,
+      "es_ms": 8.1,
+      "es_max": 8.1,
+      "drawing_ms": 411.4,
+      "drawing_max": 411.4,
+      "copy_ms": 14.4,
+      "timestamp": "13:12:04"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.2,
+      "frame_max": 12.3,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:12:14"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.2,
+      "frame_max": 11.4,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:12:24"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.2,
+      "frame_max": 10.2,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:12:34"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.2,
+      "frame_max": 11.0,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:12:44"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.2,
+      "frame_max": 16.1,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:12:54"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 53.0,
+      "frame_ms": 30.9,
+      "frame_max": 1759.4,
+      "es_ms": 126.0,
+      "es_max": 1595.9,
+      "drawing_ms": 142.4,
+      "drawing_max": 303.4,
+      "copy_ms": 28.5,
+      "timestamp": "13:14:32"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 31.6,
+      "frame_max": 217.2,
+      "es_ms": 41.5,
+      "es_max": 41.5,
+      "drawing_ms": 161.0,
+      "drawing_max": 161.0,
+      "copy_ms": 14.2,
+      "timestamp": "13:15:01"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 15.0,
+      "frame_ms": 42.3,
+      "frame_max": 308.1,
+      "es_ms": 4.3,
+      "es_max": 19.7,
+      "drawing_ms": 198.1,
+      "drawing_max": 279.6,
+      "copy_ms": 20.44,
+      "timestamp": "13:15:36"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 3.6,
+      "frame_max": 43.2,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:15:47"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.1,
+      "frame_max": 224.9,
+      "es_ms": 42.2,
+      "es_max": 42.2,
+      "drawing_ms": 169.6,
+      "drawing_max": 169.6,
+      "copy_ms": 15.8,
+      "timestamp": "13:16:22"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.8,
+      "frame_max": 44.5,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:16:58"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.0,
+      "frame_max": 207.5,
+      "es_ms": 41.7,
+      "es_max": 41.7,
+      "drawing_ms": 151.2,
+      "drawing_max": 151.2,
+      "copy_ms": 14.45,
+      "timestamp": "13:17:33"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.0,
+      "frame_max": 206.0,
+      "es_ms": 41.5,
+      "es_max": 41.5,
+      "drawing_ms": 150.6,
+      "drawing_max": 150.6,
+      "copy_ms": 14.07,
+      "timestamp": "13:18:08"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.7,
+      "frame_max": 43.9,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:18:43"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.0,
+      "frame_max": 208.3,
+      "es_ms": 41.5,
+      "es_max": 41.5,
+      "drawing_ms": 152.3,
+      "drawing_max": 152.3,
+      "copy_ms": 14.71,
+      "timestamp": "13:19:18"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 41.7,
+      "frame_max": 43.7,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "13:19:54"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.1,
+      "frame_max": 203.2,
+      "es_ms": 41.8,
+      "es_max": 41.8,
+      "drawing_ms": 145.3,
+      "drawing_max": 145.3,
+      "copy_ms": 15.98,
+      "timestamp": "13:20:29"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 53.0,
+      "frame_ms": 32.5,
+      "frame_max": 1938.4,
+      "es_ms": 121.8,
+      "es_max": 1781.6,
+      "drawing_ms": 165.8,
+      "drawing_max": 343.5,
+      "copy_ms": 26.21,
+      "timestamp": "13:24:47"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 28.6,
+      "frame_max": 218.0,
+      "es_ms": 41.4,
+      "es_max": 41.4,
+      "drawing_ms": 162.7,
+      "drawing_max": 162.7,
+      "copy_ms": 15.07,
+      "timestamp": "13:25:14"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 33.0,
+      "frame_ms": 16.9,
+      "frame_max": 1315.2,
+      "es_ms": 148.2,
+      "es_max": 1217.3,
+      "drawing_ms": 34.4,
+      "drawing_max": 186.6,
+      "copy_ms": 11.26,
+      "timestamp": "14:54:24"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 328.0,
+      "frame_ms": 28.1,
+      "frame_max": 1069.0,
+      "es_ms": 8.7,
+      "es_max": 980.9,
+      "drawing_ms": 23.5,
+      "drawing_max": 235.4,
+      "copy_ms": 10.34,
+      "timestamp": "14:54:51"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 559.0,
+      "frame_ms": 56.6,
+      "frame_max": 301.1,
+      "es_ms": 7.4,
+      "es_max": 67.5,
+      "drawing_ms": 39.0,
+      "drawing_max": 186.3,
+      "copy_ms": 12.15,
+      "timestamp": "14:55:35"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 183.0,
+      "frame_ms": 36.2,
+      "frame_max": 1311.6,
+      "es_ms": 32.9,
+      "es_max": 1215.1,
+      "drawing_ms": 55.0,
+      "drawing_max": 227.7,
+      "copy_ms": 12.69,
+      "timestamp": "17:27:53"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 294.0,
+      "frame_ms": 39.5,
+      "frame_max": 1476.1,
+      "es_ms": 23.8,
+      "es_max": 1229.6,
+      "drawing_ms": 39.9,
+      "drawing_max": 217.6,
+      "copy_ms": 3.6,
+      "timestamp": "17:38:33"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 319.0,
+      "frame_ms": 31.4,
+      "frame_max": 304.5,
+      "es_ms": 8.5,
+      "es_max": 281.9,
+      "drawing_ms": 43.7,
+      "drawing_max": 231.5,
+      "copy_ms": 3.51,
+      "timestamp": "17:39:00"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 6.3,
+      "frame_max": 44.5,
+      "es_ms": 2.7,
+      "es_max": 2.7,
+      "drawing_ms": 0.4,
+      "drawing_max": 0.4,
+      "copy_ms": 0.02,
+      "timestamp": "17:39:12"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 42.3,
+      "frame_max": 46.4,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "17:39:48"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.4,
+      "frame_max": 58.1,
+      "es_ms": 42.8,
+      "es_max": 42.8,
+      "drawing_ms": 0.4,
+      "drawing_max": 0.4,
+      "copy_ms": 0.02,
+      "timestamp": "17:40:23"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 42.3,
+      "frame_max": 45.4,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "17:40:59"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.5,
+      "frame_max": 128.2,
+      "es_ms": 42.5,
+      "es_max": 42.5,
+      "drawing_ms": 0.4,
+      "drawing_max": 0.4,
+      "copy_ms": 0.02,
+      "timestamp": "17:41:34"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.3,
+      "frame_max": 45.3,
+      "es_ms": 42.9,
+      "es_max": 42.9,
+      "drawing_ms": 0.3,
+      "drawing_max": 0.3,
+      "copy_ms": 0.02,
+      "timestamp": "17:42:10"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 44.0,
+      "frame_max": 72.8,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "17:42:46"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 44.6,
+      "frame_max": 62.5,
+      "es_ms": 49.9,
+      "es_max": 49.9,
+      "drawing_ms": 3.5,
+      "drawing_max": 3.5,
+      "copy_ms": 3.45,
+      "timestamp": "17:43:24"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 121.0,
+      "frame_ms": 26.0,
+      "frame_max": 1270.7,
+      "es_ms": 45.6,
+      "es_max": 1194.5,
+      "drawing_ms": 43.0,
+      "drawing_max": 219.4,
+      "copy_ms": 3.8,
+      "timestamp": "17:46:51"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 180.0,
+      "frame_ms": 29.7,
+      "frame_max": 1363.0,
+      "es_ms": 30.4,
+      "es_max": 1225.9,
+      "drawing_ms": 40.4,
+      "drawing_max": 213.1,
+      "copy_ms": 3.55,
+      "timestamp": "18:00:04"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 205.0,
+      "frame_ms": 27.6,
+      "frame_max": 785.7,
+      "es_ms": 17.1,
+      "es_max": 763.9,
+      "drawing_ms": 55.0,
+      "drawing_max": 295.1,
+      "copy_ms": 3.6,
+      "timestamp": "18:00:30"
+    },
+    {
+      "frames": 40.0,
+      "drawn": 39.0,
+      "frame_ms": 53.7,
+      "frame_max": 204.3,
+      "es_ms": 5.0,
+      "es_max": 6.3,
+      "drawing_ms": 45.6,
+      "drawing_max": 183.9,
+      "copy_ms": 3.38,
+      "timestamp": "18:00:33"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 582.0,
+      "frame_ms": 30.0,
+      "frame_max": 3169.9,
+      "es_ms": 11.1,
+      "es_max": 3113.7,
+      "drawing_ms": 17.9,
+      "drawing_max": 311.9,
+      "copy_ms": 1.52,
+      "timestamp": "18:01:33"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 586.0,
+      "frame_ms": 20.4,
+      "frame_max": 33.3,
+      "es_ms": 4.5,
+      "es_max": 6.7,
+      "drawing_ms": 14.8,
+      "drawing_max": 26.9,
+      "copy_ms": 1.22,
+      "timestamp": "18:01:55"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 584.0,
+      "frame_ms": 20.4,
+      "frame_max": 36.0,
+      "es_ms": 4.6,
+      "es_max": 9.7,
+      "drawing_ms": 14.8,
+      "drawing_max": 26.4,
+      "copy_ms": 1.24,
+      "timestamp": "18:02:18"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 584.0,
+      "frame_ms": 20.5,
+      "frame_max": 50.6,
+      "es_ms": 4.5,
+      "es_max": 7.6,
+      "drawing_ms": 14.9,
+      "drawing_max": 38.7,
+      "copy_ms": 1.26,
+      "timestamp": "18:02:40"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 579.0,
+      "frame_ms": 20.3,
+      "frame_max": 30.2,
+      "es_ms": 4.5,
+      "es_max": 7.3,
+      "drawing_ms": 14.9,
+      "drawing_max": 22.8,
+      "copy_ms": 1.22,
+      "timestamp": "18:03:02"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 590.0,
+      "frame_ms": 20.6,
+      "frame_max": 49.5,
+      "es_ms": 4.6,
+      "es_max": 9.1,
+      "drawing_ms": 14.8,
+      "drawing_max": 37.2,
+      "copy_ms": 1.23,
+      "timestamp": "18:03:24"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 574.0,
+      "frame_ms": 19.9,
+      "frame_max": 40.9,
+      "es_ms": 4.6,
+      "es_max": 12.8,
+      "drawing_ms": 14.5,
+      "drawing_max": 28.5,
+      "copy_ms": 1.28,
+      "timestamp": "18:03:46"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 586.0,
+      "frame_ms": 19.8,
+      "frame_max": 32.5,
+      "es_ms": 4.5,
+      "es_max": 8.0,
+      "drawing_ms": 14.3,
+      "drawing_max": 23.4,
+      "copy_ms": 1.18,
+      "timestamp": "18:04:08"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 580.0,
+      "frame_ms": 19.8,
+      "frame_max": 30.0,
+      "es_ms": 4.6,
+      "es_max": 5.7,
+      "drawing_ms": 14.4,
+      "drawing_max": 23.5,
+      "copy_ms": 1.25,
+      "timestamp": "18:04:30"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 582.0,
+      "frame_ms": 20.3,
+      "frame_max": 32.0,
+      "es_ms": 4.5,
+      "es_max": 8.5,
+      "drawing_ms": 14.8,
+      "drawing_max": 23.5,
+      "copy_ms": 1.24,
+      "timestamp": "18:04:52"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 580.0,
+      "frame_ms": 20.1,
+      "frame_max": 35.3,
+      "es_ms": 4.5,
+      "es_max": 7.1,
+      "drawing_ms": 14.7,
+      "drawing_max": 28.5,
+      "copy_ms": 1.25,
+      "timestamp": "18:05:14"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 579.0,
+      "frame_ms": 20.2,
+      "frame_max": 29.0,
+      "es_ms": 4.5,
+      "es_max": 6.4,
+      "drawing_ms": 14.9,
+      "drawing_max": 22.3,
+      "copy_ms": 1.24,
+      "timestamp": "18:05:36"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 582.0,
+      "frame_ms": 20.2,
+      "frame_max": 32.3,
+      "es_ms": 4.5,
+      "es_max": 7.4,
+      "drawing_ms": 14.6,
+      "drawing_max": 25.4,
+      "copy_ms": 1.24,
+      "timestamp": "18:05:58"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 489.0,
+      "frame_ms": 383.3,
+      "frame_max": 197405.0,
+      "es_ms": 422.8,
+      "es_max": 197357.3,
+      "drawing_ms": 36.4,
+      "drawing_max": 263.9,
+      "copy_ms": 2.98,
+      "timestamp": "18:25:16"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 311.0,
+      "frame_ms": 118.9,
+      "frame_max": 54586.8,
+      "es_ms": 182.6,
+      "es_max": 54437.0,
+      "drawing_ms": 41.1,
+      "drawing_max": 345.8,
+      "copy_ms": 3.32,
+      "timestamp": "18:26:37"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 588.0,
+      "frame_ms": 97.1,
+      "frame_max": 27170.9,
+      "es_ms": 53.8,
+      "es_max": 26862.9,
+      "drawing_ms": 41.3,
+      "drawing_max": 280.3,
+      "copy_ms": 2.94,
+      "timestamp": "18:27:45"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 44.0,
+      "frame_ms": 18.6,
+      "frame_max": 1573.8,
+      "es_ms": 116.2,
+      "es_max": 1205.4,
+      "drawing_ms": 26.2,
+      "drawing_max": 162.5,
+      "copy_ms": 2.96,
+      "timestamp": "18:38:19"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 34.6,
+      "frame_max": 44.5,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "18:38:50"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.3,
+      "frame_max": 44.1,
+      "es_ms": 43.0,
+      "es_max": 43.0,
+      "drawing_ms": 0.4,
+      "drawing_max": 0.4,
+      "copy_ms": 0.03,
+      "timestamp": "18:39:25"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.2,
+      "frame_max": 44.1,
+      "es_ms": 42.3,
+      "es_max": 42.3,
+      "drawing_ms": 0.4,
+      "drawing_max": 0.4,
+      "copy_ms": 0.02,
+      "timestamp": "18:40:01"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 42.2,
+      "frame_max": 44.1,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "18:40:36"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.2,
+      "frame_max": 44.5,
+      "es_ms": 43.3,
+      "es_max": 43.3,
+      "drawing_ms": 0.3,
+      "drawing_max": 0.3,
+      "copy_ms": 0.04,
+      "timestamp": "18:41:11"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 42.2,
+      "frame_max": 44.1,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "18:41:47"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 42.2,
+      "frame_max": 44.3,
+      "es_ms": 42.1,
+      "es_max": 42.1,
+      "drawing_ms": 0.3,
+      "drawing_max": 0.3,
+      "copy_ms": 0.02,
+      "timestamp": "18:42:22"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 42.1,
+      "frame_max": 44.3,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "18:42:57"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 262.0,
+      "frame_ms": 41.4,
+      "frame_max": 1355.6,
+      "es_ms": 28.9,
+      "es_max": 1289.1,
+      "drawing_ms": 42.9,
+      "drawing_max": 224.0,
+      "copy_ms": 3.46,
+      "timestamp": "18:53:43"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 599.0,
+      "frame_ms": 94.5,
+      "frame_max": 30475.6,
+      "es_ms": 59.0,
+      "es_max": 30428.7,
+      "drawing_ms": 32.2,
+      "drawing_max": 222.3,
+      "copy_ms": 2.31,
+      "timestamp": "18:54:50"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 600.0,
+      "frame_ms": 21.9,
+      "frame_max": 52.4,
+      "es_ms": 5.4,
+      "es_max": 11.3,
+      "drawing_ms": 15.0,
+      "drawing_max": 40.1,
+      "copy_ms": 1.18,
+      "timestamp": "18:55:13"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 598.0,
+      "frame_ms": 21.5,
+      "frame_max": 37.6,
+      "es_ms": 5.4,
+      "es_max": 14.5,
+      "drawing_ms": 14.8,
+      "drawing_max": 29.0,
+      "copy_ms": 1.19,
+      "timestamp": "18:55:36"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 597.0,
+      "frame_ms": 21.3,
+      "frame_max": 29.2,
+      "es_ms": 5.4,
+      "es_max": 8.0,
+      "drawing_ms": 14.6,
+      "drawing_max": 23.3,
+      "copy_ms": 1.17,
+      "timestamp": "18:55:59"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 598.0,
+      "frame_ms": 21.5,
+      "frame_max": 34.5,
+      "es_ms": 5.3,
+      "es_max": 8.5,
+      "drawing_ms": 14.9,
+      "drawing_max": 25.4,
+      "copy_ms": 1.15,
+      "timestamp": "18:56:21"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 597.0,
+      "frame_ms": 21.4,
+      "frame_max": 33.5,
+      "es_ms": 5.2,
+      "es_max": 7.7,
+      "drawing_ms": 14.9,
+      "drawing_max": 26.8,
+      "copy_ms": 1.15,
+      "timestamp": "18:56:44"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 600.0,
+      "frame_ms": 21.4,
+      "frame_max": 37.1,
+      "es_ms": 5.4,
+      "es_max": 13.3,
+      "drawing_ms": 14.7,
+      "drawing_max": 24.8,
+      "copy_ms": 1.15,
+      "timestamp": "18:57:07"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 600.0,
+      "frame_ms": 21.5,
+      "frame_max": 36.5,
+      "es_ms": 5.3,
+      "es_max": 8.3,
+      "drawing_ms": 14.9,
+      "drawing_max": 28.0,
+      "copy_ms": 1.14,
+      "timestamp": "18:57:30"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 600.0,
+      "frame_ms": 21.6,
+      "frame_max": 35.3,
+      "es_ms": 5.4,
+      "es_max": 7.1,
+      "drawing_ms": 14.8,
+      "drawing_max": 26.6,
+      "copy_ms": 1.17,
+      "timestamp": "18:57:52"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 597.0,
+      "frame_ms": 21.5,
+      "frame_max": 33.6,
+      "es_ms": 5.3,
+      "es_max": 9.5,
+      "drawing_ms": 14.9,
+      "drawing_max": 25.1,
+      "copy_ms": 1.15,
+      "timestamp": "18:58:15"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 597.0,
+      "frame_ms": 21.6,
+      "frame_max": 33.7,
+      "es_ms": 5.2,
+      "es_max": 8.4,
+      "drawing_ms": 15.1,
+      "drawing_max": 26.9,
+      "copy_ms": 1.14,
+      "timestamp": "18:58:38"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 596.0,
+      "frame_ms": 21.7,
+      "frame_max": 36.9,
+      "es_ms": 5.2,
+      "es_max": 9.7,
+      "drawing_ms": 15.1,
+      "drawing_max": 26.0,
+      "copy_ms": 1.16,
+      "timestamp": "18:59:01"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 600.0,
+      "frame_ms": 21.7,
+      "frame_max": 34.9,
+      "es_ms": 5.2,
+      "es_max": 9.3,
+      "drawing_ms": 15.1,
+      "drawing_max": 26.5,
+      "copy_ms": 1.16,
+      "timestamp": "18:59:24"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 51.0,
+      "frame_ms": 21.0,
+      "frame_max": 1305.2,
+      "es_ms": 103.5,
+      "es_max": 1242.2,
+      "drawing_ms": 34.3,
+      "drawing_max": 205.5,
+      "copy_ms": 3.54,
+      "timestamp": "19:14:34"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 37.0,
+      "frame_ms": 5.5,
+      "frame_max": 461.1,
+      "es_ms": 4.8,
+      "es_max": 53.2,
+      "drawing_ms": 20.2,
+      "drawing_max": 195.7,
+      "copy_ms": 1.71,
+      "timestamp": "19:14:46"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 13.0,
+      "frame_ms": 2.1,
+      "frame_max": 8.3,
+      "es_ms": 2.0,
+      "es_max": 2.4,
+      "drawing_ms": 0.3,
+      "drawing_max": 0.5,
+      "copy_ms": 0.06,
+      "timestamp": "19:14:56"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 20.4,
+      "frame_max": 46.2,
+      "es_ms": 2.2,
+      "es_max": 2.2,
+      "drawing_ms": 0.8,
+      "drawing_max": 0.8,
+      "copy_ms": 0.03,
+      "timestamp": "19:15:18"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 42.3,
+      "frame_max": 48.0,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "19:15:53"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 295.0,
+      "frame_ms": 63.3,
+      "frame_max": 1414.1,
+      "es_ms": 32.3,
+      "es_max": 1167.2,
+      "drawing_ms": 77.3,
+      "drawing_max": 283.0,
+      "copy_ms": 5.47,
+      "timestamp": "19:35:07"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 382.0,
+      "frame_ms": 15.5,
+      "frame_max": 316.9,
+      "es_ms": 4.6,
+      "es_max": 40.1,
+      "drawing_ms": 15.6,
+      "drawing_max": 297.9,
+      "copy_ms": 1.22,
+      "timestamp": "19:35:25"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.7,
+      "frame_max": 12.2,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "19:35:35"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 5.0,
+      "frame_max": 16.3,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "19:35:45"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.8,
+      "frame_max": 22.0,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "19:35:55"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 4.7,
+      "frame_max": 14.6,
+      "es_ms": 4.4,
+      "es_max": 4.4,
+      "drawing_ms": 2.0,
+      "drawing_max": 2.0,
+      "copy_ms": 0.03,
+      "timestamp": "19:36:05"
+    }
+  ],
+  "stats_summary": {
+    "windows": 158,
+    "frames": 93539.0,
+    "drawn": 23387.0,
+    "idle_windows": 42,
+    "active_windows": 116
+  },
+  "package18_stats_windows": [
+    {
+      "frames": 600.0,
+      "drawn": 295.0,
+      "frame_ms": 63.3,
+      "frame_max": 1414.1,
+      "es_ms": 32.3,
+      "es_max": 1167.2,
+      "drawing_ms": 77.3,
+      "drawing_max": 283.0,
+      "copy_ms": 5.47,
+      "timestamp": "19:35:07"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 382.0,
+      "frame_ms": 15.5,
+      "frame_max": 316.9,
+      "es_ms": 4.6,
+      "es_max": 40.1,
+      "drawing_ms": 15.6,
+      "drawing_max": 297.9,
+      "copy_ms": 1.22,
+      "timestamp": "19:35:25"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.7,
+      "frame_max": 12.2,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "19:35:35"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 5.0,
+      "frame_max": 16.3,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "19:35:45"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 0.0,
+      "frame_ms": 4.8,
+      "frame_max": 22.0,
+      "es_ms": 0.0,
+      "es_max": 0.0,
+      "drawing_ms": 0.0,
+      "drawing_max": 0.0,
+      "copy_ms": 0.0,
+      "timestamp": "19:35:55"
+    },
+    {
+      "frames": 600.0,
+      "drawn": 1.0,
+      "frame_ms": 4.7,
+      "frame_max": 14.6,
+      "es_ms": 4.4,
+      "es_max": 4.4,
+      "drawing_ms": 2.0,
+      "drawing_max": 2.0,
+      "copy_ms": 0.03,
+      "timestamp": "19:36:05"
+    }
+  ],
+  "dumps": [
+    {
+      "dump": 1,
+      "header": "frame drawn in 126.2 ms by 2 threads (whole, 100% of the screen, 1 parts), copy 12.6 ms, ES 495.2 ms before it, 1920x1080",
+      "serial_sum_ms": 84.155,
+      "commands": [
+        {
+          "id": 0,
+          "serial_ms": 14.177,
+          "description": "strip   4 vertices, box 0,0 1920x1080, texture -, blend 4/5, colour ff000000",
+          "pixels": "fill 2073k"
+        },
+        {
+          "id": 1,
+          "serial_ms": 36.408,
+          "description": "strip   4 vertices, box 0,0 1920x1080, texture 1920x1080 opaque, blend 4/5, colour ffffffff",
+          "pixels": "copy 2073k"
+        },
+        {
+          "id": 2,
+          "serial_ms": 1.237,
+          "description": "stencil  16 vertices, box 480,963 960x39, texture -, blend 4/5, colour ffffffff",
+          "pixels": "nothing"
+        },
+        {
+          "id": 3,
+          "serial_ms": 11.887,
+          "description": "strip   4 vertices, box 480,963 960x39, texture 1920x1080 opaque, blend 4/5 stencil-tested, colour 7f606060",
+          "pixels": "bilinear 37k"
+        },
+        {
+          "id": 4,
+          "serial_ms": 0.224,
+          "description": "strip   4 vertices, box 480,963 39x39, texture 32x32 opaque, blend 4/5 stencil-tested, colour ffdf1010",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 5,
+          "serial_ms": 1.376,
+          "description": "strip 174 vertices, box 679,839 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 6,
+          "serial_ms": 1.197,
+          "description": "strip 174 vertices, box 679,839 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 7,
+          "serial_ms": 1.273,
+          "description": "strip 174 vertices, box 680,839 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 8,
+          "serial_ms": 0.961,
+          "description": "strip 174 vertices, box 681,839 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 9,
+          "serial_ms": 0.845,
+          "description": "strip 174 vertices, box 682,839 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 10,
+          "serial_ms": 1.486,
+          "description": "strip 174 vertices, box 682,840 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 11,
+          "serial_ms": 1.031,
+          "description": "strip 174 vertices, box 682,841 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 12,
+          "serial_ms": 0.985,
+          "description": "strip 174 vertices, box 682,842 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 13,
+          "serial_ms": 1.232,
+          "description": "strip 174 vertices, box 682,843 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 14,
+          "serial_ms": 0.969,
+          "description": "strip 174 vertices, box 681,843 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 15,
+          "serial_ms": 0.984,
+          "description": "strip 174 vertices, box 680,843 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 16,
+          "serial_ms": 1.918,
+          "description": "strip 174 vertices, box 679,843 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 17,
+          "serial_ms": 0.867,
+          "description": "strip 174 vertices, box 679,843 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 18,
+          "serial_ms": 0.972,
+          "description": "strip 174 vertices, box 679,842 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 19,
+          "serial_ms": 0.775,
+          "description": "strip 174 vertices, box 679,841 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 20,
+          "serial_ms": 0.944,
+          "description": "strip 174 vertices, box 679,840 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 21,
+          "serial_ms": 1.55,
+          "description": "strip 174 vertices, box 679,839 565x48, texture 2048x60, blend 4/5, colour 20000000",
+          "pixels": "1:1 12k"
+        },
+        {
+          "id": 22,
+          "serial_ms": 0.857,
+          "description": "strip 174 vertices, box 679,840 565x48, texture 2048x60, blend 4/5, colour ffffffff",
+          "pixels": "1:1 12k"
+        }
+      ],
+      "top3_serial_ms": 62.472
+    },
+    {
+      "dump": 2,
+      "header": "frame drawn in 127.5 ms by 2 threads (whole, 100% of the screen, 1 parts), copy 21.7 ms, ES 1078.2 ms before it, 1920x1080",
+      "serial_sum_ms": 62.61,
+      "commands": [
+        {
+          "id": 0,
+          "serial_ms": 25.975,
+          "description": "strip   4 vertices, box 0,456 1920x1080, texture 2048x60, blend 4/5 scissor, colour ffffffff",
+          "pixels": "bilinear 1198k"
+        },
+        {
+          "id": 1,
+          "serial_ms": 21.438,
+          "description": "strip   4 vertices, box 0,456 1920x1080, texture 2048x60, blend 4/5 scissor, colour ffffffff",
+          "pixels": "bilinear 1198k"
+        },
+        {
+          "id": 2,
+          "serial_ms": 5.015,
+          "description": "strip   4 vertices, box 0,870 1920x251, texture -, blend 4/5 scissor, colour 40000000",
+          "pixels": "colour 403k"
+        },
+        {
+          "id": 3,
+          "serial_ms": 0.13,
+          "description": "strip   4 vertices, box 1439,961 326x74, texture 8x8 nearest, blend 4/5 scissor, colour 30000000",
+          "pixels": "nothing"
+        },
+        {
+          "id": 4,
+          "serial_ms": 0.005,
+          "description": "strip   4 vertices, box 1437,959 326x74, texture 8x8 nearest, blend 4/5 scissor, colour 99ffffff",
+          "pixels": "nothing"
+        },
+        {
+          "id": 5,
+          "serial_ms": 0.004,
+          "description": "strip   4 vertices, box 703,953 522x94, texture 8x8 nearest, blend 4/5 scissor, colour 50000000",
+          "pixels": "nothing"
+        },
+        {
+          "id": 6,
+          "serial_ms": 0.004,
+          "description": "strip   4 vertices, box 699,949 522x94, texture 8x8 nearest, blend 4/5 scissor, colour ffffffff",
+          "pixels": "nothing"
+        },
+        {
+          "id": 7,
+          "serial_ms": 0.006,
+          "description": "strip   4 vertices, box 0,868 1920x5, texture 8x8 nearest, blend 4/5 scissor, colour ff3675ca",
+          "pixels": "nothing"
+        },
+        {
+          "id": 8,
+          "serial_ms": 0.69,
+          "description": "strip  48 vertices, box 98,520 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 9,
+          "serial_ms": 0.369,
+          "description": "strip  18 vertices, box 60,522 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 10,
+          "serial_ms": 0.491,
+          "description": "strip  48 vertices, box 97,521 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 11,
+          "serial_ms": 0.199,
+          "description": "strip  18 vertices, box 59,523 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 12,
+          "serial_ms": 0.751,
+          "description": "strip  48 vertices, box 96,520 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 13,
+          "serial_ms": 0.279,
+          "description": "strip  18 vertices, box 58,522 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 14,
+          "serial_ms": 0.614,
+          "description": "strip  48 vertices, box 97,519 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 15,
+          "serial_ms": 0.255,
+          "description": "strip  18 vertices, box 59,521 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 16,
+          "serial_ms": 1.192,
+          "description": "strip  48 vertices, box 97,520 257x49, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 17,
+          "serial_ms": 0.363,
+          "description": "strip  18 vertices, box 59,522 163x47, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 18,
+          "serial_ms": 0.281,
+          "description": "strip  84 vertices, box 59,595 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 19,
+          "serial_ms": 0.177,
+          "description": "strip  84 vertices, box 58,596 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 20,
+          "serial_ms": 0.196,
+          "description": "strip  84 vertices, box 57,595 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 21,
+          "serial_ms": 0.263,
+          "description": "strip  84 vertices, box 58,594 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 22,
+          "serial_ms": 0.234,
+          "description": "strip  84 vertices, box 58,595 152x26, texture 1600x32, blend 4/5 scissor, colour ffd0d0d0",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 23,
+          "serial_ms": 0.337,
+          "description": "strip   4 vertices, box 23,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 24,
+          "serial_ms": 0.253,
+          "description": "strip   4 vertices, box 159,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 25,
+          "serial_ms": 0.578,
+          "description": "strip   4 vertices, box 512,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 26,
+          "serial_ms": 0.416,
+          "description": "strip   4 vertices, box 715,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 27,
+          "serial_ms": 0.237,
+          "description": "strip   4 vertices, box 931,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 28,
+          "serial_ms": 0.166,
+          "description": "strip  24 vertices, box 66,1033 76x25, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 29,
+          "serial_ms": 0.657,
+          "description": "strip 108 vertices, box 203,1025 292x39, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 30,
+          "serial_ms": 0.249,
+          "description": "strip  54 vertices, box 554,1025 144x33, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 31,
+          "serial_ms": 0.248,
+          "description": "strip  60 vertices, box 757,1032 158x26, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 32,
+          "serial_ms": 0.298,
+          "description": "strip  48 vertices, box 975,1032 130x26, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 33,
+          "serial_ms": 0.177,
+          "description": "strip  30 vertices, box 1830,1034 70x28, texture 2048x46, blend 4/5, colour ff777777",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 34,
+          "serial_ms": 0.029,
+          "description": "strip   4 vertices, box 19,13 25x25, texture -, blend 4/5, colour 90ffffff",
+          "pixels": "colour 0k"
+        },
+        {
+          "id": 35,
+          "serial_ms": 0.034,
+          "description": "strip   4 vertices, box 50,13 25x25, texture -, blend 4/5, colour 90ffffff",
+          "pixels": "colour 0k"
+        }
+      ],
+      "top3_serial_ms": 52.428
+    },
+    {
+      "dump": 3,
+      "header": "frame drawn in 206.7 ms by 2 threads (whole, 100% of the screen, 1 parts), copy 10.5 ms, ES 121.3 ms before it, 1920x1080",
+      "serial_sum_ms": 77.98,
+      "commands": [
+        {
+          "id": 0,
+          "serial_ms": 23.082,
+          "description": "strip   4 vertices, box 0,135 1920x1080, texture 1280x720 opaque, blend 4/5 scissor, colour ffffffff",
+          "pixels": "bilinear 1814k"
+        },
+        {
+          "id": 1,
+          "serial_ms": 16.765,
+          "description": "strip   4 vertices, box 0,135 1920x1080, texture 1920x1080, blend 4/5 scissor, colour ffffffff",
+          "pixels": "1:1 805k"
+        },
+        {
+          "id": 2,
+          "serial_ms": 4.837,
+          "description": "strip   4 vertices, box 0,800 1920x27, texture 1920x1080, blend 4/5 scissor, colour 40ffffff",
+          "pixels": "bilinear 51k"
+        },
+        {
+          "id": 3,
+          "serial_ms": 6.395,
+          "description": "strip   4 vertices, box 0,549 1920x251, texture -, blend 4/5 scissor, colour 40000000",
+          "pixels": "colour 481k"
+        },
+        {
+          "id": 4,
+          "serial_ms": 0.362,
+          "description": "strip   4 vertices, box 159,647 326x61, texture -, blend 4/5 scissor, colour 30000000",
+          "pixels": "colour 19k"
+        },
+        {
+          "id": 5,
+          "serial_ms": 0.263,
+          "description": "strip   4 vertices, box 157,645 326x61, texture -, blend 4/5 scissor, colour 99ffffff",
+          "pixels": "colour 19k"
+        },
+        {
+          "id": 6,
+          "serial_ms": 2.645,
+          "description": "strip   4 vertices, box 1439,640 326x74, texture 522x118, blend 4/5 scissor, colour 30000000",
+          "pixels": "bilinear 24k"
+        },
+        {
+          "id": 7,
+          "serial_ms": 2.527,
+          "description": "strip   4 vertices, box 1437,638 326x74, texture 522x118 nearest, blend 4/5 scissor, colour 99ffffff",
+          "pixels": "bilinear 24k"
+        },
+        {
+          "id": 8,
+          "serial_ms": 0.833,
+          "description": "strip   4 vertices, box 703,632 522x94, texture 522x94, blend 4/5 scissor, colour 50000000",
+          "pixels": "1:1 38k"
+        },
+        {
+          "id": 9,
+          "serial_ms": 0.728,
+          "description": "strip   4 vertices, box 699,628 522x94, texture 522x94 nearest, blend 4/5 scissor, colour ffffffff",
+          "pixels": "1:1 38k"
+        },
+        {
+          "id": 10,
+          "serial_ms": 0.053,
+          "description": "strip   4 vertices, box 0,547 1920x5, texture 32x32 opaque nearest, blend 4/5 scissor, colour ff3675ca",
+          "pixels": "fill 11k"
+        },
+        {
+          "id": 11,
+          "serial_ms": 0.038,
+          "description": "strip   4 vertices, box 0,794 1920x5, texture 32x32 opaque nearest, blend 4/5 scissor, colour ff3675ca",
+          "pixels": "fill 9k"
+        },
+        {
+          "id": 12,
+          "serial_ms": 0.477,
+          "description": "strip  48 vertices, box 98,199 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 13,
+          "serial_ms": 0.255,
+          "description": "strip  18 vertices, box 60,201 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 14,
+          "serial_ms": 0.547,
+          "description": "strip  48 vertices, box 97,200 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 15,
+          "serial_ms": 0.283,
+          "description": "strip  18 vertices, box 59,202 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 16,
+          "serial_ms": 0.784,
+          "description": "strip  48 vertices, box 96,199 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 17,
+          "serial_ms": 0.268,
+          "description": "strip  18 vertices, box 58,201 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 18,
+          "serial_ms": 0.444,
+          "description": "strip  48 vertices, box 97,198 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 19,
+          "serial_ms": 0.363,
+          "description": "strip  18 vertices, box 59,200 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 20,
+          "serial_ms": 0.41,
+          "description": "strip  48 vertices, box 97,199 257x49, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 21,
+          "serial_ms": 0.179,
+          "description": "strip  18 vertices, box 59,201 163x47, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 22,
+          "serial_ms": 0.255,
+          "description": "strip  84 vertices, box 59,275 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 23,
+          "serial_ms": 0.277,
+          "description": "strip  84 vertices, box 58,276 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 24,
+          "serial_ms": 0.175,
+          "description": "strip  84 vertices, box 57,275 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 25,
+          "serial_ms": 1.807,
+          "description": "strip  84 vertices, box 58,274 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 26,
+          "serial_ms": 0.205,
+          "description": "strip  84 vertices, box 58,275 152x26, texture 1600x32, blend 4/5 scissor, colour ffd0d0d0",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 27,
+          "serial_ms": 2.346,
+          "description": "strip 696 vertices, box 786,890 351x182, texture 1600x32, blend 4/5 scissor, colour 00000000",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 28,
+          "serial_ms": 1.762,
+          "description": "strip 696 vertices, box 785,891 351x182, texture 1600x32, blend 4/5 scissor, colour 00000000",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 29,
+          "serial_ms": 1.662,
+          "description": "strip 696 vertices, box 784,890 351x182, texture 1600x32, blend 4/5 scissor, colour 00000000",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 30,
+          "serial_ms": 2.166,
+          "description": "strip 696 vertices, box 785,889 351x182, texture 1600x32, blend 4/5 scissor, colour 00000000",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 31,
+          "serial_ms": 1.724,
+          "description": "strip 696 vertices, box 785,890 351x182, texture 1600x32, blend 4/5 scissor, colour 00d0d0d0",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 32,
+          "serial_ms": 0.267,
+          "description": "strip   4 vertices, box 23,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 33,
+          "serial_ms": 0.203,
+          "description": "strip   4 vertices, box 159,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 34,
+          "serial_ms": 0.208,
+          "description": "strip   4 vertices, box 512,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 35,
+          "serial_ms": 0.194,
+          "description": "strip   4 vertices, box 715,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 36,
+          "serial_ms": 0.252,
+          "description": "strip   4 vertices, box 931,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 37,
+          "serial_ms": 0.194,
+          "description": "strip  24 vertices, box 66,1033 76x25, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 38,
+          "serial_ms": 0.567,
+          "description": "strip 108 vertices, box 203,1025 292x39, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 39,
+          "serial_ms": 0.228,
+          "description": "strip  54 vertices, box 554,1025 144x33, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 40,
+          "serial_ms": 0.301,
+          "description": "strip  60 vertices, box 757,1032 158x26, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 41,
+          "serial_ms": 0.253,
+          "description": "strip  48 vertices, box 975,1032 130x26, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 42,
+          "serial_ms": 0.173,
+          "description": "strip  30 vertices, box 1830,1034 70x28, texture 2048x46, blend 4/5, colour ff777777",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 43,
+          "serial_ms": 0.107,
+          "description": "strip   4 vertices, box 19,13 25x25, texture 24x24, blend 4/5, colour 90ffffff",
+          "pixels": "bilinear 0k"
+        },
+        {
+          "id": 44,
+          "serial_ms": 0.079,
+          "description": "strip   4 vertices, box 49,13 25x25, texture 24x24, blend 4/5, colour 90ffffff",
+          "pixels": "bilinear 0k"
+        },
+        {
+          "id": 45,
+          "serial_ms": 0.037,
+          "description": "strip   4 vertices, box 1863,13 30x30, texture -, blend 4/5, colour a0ffffff",
+          "pixels": "colour 0k"
+        }
+      ],
+      "top3_serial_ms": 46.242000000000004
+    },
+    {
+      "dump": 4,
+      "header": "frame drawn in 125.2 ms by 2 threads (whole, 100% of the screen, 1 parts), copy 11.1 ms, ES 56.3 ms before it, 1920x1080",
+      "serial_sum_ms": 132.437,
+      "commands": [
+        {
+          "id": 0,
+          "serial_ms": 26.152,
+          "description": "strip   4 vertices, box 0,0 1920x1080, texture 1280x720 opaque, blend 4/5 scissor, colour d9ffffff",
+          "pixels": "bilinear 2073k"
+        },
+        {
+          "id": 1,
+          "serial_ms": 32.496,
+          "description": "strip   4 vertices, box 36,0 1920x1080, texture 1280x720 opaque, blend 4/5 scissor, colour 25ffffff",
+          "pixels": "bilinear 2034k"
+        },
+        {
+          "id": 2,
+          "serial_ms": 16.958,
+          "description": "strip   4 vertices, box 0,0 1920x1080, texture 1920x1080, blend 4/5 scissor, colour ffffffff",
+          "pixels": "1:1 1056k"
+        },
+        {
+          "id": 3,
+          "serial_ms": 4.529,
+          "description": "strip   4 vertices, box 0,665 1920x27, texture 64x36 nearest, blend 4/5 scissor, colour 40ffffff",
+          "pixels": "bilinear 51k"
+        },
+        {
+          "id": 4,
+          "serial_ms": 4.811,
+          "description": "strip   4 vertices, box 0,414 1920x251, texture -, blend 4/5 scissor, colour 40000000",
+          "pixels": "colour 481k"
+        },
+        {
+          "id": 5,
+          "serial_ms": 2.349,
+          "description": "strip   4 vertices, box 66,512 326x61, texture 522x97, blend 4/5 scissor, colour 30000000",
+          "pixels": "bilinear 19k"
+        },
+        {
+          "id": 6,
+          "serial_ms": 2.046,
+          "description": "strip   4 vertices, box 63,510 326x61, texture 522x97 nearest, blend 4/5 scissor, colour 99ffffff",
+          "pixels": "bilinear 19k"
+        },
+        {
+          "id": 7,
+          "serial_ms": 4.134,
+          "description": "strip   4 vertices, box 623,499 493x89, texture 522x94, blend 4/5 scissor, colour 4b000000",
+          "pixels": "bilinear 43k"
+        },
+        {
+          "id": 8,
+          "serial_ms": 3.992,
+          "description": "strip   4 vertices, box 620,496 493x89, texture 522x94 nearest, blend 4/5 scissor, colour f0ffffff",
+          "pixels": "bilinear 43k"
+        },
+        {
+          "id": 9,
+          "serial_ms": 3.435,
+          "description": "strip   4 vertices, box 1332,502 355x81, texture 522x118, blend 4/5 scissor, colour 34000000",
+          "pixels": "bilinear 28k"
+        },
+        {
+          "id": 10,
+          "serial_ms": 2.85,
+          "description": "strip   4 vertices, box 1329,500 355x81, texture 522x118 nearest, blend 4/5 scissor, colour a8ffffff",
+          "pixels": "bilinear 28k"
+        },
+        {
+          "id": 11,
+          "serial_ms": 0.316,
+          "description": "strip  84 vertices, box 59,140 152x26, texture 1600x32, blend 4/5 scissor, colour d9000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 12,
+          "serial_ms": 0.201,
+          "description": "strip  84 vertices, box 58,141 152x26, texture 1600x32, blend 4/5 scissor, colour d9000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 13,
+          "serial_ms": 0.17,
+          "description": "strip  84 vertices, box 57,140 152x26, texture 1600x32, blend 4/5 scissor, colour d9000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 14,
+          "serial_ms": 0.205,
+          "description": "strip  84 vertices, box 58,139 152x26, texture 1600x32, blend 4/5 scissor, colour d9000000",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 15,
+          "serial_ms": 0.178,
+          "description": "strip  84 vertices, box 58,140 152x26, texture 1600x32, blend 4/5 scissor, colour d9d0d0d0",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 16,
+          "serial_ms": 1.989,
+          "description": "strip 696 vertices, box 786,755 351x182, texture 1600x32, blend 4/5 scissor, colour d9000000",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 17,
+          "serial_ms": 1.753,
+          "description": "strip 696 vertices, box 785,756 351x182, texture 1600x32, blend 4/5 scissor, colour d9000000",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 18,
+          "serial_ms": 1.754,
+          "description": "strip 696 vertices, box 784,755 351x182, texture 1600x32, blend 4/5 scissor, colour d9000000",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 19,
+          "serial_ms": 1.662,
+          "description": "strip 696 vertices, box 785,754 351x182, texture 1600x32, blend 4/5 scissor, colour d9000000",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 20,
+          "serial_ms": 1.933,
+          "description": "strip 696 vertices, box 785,755 351x182, texture 1600x32, blend 4/5 scissor, colour d9d0d0d0",
+          "pixels": "1:1 17k"
+        },
+        {
+          "id": 21,
+          "serial_ms": 0.05,
+          "description": "strip   4 vertices, box 0,412 1920x5, texture 32x32 opaque nearest, blend 4/5 scissor, colour ff3675ca",
+          "pixels": "fill 11k"
+        },
+        {
+          "id": 22,
+          "serial_ms": 0.034,
+          "description": "strip   4 vertices, box 0,659 1920x5, texture 32x32 opaque nearest, blend 4/5 scissor, colour ff3675ca",
+          "pixels": "fill 9k"
+        },
+        {
+          "id": 23,
+          "serial_ms": 3.14,
+          "description": "strip   4 vertices, box 0,1010 1920x70, texture 2x58 opaque nearest, blend 4/5 scissor, colour c54075d8",
+          "pixels": "nearest 134k"
+        },
+        {
+          "id": 24,
+          "serial_ms": 0.58,
+          "description": "strip  48 vertices, box 98,64 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 25,
+          "serial_ms": 0.24,
+          "description": "strip  18 vertices, box 60,66 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 26,
+          "serial_ms": 0.631,
+          "description": "strip  48 vertices, box 97,65 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 27,
+          "serial_ms": 0.202,
+          "description": "strip  18 vertices, box 59,67 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 28,
+          "serial_ms": 0.456,
+          "description": "strip  48 vertices, box 96,64 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 29,
+          "serial_ms": 0.181,
+          "description": "strip  18 vertices, box 58,66 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 30,
+          "serial_ms": 0.349,
+          "description": "strip  48 vertices, box 97,63 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 31,
+          "serial_ms": 0.217,
+          "description": "strip  18 vertices, box 59,65 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 32,
+          "serial_ms": 0.423,
+          "description": "strip  48 vertices, box 97,64 257x49, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 33,
+          "serial_ms": 0.169,
+          "description": "strip  18 vertices, box 59,66 163x47, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 34,
+          "serial_ms": 0.238,
+          "description": "strip  54 vertices, box 59,140 93x20, texture 1600x32, blend 4/5 scissor, colour 25000000",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 35,
+          "serial_ms": 0.12,
+          "description": "strip  54 vertices, box 58,141 93x20, texture 1600x32, blend 4/5 scissor, colour 25000000",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 36,
+          "serial_ms": 0.113,
+          "description": "strip  54 vertices, box 57,140 93x20, texture 1600x32, blend 4/5 scissor, colour 25000000",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 37,
+          "serial_ms": 0.155,
+          "description": "strip  54 vertices, box 58,139 93x20, texture 1600x32, blend 4/5 scissor, colour 25000000",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 38,
+          "serial_ms": 0.115,
+          "description": "strip  54 vertices, box 58,140 93x20, texture 1600x32, blend 4/5 scissor, colour 25d0d0d0",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 39,
+          "serial_ms": 1.686,
+          "description": "strip 708 vertices, box 804,755 316x182, texture 1600x32, blend 4/5 scissor, colour 00000000",
+          "pixels": "1:1 18k"
+        },
+        {
+          "id": 40,
+          "serial_ms": 1.723,
+          "description": "strip 708 vertices, box 803,756 316x182, texture 1600x32, blend 4/5 scissor, colour 00000000",
+          "pixels": "1:1 18k"
+        },
+        {
+          "id": 41,
+          "serial_ms": 1.648,
+          "description": "strip 708 vertices, box 802,755 316x182, texture 1600x32, blend 4/5 scissor, colour 00000000",
+          "pixels": "1:1 18k"
+        },
+        {
+          "id": 42,
+          "serial_ms": 1.624,
+          "description": "strip 708 vertices, box 803,754 316x182, texture 1600x32, blend 4/5 scissor, colour 00000000",
+          "pixels": "1:1 18k"
+        },
+        {
+          "id": 43,
+          "serial_ms": 1.517,
+          "description": "strip 708 vertices, box 803,755 316x182, texture 1600x32, blend 4/5 scissor, colour 00d0d0d0",
+          "pixels": "1:1 18k"
+        },
+        {
+          "id": 44,
+          "serial_ms": 0.175,
+          "description": "strip   4 vertices, box 23,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 45,
+          "serial_ms": 0.155,
+          "description": "strip   4 vertices, box 159,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 46,
+          "serial_ms": 0.287,
+          "description": "strip   4 vertices, box 512,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 47,
+          "serial_ms": 0.16,
+          "description": "strip   4 vertices, box 715,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 48,
+          "serial_ms": 0.164,
+          "description": "strip   4 vertices, box 931,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca",
+          "pixels": "bilinear 1k"
+        },
+        {
+          "id": 49,
+          "serial_ms": 0.132,
+          "description": "strip  24 vertices, box 66,1033 76x25, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 50,
+          "serial_ms": 0.512,
+          "description": "strip 108 vertices, box 203,1025 292x39, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 6k"
+        },
+        {
+          "id": 51,
+          "serial_ms": 0.204,
+          "description": "strip  54 vertices, box 554,1025 144x33, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 52,
+          "serial_ms": 0.38,
+          "description": "strip  60 vertices, box 757,1032 158x26, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 3k"
+        },
+        {
+          "id": 53,
+          "serial_ms": 0.251,
+          "description": "strip  48 vertices, box 975,1032 130x26, texture 2048x43, blend 4/5, colour ff7d7d7d",
+          "pixels": "1:1 2k"
+        },
+        {
+          "id": 54,
+          "serial_ms": 0.164,
+          "description": "strip  30 vertices, box 1830,1034 70x28, texture 2048x46, blend 4/5, colour ff777777",
+          "pixels": "1:1 1k"
+        },
+        {
+          "id": 55,
+          "serial_ms": 0.081,
+          "description": "strip   4 vertices, box 19,13 25x25, texture 24x24, blend 4/5, colour c0a0a0ff",
+          "pixels": "bilinear 0k"
+        },
+        {
+          "id": 56,
+          "serial_ms": 0.069,
+          "description": "strip   4 vertices, box 49,13 25x25, texture 24x24, blend 4/5, colour 90ffffff",
+          "pixels": "bilinear 0k"
+        },
+        {
+          "id": 57,
+          "serial_ms": 0.179,
+          "description": "strip   4 vertices, box 1863,13 30x30, texture 85x85, blend 4/5, colour a0ffffff",
+          "pixels": "bilinear 0k"
+        }
+      ],
+      "top3_serial_ms": 75.606
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "local_commit": "fcd0450c1c5cef720ce08690c217f2aab40da620",
+  "device_binary_sha256_observed": "253a15744237071c9bc136d94666957cc4567fbbe8ebf349ce1a10cd86daf404",
+  "package18_binary_sha256": "253a15744237071c9bc136d94666957cc4567fbbe8ebf349ce1a10cd86daf404",
+  "patch29_sha256": "fa9d521819dfe8e274442278fdaf7e2b6d0e234de158f96b2152dd27f2ef7bd7",
+  "zip_vs_local_differences": [
+    {
+      "path": "mister/LEIA-ME.txt",
+      "zip_sha256": "e04256c4e84a37cdf8edab265bf2ff9a38287b947046ecaf03e094899291b142",
+      "local_sha256": "50701859b577c166532a6ceaf43a2a33fbb43d5ea5a44bf71cc0dbdfc241aa62"
+    },
+    {
+      "path": "mister/package.sh",
+      "zip_sha256": "9fe814bd5c94a831f5fa8c351b1c4424f3bd9a8e7a8388741f5b16565d3df6ec",
+      "local_sha256": "c0880f368c4e0a5bb31d3687fc040c90bd531e8b0e9c2f14641b30a16139ef88"
+    }
+  ],
+  "reconstructed_paths": [
+    "es-core/src/renderers/Renderer_Soft.cpp",
+    "es-core/src/renderers/soft/SoftOutput.cpp",
+    "es-core/src/renderers/soft/SoftRaster.cpp",
+    "mister/LEIA-ME.txt",
+    "mister/package.sh",
+    "mister/scripts/es-mister.sh"
+  ]
+}

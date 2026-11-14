@@ -1,0 +1,48 @@
+frame drawn in 206.7 ms by 2 threads (whole, 100% of the screen, 1 parts), copy 10.5 ms, ES 121.3 ms before it, 1920x1080
+   0  23.082 ms strip   4 vertices, box 0,135 1920x1080, texture 1280x720 opaque, blend 4/5 scissor, colour ffffffff: bilinear 1814k
+   1  16.765 ms strip   4 vertices, box 0,135 1920x1080, texture 1920x1080, blend 4/5 scissor, colour ffffffff: 1:1 805k
+   2   4.837 ms strip   4 vertices, box 0,800 1920x27, texture 1920x1080, blend 4/5 scissor, colour 40ffffff: bilinear 51k
+   3   6.395 ms strip   4 vertices, box 0,549 1920x251, texture -, blend 4/5 scissor, colour 40000000: colour 481k
+   4   0.362 ms strip   4 vertices, box 159,647 326x61, texture -, blend 4/5 scissor, colour 30000000: colour 19k
+   5   0.263 ms strip   4 vertices, box 157,645 326x61, texture -, blend 4/5 scissor, colour 99ffffff: colour 19k
+   6   2.645 ms strip   4 vertices, box 1439,640 326x74, texture 522x118, blend 4/5 scissor, colour 30000000: bilinear 24k
+   7   2.527 ms strip   4 vertices, box 1437,638 326x74, texture 522x118 nearest, blend 4/5 scissor, colour 99ffffff: bilinear 24k
+   8   0.833 ms strip   4 vertices, box 703,632 522x94, texture 522x94, blend 4/5 scissor, colour 50000000: 1:1 38k
+   9   0.728 ms strip   4 vertices, box 699,628 522x94, texture 522x94 nearest, blend 4/5 scissor, colour ffffffff: 1:1 38k
+  10   0.053 ms strip   4 vertices, box 0,547 1920x5, texture 32x32 opaque nearest, blend 4/5 scissor, colour ff3675ca: fill 11k
+  11   0.038 ms strip   4 vertices, box 0,794 1920x5, texture 32x32 opaque nearest, blend 4/5 scissor, colour ff3675ca: fill 9k
+  12   0.477 ms strip  48 vertices, box 98,199 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 6k
+  13   0.255 ms strip  18 vertices, box 60,201 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 3k
+  14   0.547 ms strip  48 vertices, box 97,200 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 6k
+  15   0.283 ms strip  18 vertices, box 59,202 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 3k
+  16   0.784 ms strip  48 vertices, box 96,199 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 6k
+  17   0.268 ms strip  18 vertices, box 58,201 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 3k
+  18   0.444 ms strip  48 vertices, box 97,198 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 6k
+  19   0.363 ms strip  18 vertices, box 59,200 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 3k
+  20   0.410 ms strip  48 vertices, box 97,199 257x49, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0: 1:1 6k
+  21   0.179 ms strip  18 vertices, box 59,201 163x47, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0: 1:1 3k
+  22   0.255 ms strip  84 vertices, box 59,275 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000: 1:1 2k
+  23   0.277 ms strip  84 vertices, box 58,276 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000: 1:1 2k
+  24   0.175 ms strip  84 vertices, box 57,275 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000: 1:1 2k
+  25   1.807 ms strip  84 vertices, box 58,274 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000: 1:1 2k
+  26   0.205 ms strip  84 vertices, box 58,275 152x26, texture 1600x32, blend 4/5 scissor, colour ffd0d0d0: 1:1 2k
+  27   2.346 ms strip 696 vertices, box 786,890 351x182, texture 1600x32, blend 4/5 scissor, colour 00000000: 1:1 17k
+  28   1.762 ms strip 696 vertices, box 785,891 351x182, texture 1600x32, blend 4/5 scissor, colour 00000000: 1:1 17k
+  29   1.662 ms strip 696 vertices, box 784,890 351x182, texture 1600x32, blend 4/5 scissor, colour 00000000: 1:1 17k
+  30   2.166 ms strip 696 vertices, box 785,889 351x182, texture 1600x32, blend 4/5 scissor, colour 00000000: 1:1 17k
+  31   1.724 ms strip 696 vertices, box 785,890 351x182, texture 1600x32, blend 4/5 scissor, colour 00d0d0d0: 1:1 17k
+  32   0.267 ms strip   4 vertices, box 23,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca: bilinear 1k
+  33   0.203 ms strip   4 vertices, box 159,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca: bilinear 1k
+  34   0.208 ms strip   4 vertices, box 512,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca: bilinear 1k
+  35   0.194 ms strip   4 vertices, box 715,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca: bilinear 1k
+  36   0.252 ms strip   4 vertices, box 931,1028 33x33, texture 64x64 nearest, blend 4/5, colour ff3675ca: bilinear 1k
+  37   0.194 ms strip  24 vertices, box 66,1033 76x25, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 1k
+  38   0.567 ms strip 108 vertices, box 203,1025 292x39, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 6k
+  39   0.228 ms strip  54 vertices, box 554,1025 144x33, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 3k
+  40   0.301 ms strip  60 vertices, box 757,1032 158x26, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 3k
+  41   0.253 ms strip  48 vertices, box 975,1032 130x26, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 2k
+  42   0.173 ms strip  30 vertices, box 1830,1034 70x28, texture 2048x46, blend 4/5, colour ff777777: 1:1 1k
+  43   0.107 ms strip   4 vertices, box 19,13 25x25, texture 24x24, blend 4/5, colour 90ffffff: bilinear 0k
+  44   0.079 ms strip   4 vertices, box 49,13 25x25, texture 24x24, blend 4/5, colour 90ffffff: bilinear 0k
+  45   0.037 ms strip   4 vertices, box 1863,13 30x30, texture -, blend 4/5, colour a0ffffff: colour 0k
+total 77.981 ms on one thread, 46 commands

@@ -1,0 +1,38 @@
+frame drawn in 127.5 ms by 2 threads (whole, 100% of the screen, 1 parts), copy 21.7 ms, ES 1078.2 ms before it, 1920x1080
+   0  25.975 ms strip   4 vertices, box 0,456 1920x1080, texture 2048x60, blend 4/5 scissor, colour ffffffff: bilinear 1198k
+   1  21.438 ms strip   4 vertices, box 0,456 1920x1080, texture 2048x60, blend 4/5 scissor, colour ffffffff: bilinear 1198k
+   2   5.015 ms strip   4 vertices, box 0,870 1920x251, texture -, blend 4/5 scissor, colour 40000000: colour 403k
+   3   0.130 ms strip   4 vertices, box 1439,961 326x74, texture 8x8 nearest, blend 4/5 scissor, colour 30000000: nothing
+   4   0.005 ms strip   4 vertices, box 1437,959 326x74, texture 8x8 nearest, blend 4/5 scissor, colour 99ffffff: nothing
+   5   0.004 ms strip   4 vertices, box 703,953 522x94, texture 8x8 nearest, blend 4/5 scissor, colour 50000000: nothing
+   6   0.004 ms strip   4 vertices, box 699,949 522x94, texture 8x8 nearest, blend 4/5 scissor, colour ffffffff: nothing
+   7   0.006 ms strip   4 vertices, box 0,868 1920x5, texture 8x8 nearest, blend 4/5 scissor, colour ff3675ca: nothing
+   8   0.690 ms strip  48 vertices, box 98,520 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 6k
+   9   0.369 ms strip  18 vertices, box 60,522 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 3k
+  10   0.491 ms strip  48 vertices, box 97,521 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 6k
+  11   0.199 ms strip  18 vertices, box 59,523 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 3k
+  12   0.751 ms strip  48 vertices, box 96,520 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 6k
+  13   0.279 ms strip  18 vertices, box 58,522 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 3k
+  14   0.614 ms strip  48 vertices, box 97,519 257x49, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 6k
+  15   0.255 ms strip  18 vertices, box 59,521 163x47, texture 2048x79, blend 4/5 scissor, colour ff000000: 1:1 3k
+  16   1.192 ms strip  48 vertices, box 97,520 257x49, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0: 1:1 6k
+  17   0.363 ms strip  18 vertices, box 59,522 163x47, texture 2048x79, blend 4/5 scissor, colour ffd0d0d0: 1:1 3k
+  18   0.281 ms strip  84 vertices, box 59,595 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000: 1:1 2k
+  19   0.177 ms strip  84 vertices, box 58,596 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000: 1:1 2k
+  20   0.196 ms strip  84 vertices, box 57,595 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000: 1:1 2k
+  21   0.263 ms strip  84 vertices, box 58,594 152x26, texture 1600x32, blend 4/5 scissor, colour ff000000: 1:1 2k
+  22   0.234 ms strip  84 vertices, box 58,595 152x26, texture 1600x32, blend 4/5 scissor, colour ffd0d0d0: 1:1 2k
+  23   0.337 ms strip   4 vertices, box 23,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca: bilinear 1k
+  24   0.253 ms strip   4 vertices, box 159,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca: bilinear 1k
+  25   0.578 ms strip   4 vertices, box 512,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca: bilinear 1k
+  26   0.416 ms strip   4 vertices, box 715,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca: bilinear 1k
+  27   0.237 ms strip   4 vertices, box 931,1028 33x33, texture 1600x32, blend 4/5, colour ff3675ca: bilinear 1k
+  28   0.166 ms strip  24 vertices, box 66,1033 76x25, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 1k
+  29   0.657 ms strip 108 vertices, box 203,1025 292x39, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 6k
+  30   0.249 ms strip  54 vertices, box 554,1025 144x33, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 3k
+  31   0.248 ms strip  60 vertices, box 757,1032 158x26, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 3k
+  32   0.298 ms strip  48 vertices, box 975,1032 130x26, texture 2048x43, blend 4/5, colour ff7d7d7d: 1:1 2k
+  33   0.177 ms strip  30 vertices, box 1830,1034 70x28, texture 2048x46, blend 4/5, colour ff777777: 1:1 1k
+  34   0.029 ms strip   4 vertices, box 19,13 25x25, texture -, blend 4/5, colour 90ffffff: colour 0k
+  35   0.034 ms strip   4 vertices, box 50,13 25x25, texture -, blend 4/5, colour 90ffffff: colour 0k
+total 62.607 ms on one thread, 36 commands

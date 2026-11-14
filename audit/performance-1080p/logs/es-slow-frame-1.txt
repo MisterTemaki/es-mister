@@ -1,0 +1,25 @@
+frame drawn in 126.2 ms by 2 threads (whole, 100% of the screen, 1 parts), copy 12.6 ms, ES 495.2 ms before it, 1920x1080
+   0  14.177 ms strip   4 vertices, box 0,0 1920x1080, texture -, blend 4/5, colour ff000000: fill 2073k
+   1  36.408 ms strip   4 vertices, box 0,0 1920x1080, texture 1920x1080 opaque, blend 4/5, colour ffffffff: copy 2073k
+   2   1.237 ms stencil  16 vertices, box 480,963 960x39, texture -, blend 4/5, colour ffffffff: nothing
+   3  11.887 ms strip   4 vertices, box 480,963 960x39, texture 1920x1080 opaque, blend 4/5 stencil-tested, colour 7f606060: bilinear 37k
+   4   0.224 ms strip   4 vertices, box 480,963 39x39, texture 32x32 opaque, blend 4/5 stencil-tested, colour ffdf1010: bilinear 1k
+   5   1.376 ms strip 174 vertices, box 679,839 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+   6   1.197 ms strip 174 vertices, box 679,839 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+   7   1.273 ms strip 174 vertices, box 680,839 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+   8   0.961 ms strip 174 vertices, box 681,839 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+   9   0.845 ms strip 174 vertices, box 682,839 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  10   1.486 ms strip 174 vertices, box 682,840 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  11   1.031 ms strip 174 vertices, box 682,841 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  12   0.985 ms strip 174 vertices, box 682,842 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  13   1.232 ms strip 174 vertices, box 682,843 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  14   0.969 ms strip 174 vertices, box 681,843 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  15   0.984 ms strip 174 vertices, box 680,843 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  16   1.918 ms strip 174 vertices, box 679,843 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  17   0.867 ms strip 174 vertices, box 679,843 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  18   0.972 ms strip 174 vertices, box 679,842 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  19   0.775 ms strip 174 vertices, box 679,841 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  20   0.944 ms strip 174 vertices, box 679,840 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  21   1.550 ms strip 174 vertices, box 679,839 565x48, texture 2048x60, blend 4/5, colour 20000000: 1:1 12k
+  22   0.857 ms strip 174 vertices, box 679,840 565x48, texture 2048x60, blend 4/5, colour ffffffff: 1:1 12k
+total 84.155 ms on one thread, 23 commands

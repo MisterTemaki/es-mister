@@ -1,0 +1,240 @@
+== 2026-11-13 09:23:13 es-mister.sh
+starting ES at 640x360
+2026-11-13 09:23:21	[2248]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 09:23:23	[2237]	ERROR	System "sg1000" path does not exist !
+2026-11-13 09:23:26	[2237]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 09:27:41 es-mister.sh
+starting ES at 640x360
+2026-11-13 09:27:50	[1732]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 09:27:53	[1722]	ERROR	System "sg1000" path does not exist !
+2026-11-13 09:27:56	[1722]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 09:31:34 launch nes: /media/fat/games/NES/Contra (JP).nes
+<mistergamedescription>
+	<rbf>_Console/NES</rbf>
+	<file delay="2" type="f" index="1" path="../../../../../media/fat/games/NES/Contra (JP).nes"/>
+</mistergamedescription>
+core NES started
+back in the menu
+== 2026-11-13 09:39:39 es-mister.sh
+starting ES at 640x360
+2026-11-13 09:39:48	[1728]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 09:39:51	[1717]	ERROR	System "sg1000" path does not exist !
+2026-11-13 09:39:54	[1717]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 09:46:34 es-mister.sh
+starting ES at 640x360
+2026-11-13 09:46:43	[1744]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 09:46:46	[1735]	ERROR	System "sg1000" path does not exist !
+2026-11-13 09:46:48	[1735]	ERROR	System "ngp" path does not exist !
+== 1969-12-31 21:00:31 es-mister.sh
+starting ES at 640x360
+2026-11-13 10:01:14	[1720]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 10:01:17	[1711]	ERROR	System "sg1000" path does not exist !
+2026-11-13 10:01:19	[1711]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 10:41:26 es-mister.sh
+starting ES at 640x360
+2026-11-13 10:41:36	[1775]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 10:41:38	[1777]	ERROR	System "sg1000" path does not exist !
+2026-11-13 10:41:40	[1777]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 10:42:57 launch pcenginecd: /media/fat/games/TGFX16-CD/Forgotten Worlds (US).chd
+<mistergamedescription>
+	<rbf>_Console/TurboGrafx16</rbf>
+	<file delay="1" type="s" index="0" path="../../../../../media/fat/games/TGFX16-CD/Forgotten Worlds (US).chd"/>
+</mistergamedescription>
+core TGFX16 started
+back in the menu
+== 1969-12-31 21:00:31 es-mister.sh
+starting ES at 640x360
+2026-11-13 10:46:06	[1714]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 10:46:08	[1715]	ERROR	System "sg1000" path does not exist !
+2026-11-13 10:46:11	[1716]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 11:19:47 es-mister.sh
+starting ES at 640x360
+2026-11-13 11:19:55	[1758]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 11:19:57	[1761]	ERROR	System "sg1000" path does not exist !
+2026-11-13 11:19:59	[1762]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 11:20:16 launch nes: /media/fat/games/NES/1943 - The Battle of Midway (US) (Retro-Bit Generations).nes
+<mistergamedescription>
+	<rbf>_Console/NES</rbf>
+	<file delay="2" type="f" index="1" path="../../../../../media/fat/games/NES/1943 - The Battle of Midway (US) (Retro-Bit Generations).nes"/>
+</mistergamedescription>
+core NES started
+back in the menu
+== 2026-11-13 11:24:31 es-mister.sh
+starting ES at 640x360
+2026-11-13 11:24:39	[1712]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 11:24:41	[1713]	ERROR	System "sg1000" path does not exist !
+2026-11-13 11:24:43	[1714]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 12:14:55 es-mister.sh
+es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer
+no Linux framebuffer: ES does not start
+== 2026-11-13 12:15:32 es-mister.sh
+es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer
+no Linux framebuffer: ES does not start
+== 2026-11-13 12:22:03 es-mister.sh
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 12:22:12	[1750]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 12:22:15	[1751]	ERROR	System "sg1000" path does not exist !
+2026-11-13 12:22:17	[1753]	ERROR	System "ngp" path does not exist !
+sh: shutdown: command not found
+ES closed (0)
+== 2026-11-13 12:23:36 es-mister.sh
+es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer
+no Linux framebuffer: ES does not start
+== 1969-12-31 21:00:37 es-mister.sh
+es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer (console tty2 before, tty3 after 30 F9 presses)
+the framebuffer is not on yet (try 1)
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 12:33:42	[1745]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 12:33:44	[1748]	ERROR	System "sg1000" path does not exist !
+2026-11-13 12:33:47	[1747]	ERROR	System "ngp" path does not exist !
+ES closed (0)
+== 2026-11-13 12:46:05 es-mister.sh
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 12:46:18	[1740]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 12:46:21	[1743]	ERROR	System "sg1000" path does not exist !
+2026-11-13 12:46:24	[1742]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 12:58:56 es-mister.sh
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 12:59:07	[1725]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 12:59:10	[1729]	ERROR	System "sg1000" path does not exist !
+2026-11-13 12:59:13	[1729]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 13:02:33 es-mister.sh
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 13:02:45	[1740]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 13:02:48	[1743]	ERROR	System "sg1000" path does not exist !
+2026-11-13 13:02:51	[1743]	ERROR	System "ngp" path does not exist !
+== 1969-12-31 21:00:36 es-mister.sh
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 13:09:08	[1733]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 13:09:11	[1734]	ERROR	System "sg1000" path does not exist !
+2026-11-13 13:09:14	[1734]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 13:13:54 es-mister.sh
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 13:14:06	[1722]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 13:14:08	[1725]	ERROR	System "sg1000" path does not exist !
+2026-11-13 13:14:11	[1723]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 13:24:08 es-mister.sh
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 13:24:20	[1742]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 13:24:23	[1746]	ERROR	System "sg1000" path does not exist !
+2026-11-13 13:24:26	[1746]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 13:26:11 launch megadrive: /media/fat/games/MegaDrive/Alien 3 (US - EU) (Rev-A).md
+<mistergamedescription>
+	<rbf>_Console/MegaDrive</rbf>
+	<file delay="1" type="f" index="1" path="../../../../../media/fat/games/MegaDrive/Alien 3 (US - EU) (Rev-A).md"/>
+</mistergamedescription>
+core MegaDrive started
+back in the menu
+== 2026-11-13 14:53:42 es-mister.sh
+es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer (console tty2 before, tty3 after 30 F9 presses)
+the framebuffer is not on yet (try 1)
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 14:54:07	[1757]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 14:54:08	[1758]	ERROR	System "sg1000" path does not exist !
+2026-11-13 14:54:10	[1759]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 14:56:06 launch arcade: /media/fat/_Arcade/Blood Bros (World).mra
+core bloodbro started
+back in the menu
+== 2026-11-13 17:27:09 es-mister.sh
+es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer (console tty2 before, tty3 after 8 F9 presses)
+the framebuffer is not on yet (try 1)
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 17:27:24	[1763]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 17:27:25	[1766]	ERROR	System "sg1000" path does not exist !
+2026-11-13 17:27:27	[1766]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 17:28:10 launch megadrive: /media/fat/games/MegaDrive/Aladdin (US).md
+<mistergamedescription>
+	<rbf>_Console/MegaDrive</rbf>
+	<file delay="1" type="f" index="1" path="../../../../../media/fat/games/MegaDrive/Aladdin (US).md"/>
+</mistergamedescription>
+core MegaDrive started
+back in the menu
+== 2026-11-13 17:37:48 es-mister.sh
+es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer (console tty2 before, tty3 after 8 F9 presses)
+the framebuffer is not on yet (try 1)
+starting ES at 1920x1080 (SIZE=auto)
+2026-11-13 17:38:03	[1751]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 17:38:04	[1752]	ERROR	System "sg1000" path does not exist !
+2026-11-13 17:38:06	[1753]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 17:46:17 es-mister.sh (uptime 42.34 s)
+starting ES at 1920x1080 (SIZE=auto, uptime 50.51 s)
+2026-11-13 17:46:28	[1728]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 17:46:29	[1729]	ERROR	System "sg1000" path does not exist !
+2026-11-13 17:46:31	[1731]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 17:47:18 launch megadrive: /media/fat/games/MegaDrive/Alien Storm (WR) (SEGA Classic Collection).md
+<mistergamedescription>
+	<rbf>_Console/MegaDrive</rbf>
+	<file delay="1" type="f" index="1" path="../../../../../media/fat/games/MegaDrive/Alien Storm (WR) (SEGA Classic Collection).md"/>
+</mistergamedescription>
+core MegaDrive started
+back in the menu
+== 1969-12-31 21:00:27 es-mister.sh (uptime 27.15 s)
+starting ES at 1920x1080 (SIZE=auto, uptime 36.48 s)
+2026-11-13 17:59:39	[1717]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 17:59:41	[1720]	ERROR	System "sg1000" path does not exist !
+2026-11-13 17:59:43	[1720]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 18:00:33 launch megadrive: /media/fat/games/MegaDrive/Captain America and the Avengers (US).md
+<mistergamedescription>
+	<rbf>_Console/MegaDrive</rbf>
+	<file delay="1" type="f" index="1" path="../../../../../media/fat/games/MegaDrive/Captain America and the Avengers (US).md"/>
+</mistergamedescription>
+core MegaDrive started
+back in the menu
+framebuffer 1920x1080
+== 2026-11-13 18:21:08 es-mister.sh (uptime 120.84 s)
+starting ES at 1920x1080 (SIZE=auto, uptime 129.03 s)
+2026-11-13 18:21:18	[1808]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 18:21:20	[1809]	ERROR	System "sg1000" path does not exist !
+2026-11-13 18:21:22	[1812]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 18:21:54 launch arcade: /media/fat/_Arcade/Aliens (World set 1).mra
+core aliens started
+back in the menu
+framebuffer 1920x1080
+== 2026-11-13 18:25:37 launch megadrive: /media/fat/games/MegaDrive/After Burner 2 (JP).md
+<mistergamedescription>
+	<rbf>_Console/MegaDrive</rbf>
+	<file delay="1" type="f" index="1" path="../../../../../media/fat/games/MegaDrive/After Burner 2 (JP).md"/>
+</mistergamedescription>
+core MegaDrive started
+back in the menu
+framebuffer 1920x1080
+== 2026-11-13 18:27:14 launch megadrive: /media/fat/games/MegaDrive/Captain America and the Avengers (US).md
+<mistergamedescription>
+	<rbf>_Console/MegaDrive</rbf>
+	<file delay="1" type="f" index="1" path="../../../../../media/fat/games/MegaDrive/Captain America and the Avengers (US).md"/>
+</mistergamedescription>
+core MegaDrive started
+back in the menu
+framebuffer 1920x1080
+== 2026-11-13 18:37:48 es-mister.sh (uptime 596.95 s)
+starting ES at 1920x1080 (SIZE=auto, uptime 606.84 s)
+2026-11-13 18:38:01	[2043]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 18:38:02	[2047]	ERROR	System "sg1000" path does not exist !
+2026-11-13 18:38:05	[2047]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 18:53:00 es-mister.sh (uptime 42.22 s)
+starting ES at 1920x1080 (SIZE=auto, uptime 51.15 s)
+2026-11-13 18:53:11	[1747]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 18:53:13	[1748]	ERROR	System "sg1000" path does not exist !
+2026-11-13 18:53:15	[1750]	ERROR	System "ngp" path does not exist !
+== 2026-11-13 18:54:00 launch gba: /media/fat/games/GBA/Akumajou Dracula - Circle of the Moon (JP) (Castlevania Advance Collection).gba
+<mistergamedescription>
+	<rbf>_Console/GBA</rbf>
+	<file delay="2" type="f" index="1" path="../../../../../media/fat/games/GBA/Akumajou Dracula - Circle of the Moon (JP) (Castlevania Advance Collection).gba"/>
+</mistergamedescription>
+core GBA started
+back in the menu
+framebuffer 1920x1080
+== 2026-11-13 19:13:59 es-mister.sh (uptime 42.89 s)
+es-mister-helper: Main_MiSTer did not switch to the Linux framebuffer (console tty2 before, tty3 after 8 F9 presses)
+the framebuffer is not on yet (try 1)
+starting ES at 1920x1080 (SIZE=auto, uptime 55.71 s)
+2026-11-13 19:14:14	[1755]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 19:14:16	[1758]	ERROR	System "sg1000" path does not exist !
+2026-11-13 19:14:18	[1757]	ERROR	System "ngp" path does not exist !
+Terminated
+ES closed (143)
+== 1969-12-31 21:00:27 es-mister.sh (uptime 27.21 s)
+starting ES at 1920x1080 (SIZE=auto, uptime 36.16 s)
+2026-11-13 19:34:21	[1711]	ERROR	HttpReq::onError (3) : Unsupported protocol
+2026-11-13 19:34:23	[1713]	ERROR	System "sg1000" path does not exist !
+2026-11-13 19:34:25	[1713]	ERROR	System "ngp" path does not exist !

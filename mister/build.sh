@@ -76,7 +76,7 @@ sources() {
 cmake_dep() { # source dir, build dir, options...
 	local src=$1 build=$2
 	shift 2
-	cmake -S "$src" -B "$build" -G Ninja -DCMAKE_TOOLCHAIN_FILE="$TOOLS/armhf.cmake" -DCMAKE_BUILD_TYPE=Release \
+	cmake -S "$src" -B "$build" -G Ninja -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_TOOLCHAIN_FILE="$TOOLS/armhf.cmake" -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX="$PREFIX" -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=OFF "$@" >/dev/null
 	cmake --build "$build" -j "$JOBS" >/dev/null
 	cmake --install "$build" >/dev/null
@@ -100,7 +100,7 @@ deps() {
 			cd "$SRC/alsa-lib"
 			# its git tree asks for autoconf 2.72; 2.71 (Ubuntu 24.04's) makes the same configure
 			sed -i 's/AC_PREREQ(\[\?2\.72\]\?)/AC_PREREQ(2.71)/' configure.ac
-			[ -x configure ] || autoreconf -fi >/dev/null 2>&1
+			[ -x configure ] || autoreconf -fi >"$WORK/alsa-autoreconf.log" 2>&1 || { cat "$WORK/alsa-autoreconf.log"; exit 1; }
 			mkdir -p "$WORK/obj/alsa-lib"
 			cd "$WORK/obj/alsa-lib"
 			# the MiSTer's own ALSA configuration is read at run time, from where its Linux keeps it
@@ -108,7 +108,10 @@ deps() {
 				--disable-python --disable-topology --disable-ucm --with-configdir=/usr/share/alsa \
 				--with-plugindir=/usr/lib/alsa-lib >/dev/null
 			make -j "$JOBS" >/dev/null
-			make install >/dev/null
+			# --with-configdir is a runtime path on the MiSTer, never an installation path on the host.
+			local install_root="$WORK/stage/alsa"
+			make install DESTDIR="$install_root" >/dev/null
+			cp -a "$install_root$PREFIX/." "$PREFIX/"
 		)
 	fi
 

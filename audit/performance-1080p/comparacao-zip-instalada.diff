@@ -1,0 +1,246 @@
+--- ZIP/es-core/src/renderers/Renderer_Soft.cpp
++++ instalada-reconstituida/es-core/src/renderers/Renderer_Soft.cpp
+@@ -169,7 +169,7 @@
+ 			// frame drawn, and the parts of it where this frame's draws are not the last one's are drawn again
+ 			bool dirty = true;
+ 			bool dirtyCheck = false;          // ES_SOFT_DIRTY_CHECK=1: each part-drawn frame checked against a whole one
+-			int stripRows = 16;               // ES_SOFT_STRIP: rows drawn at a time through all the commands (executeBand)
++			int stripRows = 8;                // ES_SOFT_STRIP: rows drawn at a time through all the commands (executeBand)
+ 			bool lastValid = false;           // the raster holds the frame of lastDrawn
+ 			std::vector<Drawn> lastDrawn;
+ 			std::vector<Box> rects;           // this frame's parts to draw (when drawn in part)
+@@ -382,11 +382,12 @@
+ 		}
+ 
+ 		// The frame's commands, in one band: all of it, or (drawn in part) each part. A few rows at a time
+-		// (ES_SOFT_STRIP, default 16; 0: the whole band or part at once), every command over them before the
++		// (ES_SOFT_STRIP, default 8; 0: the whole band or part at once), every command over them before the
+ 		// next rows: the rows stay in the processor's cache between the layers (a background, another over it
+ 		// in a fade, a shade...), and go to memory once instead of once a layer. On the MiSTer the memory is
+-		// what a frame waits for (the FPGA reads the screen from the same DDR3): a 1080p frame took as long
+-		// with two cores as with one.
++		// what a frame waits for (the FPGA reads the screen from the same DDR3): a 1080p frame takes as long
++		// with two cores as with one. es-mister-bench, the carousel's frame (memory asked for ahead): a layer
++		// at a time 116.8 ms, strips of 32 rows 108.7, of 16 101.4, of 8 96.9.
+ 		void executeBand(Raster& raster)
+ 		{
+ 			SoftState& s = S();
+@@ -977,7 +978,7 @@
+ 		const char* check = getenv("ES_SOFT_DIRTY_CHECK");
+ 		s.dirtyCheck = check != nullptr && strcmp(check, "0") != 0;
+ 		const char* strip = getenv("ES_SOFT_STRIP");
+-		s.stripRows = strip != nullptr ? std::max(0, atoi(strip)) : 16;
++		s.stripRows = strip != nullptr ? std::max(0, atoi(strip)) : 8;
+ 
+ 		const char* stats = getenv("ES_SOFT_STATS");
+ 		if (stats != nullptr)
+--- ZIP/es-core/src/renderers/soft/SoftOutput.cpp
++++ instalada-reconstituida/es-core/src/renderers/soft/SoftOutput.cpp
+@@ -32,13 +32,23 @@
+ 				return value != nullptr ? value : fallback;
+ 			}
+ 
+-			// a row's bytes copied (64 bytes a step with NEON: the framebuffer's memory takes wide stores best)
++			// a row's bytes copied (64 bytes a step with NEON: the framebuffer's memory takes wide stores best),
++			// the frame's next bytes asked for ahead (ES_SOFT_PLD, as the spans): a 1080p frame to the MiSTer's
++			// screen in 16.3 ms instead of 20.3 (es-mister-bench)
+ 			inline void copyBytes(uint8_t* to, const uint8_t* from, size_t n)
+ 			{
+ #if defined(__ARM_NEON) || defined(__ARM_NEON__)
++				static const size_t ahead = []
++				{
++					const char* value = getenv("ES_SOFT_PLD");
++					const int bytes = value != nullptr ? atoi(value) : 256;
++					return (size_t)std::max(0, std::min(bytes, 4096));
++				}();
+ 				size_t i = 0;
+ 				for (; i + 64 <= n; i += 64)
+ 				{
++					if (ahead)
++						__builtin_prefetch(from + i + ahead, 0);
+ 					const uint32x4_t a = vld1q_u32((const uint32_t*)(from + i)), b = vld1q_u32((const uint32_t*)(from + i + 16));
+ 					const uint32x4_t c = vld1q_u32((const uint32_t*)(from + i + 32)), d = vld1q_u32((const uint32_t*)(from + i + 48));
+ 					vst1q_u32((uint32_t*)(to + i), a);
+--- ZIP/es-core/src/renderers/soft/SoftRaster.cpp
++++ instalada-reconstituida/es-core/src/renderers/soft/SoftRaster.cpp
+@@ -30,6 +30,48 @@
+ 			enum BlendMode { BLEND_NORMAL = 0, BLEND_ADD = 1, BLEND_GENERIC = 2 };
+ 
+ 			inline uint32_t div255(uint32_t x) { return (x + 128 + ((x + 128) >> 8)) >> 8; }
++
++			// How far ahead (pixels) a span asks for the memory it will read and write next (PLD): ES_SOFT_PLD,
++			// in bytes (256; 0: not asked). On the MiSTer the ARM otherwise waits for each line of memory in
++			// turn: es-mister-bench measured a faded layer over a 1080p frame in 48.7 ms without it and 28.1
++			// ms with it (the same from 64 to 1024 bytes), and the carousel's frame in 175 ms and 117 ms.
++#if defined(__ARM_NEON) || defined(__ARM_NEON__)
++			int aheadPixels()
++			{
++				static const int ahead = []
++				{
++					const char* value = getenv("ES_SOFT_PLD");
++					const int bytes = value != nullptr ? atoi(value) : 256;
++					return std::max(0, std::min(bytes, 4096)) / 4;
++				}();
++				return ahead;
++			}
++#endif
++
++			// a row's pixels copied, the source asked for ahead (memcpy's are not: 26.6 ms a 1080p frame on the
++			// MiSTer, these 21.6 ms)
++			inline void copyPixels(uint32_t* to, const uint32_t* from, int n)
++			{
++#if defined(__ARM_NEON) || defined(__ARM_NEON__)
++				const int ahead = aheadPixels();
++				int i = 0;
++				for (; i + 16 <= n; i += 16)
++				{
++					if (ahead)
++						__builtin_prefetch(from + i + ahead, 0);
++					const uint32x4_t a = vld1q_u32(from + i), b = vld1q_u32(from + i + 4);
++					const uint32x4_t c = vld1q_u32(from + i + 8), d = vld1q_u32(from + i + 12);
++					vst1q_u32(to + i, a);
++					vst1q_u32(to + i + 4, b);
++					vst1q_u32(to + i + 8, c);
++					vst1q_u32(to + i + 12, d);
++				}
++				if (i < n)
++					memcpy(to + i, from + i, (size_t)(n - i) * 4);
++#else
++				memcpy(to, from, (size_t)n * 4);
++#endif
++			}
+ 
+ 			// two 8-bit products in bits 0-15 and 16-31, each divided by 255
+ 			inline uint32_t div255x2(uint32_t x) { return ((x + 0x00800080 + ((x >> 8) & 0x00FF00FF)) >> 8) & 0x00FF00FF; }
+@@ -405,9 +447,17 @@
+ 				Span p = at(first);
+ 				alignas(16) uint32_t c00[8], c10[8], c01[8], c11[8];
+ 				alignas(16) uint16_t wx[8], wy[8];
++				const int ahead = aheadPixels();
+ 
+ 				for (int i = first; i < end; i += 8)
+ 				{
++					// the next lines of the frame (and of a 1:1 picture) asked for while these are drawn
++					if (ahead)
++					{
++						__builtin_prefetch(dst + i + ahead, 1);
++						if (TEX == TEX_DIRECT)
++							__builtin_prefetch(direct + i + ahead, 0);
++					}
+ 					uint8x8x4_t src;
+ 					if (TEX == TEX_NONE)
+ 						src = color;
+@@ -1002,7 +1052,7 @@
+ 				for (int y = py0; y < py1; y++)
+ 				{
+ 					const int vy = (int)std::floor(texelV0 + (y - qy0) * texelDv);
+-					memcpy(mPx + (size_t)y * mWidth + px0, tex.px + (size_t)vy * tex.w + ux, (size_t)(px1 - px0) * 4);
++					copyPixels(mPx + (size_t)y * mWidth + px0, tex.px + (size_t)vy * tex.w + ux, px1 - px0);
+ 				}
+ 				mStats.pixels += (uint64_t)(px1 - px0) * (py1 - py0);
+ 				mStats.kinds[PX_COPY] += (uint64_t)(px1 - px0) * (py1 - py0);
+@@ -1053,7 +1103,7 @@
+ 					const size_t offset = (size_t)y * mWidth + px0;
+ 					if (copy)
+ 					{
+-						memcpy(mPx + offset, sampled, (size_t)columns * 4);
++						copyPixels(mPx + offset, sampled, columns);
+ 						continue;
+ 					}
+ 					if (mod == MOD_VARY)
+@@ -1163,7 +1213,7 @@
+ 					const size_t offset = (size_t)y * mWidth + px0;
+ 					if (copy)
+ 					{
+-						memcpy(mPx + offset, sampled, (size_t)n * 4);
++						copyPixels(mPx + offset, sampled, n);
+ 						continue;
+ 					}
+ 					if (mod == MOD_VARY)
+--- ZIP/mister/LEIA-ME.txt
++++ instalada-reconstituida/mister/LEIA-ME.txt
+@@ -38,11 +38,23 @@
+ Ajustes
+ -------
+ /media/fat/emulationstation/es-mister.ini:
+-  SIZE=640x360   tamanho em que o EmulationStation desenha (640x360 preenche
+-                 1080p e 720p exatos); maior fica mais nítido e mais lento
++  SIZE=auto      tamanho em que o EmulationStation desenha: auto é o da tela
++                 (1920x1080 numa TV 1080p), o mais nítido e o mais lento;
++                 auto/2 é a metade, auto/3 um terço, ou LARGURAxALTURA
+   FPS=60         limite de quadros por segundo
+   BENCH=0        1 = redesenha a tela inteira em todo quadro, para medir o
+                  custo do desenho (veja logs/es-mister-stats.txt)
++  STRIP=8        linhas de cada faixa do desenho (0 = uma camada por vez)
++  PLD=256        bytes de memória pedidos à frente do desenho (0 = nenhum)
++
++Medir o desenho no seu MiSTer
++-----------------------------
++es-mister-bench desenha, sem mostrar nada de novo, o quadro mais pesado do
++EmulationStation (a troca de sistema no carrossel, em 1920x1080) de várias
++maneiras e mede cada uma no ARM do MiSTer. Feche o EmulationStation (Menu >
++Sair) e, pelo SSH, logo em seguida:
++  /media/fat/emulationstation/es-mister-bench | tee /media/fat/emulationstation/logs/es-mister-bench.txt
++Leva uns 2 minutos. Mande de volta o logs/es-mister-bench.txt.
+ 
+ O que mandar de volta depois do teste
+ -------------------------------------
+--- ZIP/mister/package.sh
++++ instalada-reconstituida/mister/package.sh
+@@ -39,6 +39,7 @@
+ echo "== program"
+ llvm-strip -o "$ES/emulationstation" "$WORK/out/emulationstation"
+ "$TOOLS/zcc" -O2 -s -static -o "$ES/es-mister-helper" "$ROOT/mister/es-mister-helper.c"
++"$TOOLS/zcc" -O3 -s -static -pthread -o "$ES/es-mister-bench" "$ROOT/mister/es-mister-bench.c"
+ cp "$ROOT/mister/scripts/es-mister.sh" "$ROOT/mister/scripts/mister-launch.sh" "$ROOT/mister/systems.tsv" "$ES/"
+ cp "$ROOT/mister/scripts/emulationstation.sh" "$STAGE/Scripts/"
+ cat >"$ES/es-mister.ini" <<'EOF'
+@@ -66,9 +67,15 @@
+ SLOW_DUMPS=4
+ 
+ # Rows of the screen drawn at a time through all its layers, so they stay in the processor's cache
+-# between them (the memory is what a 1080p frame waits for). 16 by default; to compare, 8 or 32, or 0
+-# (each band whole, as before), then logs/es-mister-stats.txt and logs/es-slow-frame-N.txt
+-STRIP=16
++# between them (the memory is what a 1080p frame waits for). 8 by default (the fastest es-mister-bench
++# measured on the MiSTer); to compare, 4, 16 or 32, or 0 (each band whole), then
++# logs/es-mister-stats.txt and logs/es-slow-frame-N.txt
++STRIP=8
++
++# Bytes of memory the drawing asks for ahead of what it draws (the ARM's PLD), so it does not wait for
++# each line of memory in turn: 256 by default (es-mister-bench: a layer of a 1080p frame in 28 ms
++# instead of 49); 0: not asked for, to compare
++PLD=256
+ 
+ # Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of
+ # other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.
+@@ -123,7 +130,7 @@
+                 path = os.path.join(folder, name)
+                 info = zipfile.ZipInfo.from_file(path)
+                 info.compress_type = zipfile.ZIP_DEFLATED
+-                if name in ("emulationstation", "es-mister-helper") or name.endswith(".sh"):
++                if name in ("emulationstation", "es-mister-helper", "es-mister-bench") or name.endswith(".sh"):
+                     info.external_attr = 0o100755 << 16
+                 with open(path, "rb") as f:
+                     z.writestr(info, f.read())
+--- ZIP/mister/scripts/es-mister.sh
++++ instalada-reconstituida/mister/scripts/es-mister.sh
+@@ -20,7 +20,8 @@
+ BENCH=0
+ PROFILE=0
+ SLOW_DUMPS=4
+-STRIP=16
++STRIP=8
++PLD=256
+ ARCADE_SKIP="cores _organized mame hbmame _alternatives"
+ INPUT_IGNORE="MiSTer virtual input,Zaparoo"
+ GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
+@@ -119,6 +120,8 @@
+ export ES_ARCADE_SKIP="$ARCADE_SKIP"
+ # rows drawn at a time through all the layers (they stay in the processor's cache); 0: a band at once
+ export ES_SOFT_STRIP="$STRIP"
++# memory asked for ahead of the drawing (bytes); 0: not asked for
++export ES_SOFT_PLD="$PLD"
+ # the first frames slow to draw, with each draw's time (logs/es-slow-frame-N.txt), to see what to make faster
+ if [ "$SLOW_DUMPS" -gt 0 ] 2>/dev/null; then
+ 	rm -f "$LOGS"/es-slow-frame-*.txt

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -16,8 +17,14 @@ namespace Renderer
 {
 	namespace Soft
 	{
+		static thread_local CacheTrace* cacheTrace = nullptr;
+		void traceCache(CacheTrace* trace) { cacheTrace = trace; }
 		namespace
 		{
+			int64_t cacheNow()
+			{
+				return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+			}
 			// Renderer::Blend::Factor
 			enum
 			{
@@ -30,6 +37,48 @@ namespace Renderer
 			enum BlendMode { BLEND_NORMAL = 0, BLEND_ADD = 1, BLEND_GENERIC = 2 };
 
 			inline uint32_t div255(uint32_t x) { return (x + 128 + ((x + 128) >> 8)) >> 8; }
+
+			// How far ahead (pixels) a span asks for the memory it will read and write next (PLD): ES_SOFT_PLD,
+			// in bytes (256; 0: not asked). On the MiSTer the ARM otherwise waits for each line of memory in
+			// turn: es-mister-bench measured a faded layer over a 1080p frame in 48.7 ms without it and 28.1
+			// ms with it (the same from 64 to 1024 bytes), and the carousel's frame in 175 ms and 117 ms.
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+			int aheadPixels()
+			{
+				static const int ahead = []
+				{
+					const char* value = getenv("ES_SOFT_PLD");
+					const int bytes = value != nullptr ? atoi(value) : 256;
+					return std::max(0, std::min(bytes, 4096)) / 4;
+				}();
+				return ahead;
+			}
+#endif
+
+			// a row's pixels copied, the source asked for ahead (memcpy's are not: 26.6 ms a 1080p frame on the
+			// MiSTer, these 21.6 ms)
+			inline void copyPixels(uint32_t* to, const uint32_t* from, int n)
+			{
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+				const int ahead = aheadPixels();
+				int i = 0;
+				for (; i + 16 <= n; i += 16)
+				{
+					if (ahead)
+						__builtin_prefetch(from + i + ahead, 0);
+					const uint32x4_t a = vld1q_u32(from + i), b = vld1q_u32(from + i + 4);
+					const uint32x4_t c = vld1q_u32(from + i + 8), d = vld1q_u32(from + i + 12);
+					vst1q_u32(to + i, a);
+					vst1q_u32(to + i + 4, b);
+					vst1q_u32(to + i + 8, c);
+					vst1q_u32(to + i + 12, d);
+				}
+				if (i < n)
+					memcpy(to + i, from + i, (size_t)(n - i) * 4);
+#else
+				memcpy(to, from, (size_t)n * 4);
+#endif
+			}
 
 			// two 8-bit products in bits 0-15 and 16-31, each divided by 255
 			inline uint32_t div255x2(uint32_t x) { return ((x + 0x00800080 + ((x >> 8) & 0x00FF00FF)) >> 8) & 0x00FF00FF; }
@@ -405,9 +454,17 @@ namespace Renderer
 				Span p = at(first);
 				alignas(16) uint32_t c00[8], c10[8], c01[8], c11[8];
 				alignas(16) uint16_t wx[8], wy[8];
+				const int ahead = aheadPixels();
 
 				for (int i = first; i < end; i += 8)
 				{
+					// the next lines of the frame (and of a 1:1 picture) asked for while these are drawn
+					if (ahead)
+					{
+						__builtin_prefetch(dst + i + ahead, 1);
+						if (TEX == TEX_DIRECT)
+							__builtin_prefetch(direct + i + ahead, 0);
+					}
 					uint8x8x4_t src;
 					if (TEX == TEX_NONE)
 						src = color;
@@ -590,7 +647,9 @@ namespace Renderer
 			std::shared_ptr<Scaled> scaledFor(const Texture* t, int w, int h, float u0, float u1, float t0, float t1)
 			{
 				ScaledCache& cache = scaledCache();
+				const int64_t lockStart = cacheTrace ? cacheNow() : 0;
 				std::lock_guard<std::mutex> guard(cache.lock);
+				if (cacheTrace) { cacheTrace->lookups++; cacheTrace->mutexNs += cacheNow() - lockStart; }
 				if (!cache.ready)
 				{
 					cache.ready = true;
@@ -603,20 +662,27 @@ namespace Renderer
 						entry->u0 == u0 && entry->u1 == u1 && entry->t0 == t0 && entry->t1 == t1)
 					{
 						entry->used = frame;
+						if (cacheTrace) cacheTrace->hits++;
 						return entry;
 					}
 
+				if (cacheTrace) cacheTrace->misses++;
 				std::shared_ptr<Scaled> sc = std::make_shared<Scaled>();
 				sc->id = t->id; sc->generation = t->generation;
 				sc->w = w; sc->h = h;
 				sc->u0 = u0; sc->u1 = u1; sc->t0 = t0; sc->t1 = t1;
 				sc->used = frame;
+				const int64_t gridStart = cacheTrace ? cacheNow() : 0;
 				setGrid(*sc, t);
+				if (cacheTrace) cacheTrace->gridNs += cacheNow() - gridStart;
 
 				// room: the pictures not drawn in this frame, the least lately drawn first
 				const size_t bytes = (size_t)(w + 1) * (h + 1) * 4;
 				if (bytes > cache.budget)
+				{
+					if (cacheTrace) cacheTrace->uncached++;
 					return sc; // not kept
+				}
 				while (cache.bytes + bytes > cache.budget)
 				{
 					auto oldest = cache.entries.end();
@@ -624,15 +690,22 @@ namespace Renderer
 						if ((*it)->used != frame && (oldest == cache.entries.end() || (*it)->used < (*oldest)->used))
 							oldest = it;
 					if (oldest == cache.entries.end())
+					{
+						if (cacheTrace) cacheTrace->uncached++;
 						return sc; // not kept
+					}
 					cache.bytes -= (*oldest)->bytes();
 					cache.entries.erase(oldest);
 				}
 				sc->px.reset(new (std::nothrow) uint32_t[(size_t)(w + 1) * (h + 1)]);
 				if (!sc->px)
+				{
+					if (cacheTrace) cacheTrace->uncached++;
 					return sc;
+				}
 				sc->state.reset(new std::atomic<uint8_t>[h + 1]());
 				cache.bytes += bytes;
+				if (cacheTrace) cacheTrace->allocatedBytes += bytes;
 				cache.entries.push_back(sc);
 				return sc;
 			}
@@ -647,11 +720,16 @@ namespace Renderer
 					uint32_t* row = sc.px.get() + (size_t)r * columns;
 					uint8_t state = sc.state[r].load(std::memory_order_acquire);
 					if (state == 2)
+					{
+						if (cacheTrace) cacheTrace->readyRows++;
 						return row;
+					}
 					// not sampled: this thread samples it (another sampling it now: sampled here too, not kept)
 					if (state == 0 && sc.state[r].compare_exchange_strong(state, 1, std::memory_order_acq_rel))
 						keep = row;
+					else if (cacheTrace) cacheTrace->duplicateRows++;
 				}
+				if (cacheTrace) cacheTrace->sampledRows++;
 
 				if (scratch.owner != &sc || (int)scratch.out.size() < columns)
 				{
@@ -1002,7 +1080,7 @@ namespace Renderer
 				for (int y = py0; y < py1; y++)
 				{
 					const int vy = (int)std::floor(texelV0 + (y - qy0) * texelDv);
-					memcpy(mPx + (size_t)y * mWidth + px0, tex.px + (size_t)vy * tex.w + ux, (size_t)(px1 - px0) * 4);
+					copyPixels(mPx + (size_t)y * mWidth + px0, tex.px + (size_t)vy * tex.w + ux, px1 - px0);
 				}
 				mStats.pixels += (uint64_t)(px1 - px0) * (py1 - py0);
 				mStats.kinds[PX_COPY] += (uint64_t)(px1 - px0) * (py1 - py0);
@@ -1053,7 +1131,7 @@ namespace Renderer
 					const size_t offset = (size_t)y * mWidth + px0;
 					if (copy)
 					{
-						memcpy(mPx + offset, sampled, (size_t)columns * 4);
+						copyPixels(mPx + offset, sampled, columns);
 						continue;
 					}
 					if (mod == MOD_VARY)
@@ -1163,7 +1241,7 @@ namespace Renderer
 					const size_t offset = (size_t)y * mWidth + px0;
 					if (copy)
 					{
-						memcpy(mPx + offset, sampled, (size_t)n * 4);
+						copyPixels(mPx + offset, sampled, n);
 						continue;
 					}
 					if (mod == MOD_VARY)

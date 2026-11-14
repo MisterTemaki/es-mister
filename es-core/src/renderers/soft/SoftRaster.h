@@ -74,6 +74,15 @@ namespace Renderer
 			uint64_t kinds[PX_KINDS] = {}; // pixels by kind: opaque fills, opaque copies, blended colour, textures 1:1, nearest, bilinear, triangles
 		};
 
+		struct CacheTrace
+		{
+			uint64_t lookups = 0, hits = 0, misses = 0, uncached = 0;
+			uint64_t readyRows = 0, sampledRows = 0, duplicateRows = 0, allocatedBytes = 0;
+			int64_t mutexNs = 0, gridNs = 0;
+		};
+		// A worker-local destination, set only during explicitly sampled profiling frames.
+		void traceCache(CacheTrace* trace);
+
 		class Raster
 		{
 		public:

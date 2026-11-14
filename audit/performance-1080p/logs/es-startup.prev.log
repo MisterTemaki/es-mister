@@ -1,0 +1,274 @@
+    0.002 [1744] trace started (uptime 56.20 s)
+    0.007 [1744] ES main
+    0.010 [1744] processors: 1 -> 3
+    0.014 [1750] > video init
+    0.019 [1750] < video init (0.005 s)
+    0.038 [1750] > mame names
+    0.015 [1751] > ip address
+    0.015 [1752] > metadata init
+    0.264 [1744] image loaded on the main thread: 143 ms, :/scroll_gradient.png
+    0.302 [1744] > window init
+    0.320 [1751] < ip address (0.305 s)
+    0.347 [1751] > genres
+    0.396 [1751] < genres (0.049 s)
+    0.401 [1751] > http cookies
+    0.438 [1751] < http cookies (0.037 s)
+    0.448 [1752] < metadata init (0.433 s)
+    0.821 [1750] < mame names (0.783 s)
+    1.322 [1744] < window init (1.020 s)
+    1.651 [1744] image loaded on the main thread: 323 ms, :/logo.png
+    1.813 [1744] first frame shown
+    1.824 [1744] slow frame: ES 1242 ms before it, drawing 36 ms (100% of the screen)
+    1.845 [1744] > collections init
+    1.858 [1744] < collections init (0.013 s)
+    1.869 [1744] > wait for init threads
+    1.876 [1744] < wait for init threads (0.007 s)
+    1.883 [1744] > load systems
+    1.893 [1756] > load collections
+    1.894 [1758] > load system: nes
+    1.894 [1757] > load system: fds
+    1.894 [1759] > load system: snes
+    1.898 [1756] > load theme: all
+    1.901 [1758] > read folder: /media/fat/games/NES
+    1.905 [1757] > read folder: /media/fat/games/NES
+    1.909 [1759] > read folder: /media/fat/games/SNES
+    2.260 [1758] < read folder: /media/fat/games/NES (0.358 s)
+    2.276 [1757] < read folder: /media/fat/games/NES (0.371 s)
+    2.276 [1758] > read gamelist: nes
+    2.286 [1757] < load system: fds (0.392 s)
+    2.299 [1757] > load system: sgb
+    2.312 [1757] > read folder: /media/fat/games/SGB
+    2.320 [1757] < read folder: /media/fat/games/SGB (0.008 s)
+    2.329 [1757] < load system: sgb (0.031 s)
+    2.336 [1757] > load system: gb
+    2.343 [1758] < read gamelist: nes (0.066 s)
+    2.344 [1757] > read folder: /media/fat/games/GAMEBOY
+    2.355 [1758] > load theme: nes
+    2.428 [1744] slow frame: ES 470 ms before it, drawing 99 ms (100% of the screen)
+    2.593 [1757] < read folder: /media/fat/games/GAMEBOY (0.249 s)
+    2.611 [1757] > read gamelist: gb
+    2.672 [1757] < read gamelist: gb (0.060 s)
+    2.686 [1757] > load theme: gb
+    2.803 [1758] < load theme: nes (0.448 s)
+    2.857 [1758] < load system: nes (0.964 s)
+    2.937 [1756] < load theme: all (1.039 s)
+    2.937 [1758] > load system: gbc
+    2.950 [1756] > load theme: favorites
+    2.968 [1758] > read folder: /media/fat/games/GAMEBOY
+    2.996 [1759] slow folder: /media/fat/games/SNES/MSU (0.46 s, 21 entries)
+    3.044 [1759] < read folder: /media/fat/games/SNES (1.136 s)
+    3.053 [1757] < load theme: gb (0.367 s)
+    3.058 [1757] < load system: gb (0.722 s)
+    3.065 [1757] > load system: gba
+    3.069 [1757] > read folder: /media/fat/games/GBA
+    3.054 [1759] > read gamelist: snes
+    3.094 [1759] < read gamelist: snes (0.040 s)
+    3.104 [1759] > load theme: snes
+    3.112 [1758] < read folder: /media/fat/games/GAMEBOY (0.144 s)
+    3.120 [1758] < load system: gbc (0.183 s)
+    3.134 [1758] > load system: n64
+    3.146 [1758] > read folder: /media/fat/games/N64
+    3.257 [1756] < load theme: favorites (0.308 s)
+    3.269 [1756] > load theme: collections
+    3.275 [1758] < read folder: /media/fat/games/N64 (0.130 s)
+    3.282 [1758] > read gamelist: n64
+    3.301 [1758] < read gamelist: n64 (0.018 s)
+    3.360 [1758] > load theme: n64
+    3.383 [1759] < load theme: snes (0.279 s)
+    3.395 [1759] < load system: snes (1.500 s)
+    3.410 [1759] > load system: virtualboy
+    3.469 [1759] > read folder: /media/fat/games/VirtualBoy
+    3.513 [1759] < read folder: /media/fat/games/VirtualBoy (0.044 s)
+    3.520 [1759] < load system: virtualboy (0.110 s)
+    3.527 [1759] > load system: pokemini
+    3.537 [1759] > read folder: /media/fat/games/PokemonMini
+    3.544 [1759] < read folder: /media/fat/games/PokemonMini (0.007 s)
+    3.550 [1759] < load system: pokemini (0.023 s)
+    3.556 [1759] > load system: mastersystem
+    3.563 [1759] > read folder: /media/fat/games/SMS
+    3.573 [1757] < read folder: /media/fat/games/GBA (0.504 s)
+    3.580 [1757] > read gamelist: gba
+    3.622 [1756] < load theme: collections (0.353 s)
+    3.627 [1759] < read folder: /media/fat/games/SMS (0.064 s)
+    3.631 [1757] < read gamelist: gba (0.051 s)
+    3.637 [1756] < load collections (1.745 s)
+    3.641 [1756] > load system: gamegear
+    3.638 [1757] > load theme: gba
+    3.632 [1759] > read gamelist: mastersystem
+    3.726 [1759] < read gamelist: mastersystem (0.094 s)
+    3.731 [1759] > load theme: mastersystem
+    3.735 [1758] < load theme: n64 (0.375 s)
+    3.740 [1758] < load system: n64 (0.605 s)
+    3.747 [1758] > load system: sg1000
+    3.716 [1756] > read folder: /media/fat/games/SMS
+    3.762 [1758] < load system: sg1000 (0.015 s)
+    3.778 [1758] > load system: megadrive
+    3.783 [1758] > read folder: /media/fat/games/MegaDrive
+    3.793 [1756] < read folder: /media/fat/games/SMS (0.077 s)
+    3.805 [1756] < load system: gamegear (0.163 s)
+    3.815 [1756] > load system: sega32x
+    3.822 [1756] > read folder: /media/fat/games/S32X
+    3.836 [1756] < read folder: /media/fat/games/S32X (0.013 s)
+    3.848 [1756] > read gamelist: sega32x
+    3.859 [1756] < read gamelist: sega32x (0.012 s)
+    3.867 [1756] > load theme: sega32x
+    3.952 [1757] < load theme: gba (0.314 s)
+    4.009 [1757] < load system: gba (0.943 s)
+    4.018 [1757] > load system: segacd
+    4.024 [1759] < load theme: mastersystem (0.293 s)
+    4.030 [1759] < load system: mastersystem (0.473 s)
+    4.037 [1759] > load system: saturn
+    4.027 [1757] > read folder: /media/fat/games/MegaCD
+    4.055 [1759] > read folder: /media/fat/games/Saturn
+    4.165 [1759] < read folder: /media/fat/games/Saturn (0.110 s)
+    4.182 [1759] > read gamelist: saturn
+    4.194 [1757] < read folder: /media/fat/games/MegaCD (0.168 s)
+    4.206 [1756] < load theme: sega32x (0.339 s)
+    4.215 [1756] < load system: sega32x (0.400 s)
+    4.226 [1756] > load system: pcengine
+    4.268 [1759] < read gamelist: saturn (0.086 s)
+    4.206 [1757] > read gamelist: segacd
+    4.269 [1756] > read folder: /media/fat/games/TGFX16
+    4.280 [1759] > load theme: saturn
+    4.339 [1757] < read gamelist: segacd (0.133 s)
+    4.408 [1757] > load theme: segacd
+    4.471 [1756] < read folder: /media/fat/games/TGFX16 (0.202 s)
+    4.575 [1756] > read gamelist: pcengine
+    4.602 [1756] < read gamelist: pcengine (0.027 s)
+    4.669 [1756] > load theme: pcengine
+    4.683 [1759] < load theme: saturn (0.403 s)
+    4.696 [1759] < load system: saturn (0.659 s)
+    4.724 [1759] > load system: supergrafx
+    4.748 [1759] > read folder: /media/fat/games/TGFX16
+    4.820 [1757] < load theme: segacd (0.412 s)
+    4.858 [1757] < load system: segacd (0.840 s)
+    4.896 [1757] > load system: pcenginecd
+    4.926 [1757] > read folder: /media/fat/games/TGFX16-CD
+    4.944 [1759] < read folder: /media/fat/games/TGFX16 (0.196 s)
+    4.964 [1759] < load system: supergrafx (0.241 s)
+    5.015 [1756] < load theme: pcengine (0.346 s)
+    5.029 [1756] < load system: pcengine (0.804 s)
+    5.048 [1757] < read folder: /media/fat/games/TGFX16-CD (0.122 s)
+    5.059 [1757] > read gamelist: pcenginecd
+    5.049 [1756] > load system: neogeocd
+    5.015 [1759] > load system: neogeo
+    5.134 [1757] < read gamelist: pcenginecd (0.075 s)
+    5.146 [1757] > load theme: pcenginecd
+    5.134 [1759] > read folder: /media/fat/games/NEOGEO
+    5.120 [1756] > read folder: /media/fat/games/NeoGeo-CD
+    5.199 [1758] slow folder: /media/fat/games/MegaDrive/MD+ (1.15 s, 72 entries)
+    5.253 [1756] < read folder: /media/fat/games/NeoGeo-CD (0.132 s)
+    5.274 [1756] > read gamelist: neogeocd
+    5.296 [1756] < read gamelist: neogeocd (0.021 s)
+    5.318 [1756] > load theme: neogeocd
+    5.362 [1758] < read folder: /media/fat/games/MegaDrive (1.579 s)
+    5.374 [1758] > read gamelist: megadrive
+    5.381 [1759] < read folder: /media/fat/games/NEOGEO (0.247 s)
+    5.398 [1759] > read gamelist: neogeo
+    5.405 [1759] < read gamelist: neogeo (0.008 s)
+    5.413 [1759] > load theme: neogeo
+    5.421 [1758] < read gamelist: megadrive (0.047 s)
+    5.428 [1758] > load theme: megadrive
+    5.489 [1757] < load theme: pcenginecd (0.342 s)
+    5.499 [1757] < load system: pcenginecd (0.603 s)
+    5.503 [1757] > load system: psx
+    5.512 [1757] > read folder: /media/fat/games/PSX
+    5.574 [1757] < read folder: /media/fat/games/PSX (0.062 s)
+    5.588 [1757] > read gamelist: psx
+    5.661 [1759] < load theme: neogeo (0.248 s)
+    5.666 [1756] < load theme: neogeocd (0.348 s)
+    5.671 [1756] < load system: neogeocd (0.622 s)
+    5.675 [1756] > load system: atari2600
+    5.679 [1759] < load system: neogeo (0.664 s)
+    5.683 [1759] > load system: atari7800
+    5.688 [1759] > read folder: /media/fat/games/ATARI7800
+    5.697 [1759] < read folder: /media/fat/games/ATARI7800 (0.009 s)
+    5.680 [1756] > read folder: /media/fat/games/ATARI7800
+    5.710 [1757] < read gamelist: psx (0.122 s)
+    5.705 [1759] > read gamelist: atari7800
+    5.721 [1759] < read gamelist: atari7800 (0.016 s)
+    5.725 [1759] > load theme: atari7800
+    5.729 [1756] < read folder: /media/fat/games/ATARI7800 (0.049 s)
+    5.737 [1756] < load system: atari2600 (0.061 s)
+    5.718 [1757] > load theme: psx
+    5.748 [1756] > load system: lynx
+    5.767 [1756] > read folder: /media/fat/games/AtariLynx
+    5.776 [1758] < load theme: megadrive (0.348 s)
+    5.781 [1758] < load system: megadrive (2.004 s)
+    5.788 [1758] > load system: colecovision
+    5.796 [1756] < read folder: /media/fat/games/AtariLynx (0.030 s)
+    5.799 [1758] > read folder: /media/fat/games/Coleco
+    5.807 [1756] < load system: lynx (0.060 s)
+    5.813 [1756] > load system: intellivision
+    5.820 [1756] > read folder: /media/fat/games/Intellivision
+    5.827 [1756] < read folder: /media/fat/games/Intellivision (0.007 s)
+    5.833 [1756] > read gamelist: intellivision
+    5.837 [1758] < read folder: /media/fat/games/Coleco (0.038 s)
+    5.844 [1758] < load system: colecovision (0.056 s)
+    5.852 [1758] > load system: vectrex
+    5.856 [1756] < read gamelist: intellivision (0.024 s)
+    5.860 [1756] > load theme: intellivision
+    5.856 [1758] > read folder: /media/fat/games/VECTREX
+    5.949 [1758] < read folder: /media/fat/games/VECTREX (0.093 s)
+    5.954 [1758] < load system: vectrex (0.102 s)
+    5.959 [1758] > load system: o2em
+    5.964 [1758] > read folder: /media/fat/games/ODYSSEY2
+    5.968 [1759] < load theme: atari7800 (0.243 s)
+    5.974 [1759] < load system: atari7800 (0.291 s)
+    5.980 [1759] > load system: wswan
+    5.985 [1759] > read folder: /media/fat/games/WonderSwan
+    6.060 [1758] < read folder: /media/fat/games/ODYSSEY2 (0.096 s)
+    6.064 [1757] < load theme: psx (0.346 s)
+    6.068 [1759] < read folder: /media/fat/games/WonderSwan (0.084 s)
+    6.072 [1759] < load system: wswan (0.093 s)
+    6.076 [1757] < load system: psx (0.573 s)
+    6.080 [1758] < load system: o2em (0.122 s)
+    6.089 [1758] > load system: ngpc
+    6.094 [1758] > read folder: /media/fat/games/NGPC
+    6.077 [1759] > load system: wswanc
+    6.104 [1759] > read folder: /media/fat/games/WonderSwan
+    6.108 [1758] < read folder: /media/fat/games/NGPC (0.014 s)
+    6.081 [1757] > load system: ngp
+    6.117 [1757] < load system: ngp (0.036 s)
+    6.122 [1758] < load system: ngpc (0.034 s)
+    6.129 [1759] < read folder: /media/fat/games/WonderSwan (0.025 s)
+    6.135 [1759] < load system: wswanc (0.058 s)
+    6.122 [1757] > load system: arcade
+    6.144 [1757] > read folder: /media/fat/_Arcade
+    6.161 [1756] < load theme: intellivision (0.300 s)
+    6.182 [1756] < load system: intellivision (0.369 s)
+    7.461 [1757] slow folder: /media/fat/_Arcade/_MeatCores/_alternatives (0.43 s, 40 entries)
+    7.805 [1757] slow folder: /media/fat/_Arcade/_MeatCores/_TaitoF3 (0.34 s, 34 entries)
+    7.850 [1757] slow folder: /media/fat/_Arcade/_MeatCores (0.88 s, 173 entries)
+    8.752 [1757] < read folder: /media/fat/_Arcade (2.608 s)
+    8.771 [1757] > read gamelist: arcade
+    8.792 [1757] < read gamelist: arcade (0.021 s)
+    8.798 [1757] > load theme: arcade
+    8.927 [1757] < load theme: arcade (0.129 s)
+    8.934 [1757] < load system: arcade (2.811 s)
+    9.003 [1744] > group systems and collections
+    9.604 [1744] < group systems and collections (0.601 s)
+    9.608 [1744] < load systems (7.725 s)
+    9.658 [1744] systems shown: sega32x 37, arcade 3553, atari7800 60, gb 1627, gba 3054, intellivision 4, mastersystem 291, megadrive 1740, segacd 149, neogeo 153, neogeocd 100, n64 962, nes 2465, pcengine 438, pcenginecd 91, psx 578, saturn 184, snes 3791, all 19277, favorites 0
+    9.668 [1744] systems not shown: -
+    9.672 [1744] > preload views
+    9.675 [1744] < preload views (0.004 s)
+    9.679 [1744] > input init
+    9.831 [1744] < input init (0.152 s)
+    9.851 [1744] slow frame: ES 836 ms before it, drawing 11 ms (4% of the screen)
+    9.872 [1744] > go to start
+   10.301 [1744] carousel: sega32x, arcade, atari7800, gb, gba, intellivision, mastersystem, megadrive, segacd, neogeo, neogeocd, n64, nes, pcengine, pcenginecd, psx, saturn, snes, all, favorites
+   10.307 [1744] carousel leaves out: -
+   10.459 [1744] < go to start (0.588 s)
+   10.465 [1744] > wait for init threads
+   10.470 [1744] < wait for init threads (0.005 s)
+   10.479 [1744] > audio init
+   10.563 [1744] < audio init (0.084 s)
+   10.569 [1744] ready
+   10.967 [1744] slow frame: ES 1060 ms before it, drawing 24 ms (100% of the screen)
+   11.255 [1744] slow frame: ES 165 ms before it, drawing 90 ms (100% of the screen)
+   11.686 [1744] slow frame: ES 22 ms before it, drawing 163 ms (100% of the screen)
+   14.656 [1744] first press answered: 462 ms
+   14.660 [1744] slow frame: ES 54 ms before it, drawing 154 ms (100% of the screen)
+   15.138 [1744] slow frame: ES 11 ms before it, drawing 205 ms (100% of the screen)
+   31.444 [1744] slow frame: ES 13 ms before it, drawing 196 ms (100% of the screen)

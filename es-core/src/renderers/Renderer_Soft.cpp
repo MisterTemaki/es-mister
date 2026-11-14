@@ -6,6 +6,7 @@
 #include "renderers/soft/SoftOutput.h"
 #include "renderers/soft/SoftRaster.h"
 #include "renderers/soft/SoftScript.h"
+#include "renderers/soft/SoftTrace.h"
 #include "math/Transform4x4f.h"
 #include "Log.h"
 #include "Settings.h"
@@ -169,7 +170,7 @@ namespace Renderer
 			// frame drawn, and the parts of it where this frame's draws are not the last one's are drawn again
 			bool dirty = true;
 			bool dirtyCheck = false;          // ES_SOFT_DIRTY_CHECK=1: each part-drawn frame checked against a whole one
-			int stripRows = 16;               // ES_SOFT_STRIP: rows drawn at a time through all the commands (executeBand)
+			int stripRows = 8;                // ES_SOFT_STRIP: rows drawn at a time through all the commands (executeBand)
 			bool lastValid = false;           // the raster holds the frame of lastDrawn
 			std::vector<Drawn> lastDrawn;
 			std::vector<Box> rects;           // this frame's parts to draw (when drawn in part)
@@ -191,6 +192,7 @@ namespace Renderer
 			int statsEvery = 600;
 			bool bench = false; // ES_SOFT_BENCH: every frame drawn, even the same as the last
 			Stats stats;
+			Soft::Trace trace;
 		};
 
 		SoftState& S()
@@ -353,12 +355,25 @@ namespace Renderer
 		void executePart(Raster& raster, const Box& part)
 		{
 			SoftState& s = S();
+			const int64_t clearStart = Soft::tracedCommands ? Soft::traceNow() : 0;
 			raster.clearBox(part.x0, part.y0, part.x1, part.y1, 0);
+			if (Soft::tracedWorker)
+			{
+				Soft::tracedWorker->parts++;
+				if (clearStart) Soft::tracedWorker->clearNs += Soft::traceNow() - clearStart;
+			}
 			for (const Command& command : s.commands)
 			{
+				if (Soft::tracedWorker) Soft::tracedWorker->visits++;
 				// a stencil shape is always set: it also clears the last one
 				if (!command.stencil && !command.box.meets(part))
+				{
+					if (Soft::tracedWorker) Soft::tracedWorker->culled++;
 					continue;
+				}
+				const size_t ci = &command - s.commands.data();
+				Soft::TraceCommand* timing = Soft::tracedCommands && ci < Soft::tracedCommands->size() ? &(*Soft::tracedCommands)[ci] : nullptr;
+				const int64_t commandStart = timing ? Soft::traceNow() : 0;
 				DrawState state = command.state;
 				if (state.scissor)
 				{
@@ -378,15 +393,17 @@ namespace Renderer
 					state.texture = command.texture.get();
 					raster.draw(vertices, (int)command.count, command.topology, state);
 				}
+				if (timing) { timing->ns += Soft::traceNow() - commandStart; timing->calls++; }
 			}
 		}
 
 		// The frame's commands, in one band: all of it, or (drawn in part) each part. A few rows at a time
-		// (ES_SOFT_STRIP, default 16; 0: the whole band or part at once), every command over them before the
+		// (ES_SOFT_STRIP, default 8; 0: the whole band or part at once), every command over them before the
 		// next rows: the rows stay in the processor's cache between the layers (a background, another over it
 		// in a fade, a shade...), and go to memory once instead of once a layer. On the MiSTer the memory is
-		// what a frame waits for (the FPGA reads the screen from the same DDR3): a 1080p frame took as long
-		// with two cores as with one.
+		// what a frame waits for (the FPGA reads the screen from the same DDR3): a 1080p frame takes as long
+		// with two cores as with one. es-mister-bench, the carousel's frame (memory asked for ahead): a layer
+		// at a time 116.8 ms, strips of 32 rows 108.7, of 16 101.4, of 8 96.9.
 		void executeBand(Raster& raster)
 		{
 			SoftState& s = S();
@@ -460,11 +477,22 @@ namespace Renderer
 			SoftState& s = S();
 			Bands& b = s.bands;
 			Raster& raster = *b.rasters[index];
+			Soft::TraceWorker* trace = s.trace.active ? &s.trace.frame.worker[index] : nullptr;
+			const int64_t cpuStart = trace ? Soft::traceCpu() : 0;
+			if (trace) trace->start = Soft::traceNow();
+			Soft::tracedWorker = trace;
+			Soft::tracedCommands = s.trace.detail ? &s.trace.commandTimes[index] : nullptr;
+			Soft::traceCache(trace && s.trace.detail ? &trace->cache : nullptr);
 			const Clock::time_point start = Clock::now();
 			raster.stats() = RasterStats();
 			executeBand(raster);
 			const Clock::time_point drawn = Clock::now();
 			b.ms[index] = std::chrono::duration<double, std::milli>(drawn - start).count();
+			const int64_t cpuDrawn = trace ? Soft::traceCpu() : 0;
+			if (trace) { trace->drawn = Soft::traceNow(); trace->cpuDraw = cpuStart >= 0 && cpuDrawn >= 0 ? cpuDrawn - cpuStart : -1; }
+			Soft::tracedWorker = nullptr;
+			Soft::tracedCommands = nullptr;
+			Soft::traceCache(nullptr);
 
 			// its rows to the screen at once, while the other bands may still draw theirs
 			b.copied[index] = 0;
@@ -473,6 +501,12 @@ namespace Renderer
 			{
 				b.copied[index] = presentBand(raster);
 				b.copyMs[index] = std::chrono::duration<double, std::milli>(Clock::now() - drawn).count();
+			}
+			if (trace)
+			{
+				trace->copied = Soft::traceNow();
+				const int64_t cpuCopied = Soft::traceCpu();
+				trace->cpuCopy = cpuDrawn >= 0 && cpuCopied >= 0 ? cpuCopied - cpuDrawn : -1;
 			}
 		}
 
@@ -820,9 +854,11 @@ namespace Renderer
 		{
 			SoftState& s = S();
 			Bands& b = s.bands;
+			const int64_t executeStart = s.trace.active ? Soft::traceNow() : 0;
 			if (b.rasters.empty())
 				startBands();
 			placeBands();
+			if (s.trace.active) s.trace.frame.placed = Soft::traceNow();
 
 			b.present = s.output != nullptr;
 			if (b.count > 1)
@@ -831,6 +867,7 @@ namespace Renderer
 				b.pending = b.count - 1;
 				b.job++;
 			}
+			if (s.trace.active) s.trace.frame.published = Soft::traceNow();
 			b.wake.notify_all();
 			timedBand(0);
 			if (b.count > 1)
@@ -838,6 +875,7 @@ namespace Renderer
 				std::unique_lock<std::mutex> guard(b.lock);
 				b.finished.wait(guard, [&] { return b.pending == 0; });
 			}
+			if (s.trace.active) s.trace.frame.joined = Soft::traceNow();
 
 			if (b.present)
 			{
@@ -858,6 +896,11 @@ namespace Renderer
 				total.triangles += raster->stats().triangles;
 				for (int k = 0; k < Soft::PX_KINDS; k++)
 					total.kinds[k] += raster->stats().kinds[k];
+			}
+			if (s.trace.active)
+			{
+				s.trace.frame.finished = Soft::traceNow();
+				s.trace.frame.execute = s.trace.frame.finished - executeStart;
 			}
 		}
 
@@ -959,6 +1002,7 @@ namespace Renderer
 	void SoftRenderer::createContext()
 	{
 		SoftState& s = S();
+		s.trace.configure();
 		if (!openOutput())
 		{
 			LOG(LogError) << "SoftRenderer: no output";
@@ -977,7 +1021,7 @@ namespace Renderer
 		const char* check = getenv("ES_SOFT_DIRTY_CHECK");
 		s.dirtyCheck = check != nullptr && strcmp(check, "0") != 0;
 		const char* strip = getenv("ES_SOFT_STRIP");
-		s.stripRows = strip != nullptr ? std::max(0, atoi(strip)) : 16;
+		s.stripRows = strip != nullptr ? std::max(0, atoi(strip)) : 8;
 
 		const char* stats = getenv("ES_SOFT_STATS");
 		if (stats != nullptr)
@@ -1003,6 +1047,7 @@ namespace Renderer
 		s.bands.rasters.clear();
 		if (s.output)
 			s.output->close();
+		s.trace.save();
 		s.open = false;
 		s.commands.clear();
 		s.vertices.clear();
@@ -1253,13 +1298,17 @@ namespace Renderer
 		// a frame with nothing drawn (ES swaps while it loads) leaves the last one on screen
 		const bool recorded = !s.commands.empty();
 		const bool redraw = recorded && (s.forceRedraw || s.bench || s.hash != s.lastHash);
+		s.trace.begin(redraw && s.open, s.commands.size());
 		if (redraw && s.open)
 		{
 			const double esMs = s.frameStarted ? msSince(s.frameStart) : 0;
+			if (s.trace.active) s.trace.frame.ui = (int64_t)(esMs * 1000000);
 			s.stats.esMs += esMs;
 			s.stats.esMax = std::max(s.stats.esMax, esMs);
 			// what changed since the last frame drawn, when it can be drawn in part (a benchmark draws all)
+			const int64_t dirtyStart = s.trace.active ? Soft::traceNow() : 0;
 			s.partial = s.dirty && !s.bench && s.lastValid && !s.forceRedraw && findParts();
+			if (s.trace.active) { s.trace.frame.dirty = Soft::traceNow() - dirtyStart; s.trace.frame.partial = s.partial; }
 			// drawn and copied to the screen, each band by its thread; the times are the slowest band's
 			if (!s.partial || !s.rects.empty() || s.bands.rasters.empty())
 				execute();
@@ -1271,6 +1320,7 @@ namespace Renderer
 				if (s.output)
 					s.output->finishFrame(0);
 			}
+			const int64_t postStart = s.trace.active ? Soft::traceNow() : 0;
 			if ((s.partial || s.stripRows > 0) && s.dirtyCheck)
 				checkParts();
 			uint64_t redrawn = 0;
@@ -1288,6 +1338,8 @@ namespace Renderer
 					s.lastDrawn.push_back({ command.sig, command.box });
 			s.lastValid = true;
 			Soft::scaledFrame();
+			if (s.trace.active) s.trace.frame.post = Soft::traceNow() - postStart;
+			const int64_t diagnosticStart = s.trace.active ? Soft::traceNow() : 0;
 			const double rasterMs = *std::max_element(s.bands.ms.begin(), s.bands.ms.end());
 			const double copyMs = *std::max_element(s.bands.copyMs.begin(), s.bands.copyMs.end());
 
@@ -1359,6 +1411,7 @@ namespace Renderer
 					100.0 * redrawn / std::max(1, s.width * s.height));
 				StartupTrace::mark("slow frame", detail);
 			}
+			if (s.trace.active) s.trace.frame.diagnostics = Soft::traceNow() - diagnosticStart;
 		}
 		else if (StartupTrace::inputWaitingMs() > 250)
 		{
@@ -1377,6 +1430,17 @@ namespace Renderer
 				s.statsNow = true;
 		}
 
+		if (s.trace.detail)
+			for (unsigned w = 0; w < (unsigned)s.bands.count; ++w)
+				for (unsigned c = 0; c < s.trace.commandTimes[w].size() && s.trace.samples.size() < 65536; ++c)
+				{
+					const auto& t = s.trace.commandTimes[w][c];
+					if (!t.calls) continue;
+					const auto& cmd = s.commands[c];
+					s.trace.samples.push_back({s.trace.frame.id, cmd.sig, w, c, t.calls, cmd.count,
+						s.vertices[cmd.first].color >> 24, cmd.texture ? (uint32_t)cmd.texture->width : 0,
+						cmd.texture ? (uint32_t)cmd.texture->height : 0, t.ns});
+				}
 		if (recorded)
 		{
 			s.lastHash = s.hash;
@@ -1401,6 +1465,7 @@ namespace Renderer
 		}
 
 		// a steady rate in place of the display's vertical sync
+		const int64_t pacingStart = s.trace.active ? Soft::traceNow() : 0;
 		if (s.vsync && s.interval > 0)
 		{
 			const Clock::time_point now = Clock::now();
@@ -1410,6 +1475,11 @@ namespace Renderer
 			s.nextFrame += interval;
 			if (s.nextFrame > now)
 				std::this_thread::sleep_until(s.nextFrame);
+		}
+		if (s.trace.active)
+		{
+			s.trace.frame.pacing = Soft::traceNow() - pacingStart;
+			s.trace.frames.push_back(s.trace.frame);
 		}
 
 		s.frameStart = Clock::now();
