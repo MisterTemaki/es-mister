@@ -1,5 +1,11 @@
 # Validação no MiSTer em 1080p — 13–14/11/2026
 
+Atualização de 14/11: a investigação específica do Linux está em [LINUX.md](LINUX.md).
+O mesmo binário otimizado respondeu a duas novas sequências de 1.000 comandos
+(medianas 97,563 e 97,815 ms), sem mudança de kernel. Não há políticas CPUFreq
+expostas neste boot; o A/B de governador ficou indisponível. Esses números
+não substituem a comparação histórica abaixo nem representam novo ganho de código.
+
 Esta etapa complementa o relatório histórico da etapa 1 e a análise `ANALISE.md`.
 A resolução foi mantida em **1920×1080**, com tema Carbon, duas threads,
 **STRIP=8 e PLD=256**. Não foram reduzidos resolução, filtro, efeitos ou duração
