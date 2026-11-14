@@ -62,6 +62,7 @@ public:
         detailEvery = d ? std::max(0, std::atoi(d)) : 0;
         frames.reserve(8192);
         samples.reserve(65536);
+        answers.reserve(8192);
     }
     bool begin(bool redraw, size_t commands)
     {
@@ -112,12 +113,26 @@ public:
                     s.worker,s.command,(unsigned long long)s.signature,s.calls,s.vertices,s.alpha,s.texW,s.texH,(long long)s.ns);
             std::fclose(out);
         }
+        out = std::fopen((path + ".input.csv").c_str(), "w");
+        if (out)
+        {
+            std::fprintf(out,"at_ns,dispatch_ns,event_ns\n");
+            for (const auto& a : answers)
+                std::fprintf(out,"%lld,%lld,%lld\n",(long long)a[0],(long long)a[1],(long long)a[2]);
+            std::fclose(out);
+        }
+    }
+    void answer(double dispatchMs, double eventMs)
+    {
+        if (!path.empty() && answers.size() < 8192)
+            answers.push_back({traceNow(), (int64_t)(dispatchMs * 1000000), (int64_t)(eventMs * 1000000)});
     }
     bool active = false, detail = false;
     TraceFrame frame;
     std::array<std::vector<TraceCommand>, 8> commandTimes;
     std::vector<TraceFrame> frames;
     std::vector<TraceCommandSample> samples;
+    std::vector<std::array<int64_t, 3>> answers;
 private:
     std::string path;
     uint64_t sequence = 0, redraws = 0;

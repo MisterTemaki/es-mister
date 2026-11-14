@@ -1,0 +1,35 @@
+reference scene 0 hash 236a62a0b9e155ef median_ms 0.758
+scene 1 hash ac489098145052ab median_ms 0.800
+scene 2 hash e870cdc3cfcf3372 median_ms 0.756
+scene 3 hash c22fe4dc3b0b465b median_ms 0.750
+scene 4 hash e8c9772432c7fe3b median_ms 0.795
+scene 5 hash c1d074781226046a median_ms 0.835
+scene 6 hash c23147e023e3afba median_ms 0.831
+scene 7 hash 99843798fb0680d1 median_ms 0.743
+scene 8 hash 38bb1e2ec3859464 median_ms 0.762
+scene 9 hash 75eed4568da5fd19 median_ms 0.797
+scene 10 hash e0b79f35149b0dce median_ms 0.781
+scene 11 hash 5cc110ee2d86e81c median_ms 0.833
+scene 12 hash 2b22005b63fd223e median_ms 0.786
+scene 13 hash 8caf4a2e02e979a9 median_ms 0.821
+scene 14 hash 0c7b8c276a6068a8 median_ms 0.799
+scene 15 hash 9886b6253225c1c3 median_ms 0.753
+
+final scene 0 hash 236a62a0b9e155ef median_ms 0.774
+scene 1 hash ac489098145052ab median_ms 0.837
+scene 2 hash e870cdc3cfcf3372 median_ms 0.770
+scene 3 hash c22fe4dc3b0b465b median_ms 0.727
+scene 4 hash e8c9772432c7fe3b median_ms 0.810
+scene 5 hash c1d074781226046a median_ms 0.801
+scene 6 hash c23147e023e3afba median_ms 0.832
+scene 7 hash 99843798fb0680d1 median_ms 0.789
+scene 8 hash 38bb1e2ec3859464 median_ms 0.804
+scene 9 hash 75eed4568da5fd19 median_ms 0.866
+scene 10 hash e0b79f35149b0dce median_ms 0.922
+scene 11 hash 5cc110ee2d86e81c median_ms 0.761
+scene 12 hash 2b22005b63fd223e median_ms 0.802
+scene 13 hash 8caf4a2e02e979a9 median_ms 0.845
+scene 14 hash 0c7b8c276a6068a8 median_ms 0.817
+scene 15 hash 9886b6253225c1c3 median_ms 0.782
+
+16 differential scenes: identical pixel hashes

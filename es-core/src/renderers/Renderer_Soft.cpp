@@ -100,6 +100,7 @@ namespace Renderer
 			int checked = 0, wrong = 0;  // ES_SOFT_DIRTY_CHECK: frames drawn in part checked against whole ones
 			std::vector<float> answers;  // ms from a press of the user's to the first frame shown after it
 			int overBudget = 0;          // drawn frames that took more than 1/60 s (ES, drawing and copy)
+			uint64_t transparentCommands = 0, transparentVertices = 0;
 		};
 
 		// The frame drawn in horizontal bands, one a thread: the first by the thread that swaps, the others
@@ -160,6 +161,7 @@ namespace Renderer
 			StencilTest stencil = StencilTest::Off;
 
 			std::vector<Command> commands;
+			bool hadCommands = false; // a transparent-only frame must still clear the previous image
 			std::vector<SVertex> vertices;
 			uint64_t hash = kHashSeed;
 			uint64_t lastHash = 0;
@@ -259,6 +261,19 @@ namespace Renderer
 				return;
 
 			SoftState& s = S();
+			s.hadCommands = true;
+			if (!stencil && src == Blend::SRC_ALPHA && dst == Blend::ONE_MINUS_SRC_ALPHA && Soft::optimizationsEnabled())
+			{
+				bool transparent = true;
+				for (unsigned int i = 0; i < count; ++i)
+					if ((vertices[i].col >> 24) != 0) { transparent = false; break; }
+				if (transparent)
+				{
+					s.stats.transparentCommands++;
+					s.stats.transparentVertices += count;
+					return; // normal alpha blending cannot change any destination channel
+				}
+			}
 			Command command;
 			command.stencil = stencil;
 			command.topology = topology;
@@ -938,15 +953,19 @@ namespace Renderer
 			}
 			char budget[96];
 			snprintf(budget, sizeof(budget), "; %d of %d drawn frames over 16.7 ms", st.overBudget, st.drawn);
+			char skipped[128] = "";
+			if (st.transparentCommands)
+				snprintf(skipped, sizeof(skipped), "; skipped %llu transparent commands (%llu vertices)",
+					(unsigned long long)st.transparentCommands, (unsigned long long)st.transparentVertices);
 			char line[1400];
 			snprintf(line, sizeof(line),
 				"SoftRenderer: %d frames, %d drawn; frame %.1f ms (max %.1f), ES before a drawn frame %.1f ms (max %.1f), drawing %.1f ms (max %.1f)%s, copy %.2f ms, %.0f k pixels copied, "
 				"%.0f vertices, %.0f k pixels, %u quads, %u triangles a drawn frame%s; k pixels: fill %.0f, copy %.0f, colour %.0f, "
-				"picture 1:1 %.0f, nearest %.0f, bilinear %.0f, triangles %.0f%s%s",
+				"picture 1:1 %.0f, nearest %.0f, bilinear %.0f, triangles %.0f%s%s%s",
 				st.frames, st.drawn, st.frameMs / st.frames, st.frameMax, st.esMs / drawn, st.esMax, st.rasterMs / drawn, st.rasterMax, bands, st.copyMs / drawn,
 				(double)st.copied / drawn / 1000.0, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn, parts,
 				kpx(Soft::PX_FILL), kpx(Soft::PX_COPY), kpx(Soft::PX_COLOR), kpx(Soft::PX_TEX_1TO1), kpx(Soft::PX_TEX_NEAREST), kpx(Soft::PX_TEX_LINEAR), kpx(Soft::PX_TRIANGLE),
-				budget, answers);
+				budget, answers, skipped);
 			LOG(LogInfo) << line;
 
 			// also where it can be read without ES's debug log (ES_SOFT_STATS_FILE), with the time
@@ -1050,6 +1069,7 @@ namespace Renderer
 		s.trace.save();
 		s.open = false;
 		s.commands.clear();
+		s.hadCommands = false;
 		s.vertices.clear();
 		s.hash = kHashSeed;
 		s.stencilSig = 0;
@@ -1296,7 +1316,7 @@ namespace Renderer
 		StartupTrace::frameShown();
 
 		// a frame with nothing drawn (ES swaps while it loads) leaves the last one on screen
-		const bool recorded = !s.commands.empty();
+		const bool recorded = s.hadCommands;
 		const bool redraw = recorded && (s.forceRedraw || s.bench || s.hash != s.lastHash);
 		s.trace.begin(redraw && s.open, s.commands.size());
 		if (redraw && s.open)
@@ -1376,9 +1396,10 @@ namespace Renderer
 			}
 
 			// the time from a press to the frame that shows its effect, and the frames over a 60 Hz frame's time
-			double answeredMs;
-			if (StartupTrace::inputAnswered(answeredMs))
+			double answeredMs, eventMs;
+			if (StartupTrace::inputAnswered(answeredMs, &eventMs))
 			{
+				s.trace.answer(answeredMs, eventMs);
 				st.answers.push_back((float)answeredMs);
 				static bool first = true;
 				if (first && StartupTrace::enabled())
@@ -1449,6 +1470,7 @@ namespace Renderer
 		s.hash = kHashSeed;
 		s.stencilSig = 0;
 		s.commands.clear();
+		s.hadCommands = false;
 		s.vertices.clear();
 
 		// the frame's time, from the end of the last one's wait to the end of this one's drawing
@@ -1470,11 +1492,20 @@ namespace Renderer
 		{
 			const Clock::time_point now = Clock::now();
 			const Clock::duration interval = std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(s.interval));
-			if (s.nextFrame < now - interval)
-				s.nextFrame = now;
-			s.nextFrame += interval;
-			if (s.nextFrame > now)
-				std::this_thread::sleep_until(s.nextFrame);
+			if (Soft::optimizationsEnabled())
+			{
+				s.nextFrame += interval;
+				if (s.nextFrame > now)
+					std::this_thread::sleep_until(s.nextFrame);
+				else if (s.nextFrame < now - interval)
+					s.nextFrame = now; // late already: the elapsed drawing time satisfies the limiter
+			}
+			else
+			{
+				if (s.nextFrame < now - interval) s.nextFrame = now;
+				s.nextFrame += interval;
+				if (s.nextFrame > now) std::this_thread::sleep_until(s.nextFrame);
+			}
 		}
 		if (s.trace.active)
 		{

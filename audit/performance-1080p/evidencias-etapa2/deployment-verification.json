@@ -1,0 +1,35 @@
+{
+  "pid": 1808,
+  "framebuffer": "1920,1080",
+  "core": "MENU",
+  "sha256": {
+    "emulationstation": "d53703bb6cd2dc16838d885645d797cac512a49c68d282962a03ae2bb94abb64",
+    "es-mister-helper": "c826dc9341aa47947e25230d8be51ca1b80882a4dc8e11296364d8bb785288b8",
+    "es-mister.sh": "dbaecd4e2b5d9d357f89fe14672bbbb9f1eebcd55d4a57a1d930936a0bde4787",
+    "LEIA-ME.txt": "aba3f84c1c916291750a97e893e80e90e581fb50362b22b304c40164750c72f2"
+  },
+  "settings": "# EmulationStation on the MiSTer: settings read by es-mister.sh and mister-launch.sh\n\n# The size ES draws at. auto: the size the MiSTer gives the Linux framebuffer for its menu, which\n# follows the screen (video_mode in MiSTer.ini): the sharpest, and the slowest (a 1080p screen is nine\n# times the pixels of 640x360). auto/2: half of it (960x540 on 1080p), auto/3: a third (640x360 on\n# 1080p, the fastest). Or WIDTHxHEIGHT.\nSIZE=auto\n\n# The most frames a second ES draws (fewer leaves the ARM more time)\nFPS=60\n\n# 1: every frame drawn whole even when nothing changed, to measure the drawing's cost\n# (logs/es-mister-stats.txt); 0 in normal use\nBENCH=0\n\n# 1: where ES spends the processor, sampled and written to logs/es-profile.txt (for tuning the port,\n# when asked for); 0 in normal use\nPROFILE=0\n\n# The first frames that take long to draw (up to this many each start) written with each draw's time to\n# logs/es-slow-frame-N.txt, to see what to make faster; 0: none\nSLOW_DUMPS=0\n\n# Rows of the screen drawn at a time through all its layers, so they stay in the processor's cache\n# between them (the memory is what a 1080p frame waits for). 8 by default (the fastest es-mister-bench\n# measured on the MiSTer); to compare, 4, 16 or 32, or 0 (each band whole), then\n# logs/es-mister-stats.txt and logs/es-slow-frame-N.txt\nSTRIP=8\n\n# Bytes of memory the drawing asks for ahead of what it draws (the ARM's PLD), so it does not wait for\n# each line of memory in turn: 256 by default (es-mister-bench: a layer of a 1080p frame in 28 ms\n# instead of 49); 0: not asked for, to compare\nPLD=256\n\n# Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of\n# other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.\n# Take it out of the list to see them in ES.\nARCADE_SKIP=\"cores _organized mame hbmame _alternatives\"\n\n# Input devices ES leaves out, by name (comma apart; /proc/bus/input/devices lists them). Main_MiSTer's\n# and Zaparoo's virtual keyboards repeat a controller's presses as keys: without this, each press moved\n# twice. Physical keyboards and controllers are not affected.\nINPUT_IGNORE=\"MiSTer virtual input,Zaparoo\"\n\n# Where games folders are looked for, in order (each system takes the first that has its folder)\nGAMES_ROOTS=\"/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs\"\n",
+  "startup_last_lines": [
+    "    8.879 [1808] slow frame: ES 761 ms before it, drawing 10 ms (4% of the screen)",
+    "    8.883 [1808] > go to start",
+    "    9.295 [1808] carousel: sega32x, arcade, atari7800, gb, gba, intellivision, mastersystem, megadrive, segacd, neogeo, neogeocd, n64, nes, pcengine, pcenginecd, psx, saturn, snes, all, favorites",
+    "    9.302 [1808] carousel leaves out: -",
+    "    9.434 [1808] < go to start (0.551 s)",
+    "    9.439 [1808] > wait for init threads",
+    "    9.444 [1808] < wait for init threads (0.004 s)",
+    "    9.452 [1808] > audio init",
+    "    9.533 [1808] < audio init (0.081 s)",
+    "    9.537 [1808] ready",
+    "    9.824 [1808] slow frame: ES 899 ms before it, drawing 27 ms (100% of the screen)",
+    "   10.104 [1808] slow frame: ES 224 ms before it, drawing 36 ms (100% of the screen)"
+  ],
+  "process_status": [
+    "VmHWM:\t   97636 kB",
+    "VmRSS:\t   92132 kB",
+    "Threads:\t11"
+  ],
+  "systems_api_bytes": 11695,
+  "backups": [
+    "/media/fat/emulationstation/backups/codex-1080p-19691231-210331-561759"
+  ]
+}

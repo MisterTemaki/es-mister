@@ -1,12 +1,14 @@
 #pragma once
 
 #include "Window.h"
-#include <thread>
+#include <memory>
+#include <atomic>
 
 namespace httplib
 {
 	class Server;
 }
+class HttpServerWorker;
 
 class HttpServerThread
 {
@@ -18,13 +20,8 @@ public:
 
 private:
 	Window*			mWindow;
-	bool			mRunning;
-	bool			mFirstRun;
-	std::thread*	mThread;
-
-	httplib::Server* mHttpServer;
-
-	void run();
+	std::unique_ptr<HttpServerWorker> mWorker;
+	void run(httplib::Server& server, const std::atomic<bool>& stopRequested);
 };
 
 

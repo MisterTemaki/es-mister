@@ -1,5 +1,9 @@
 # Auditoria es-mister — etapa 1
 
+> Registro histórico da primeira etapa. A continuação com correções P01–P06,
+> compilação ARM e medições reais está em [performance-1080p/RESULTADOS.md](performance-1080p/RESULTADOS.md).
+> Os limites abaixo descrevem o estado daquela entrega e não substituem a atualização.
+
 Data: 13/11/2026. Estado: correções desta etapa implementadas e validadas localmente; auditoria integral pendente.
 
 **Material e base de comparação**

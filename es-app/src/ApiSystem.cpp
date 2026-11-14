@@ -12,6 +12,7 @@
 #include "utils/FileSystemUtil.h"
 #include "utils/StringUtil.h"
 #include "utils/ThreadPool.h"
+#include "services/ThemeInstall.h"
 #include "RetroAchievements.h"
 #include "utils/ZipFile.h"
 #include "Paths.h"
@@ -1247,25 +1248,14 @@ std::pair<std::string, int> ApiSystem::installBatoceraTheme(std::string thname, 
 			if (func != nullptr)
 				func(_("Extracting") + " " + thname);
 
-			unzipFile(zipFile, extractionDirectory);
-			
-			std::string folderName = extractionDirectory + "/" + themeFileName + "-" + branch;
-			if (!Utils::FileSystem::exists(folderName))
-				folderName = extractionDirectory + "/" + themeFileName;
-
-			if (Utils::FileSystem::exists(folderName))
-			{
-				std::string finalfolderName = installFolder  + "/" + themeFileName;
-				if (Utils::FileSystem::exists(finalfolderName))
-					Utils::FileSystem::deleteDirectoryFiles(finalfolderName, true);
-
-				Utils::FileSystem::renameFile(folderName, finalfolderName);
-			}
+			std::string recovery;
+			const bool installed = ThemeInstall::install(zipFile, installFolder, themeFileName, &recovery);
+			if (!recovery.empty()) { LOG(LogError) << "Previous theme retained at " << recovery; }
 
 			Utils::FileSystem::removeFile(zipFile);
 			Utils::FileSystem::deleteDirectoryFiles(extractionDirectory, true);
 
-			return std::pair<std::string, int>(std::string("OK"), 0);
+			return std::pair<std::string, int>(installed ? std::string("OK") : std::string(""), installed ? 0 : 1);
 		}
 
 		Utils::FileSystem::deleteDirectoryFiles(extractionDirectory, true);

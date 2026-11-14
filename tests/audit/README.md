@@ -10,11 +10,28 @@ cmake -S tests/audit -B build-audit -G Ninja -DCMAKE_BUILD_TYPE=Debug
 cmake --build build-audit -j2
 python3 tests/audit/run.py build-audit/audit_regressions
 python3 tests/audit/run_settings.py build-audit/audit_settings
+python3 tests/audit/run_renderer.py build-audit/audit_renderer
+build-audit/audit_http_server
+build-audit/audit_thread_pool
+build-audit/audit_copy_file
+build-audit/audit_similarity
+python3 tests/audit/run_theme.py build-audit/audit_theme
 ```
 
 AddressSanitizer, LeakSanitizer e UndefinedBehaviorSanitizer ficam habilitados por padrão.
 O cenário entre sistemas de arquivos executa quando `/dev/shm` existe e tem dispositivo diferente
 do diretório temporário. O relatório registra que ele foi executado nesta máquina.
+
+As suítes adicionais cobrem encerramento HTTP durante handler ativo e início imediato,
+reuso/cancelamento/exceções do pool, falha real de escrita de cópia com preservação do
+destino, equivalência da busca e metadados com 100.000 bytes, instalação de temas com
+CRC inválido/traversal/rollback, e pixels do backend com comandos transparentes,
+blend aditivo, stencil e recriação. A referência antiga de similaridade é apenas um
+oráculo de teste para entradas limitadas, nunca código compilado na aplicação.
+
+`raster_workload.cpp` permite comparação diferencial de 16 cenas com o rasterizador
+anterior em x86 e ARM/NEON. O modo `bench` é sintético e não mede latência da TV.
+As medições de navegação do DE10-Nano estão em `audit/performance-1080p/RESULTADOS.md`.
 
 Para testar a interface compilada por software, sem framebuffer, com um catálogo artificial:
 

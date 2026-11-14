@@ -59,7 +59,14 @@ EOF
 fetch() { # name url ref
 	local dir=$SRC/$1
 	if [ ! -d "$dir" ]; then
-		git clone -q --depth 1 -b "$3" "$2" "$dir"
+		if [[ "$3" =~ ^[0-9a-f]{40}$ ]]; then
+			git init -q "$dir"
+			git -C "$dir" remote add origin "$2"
+			git -C "$dir" fetch -q --depth 1 origin "$3"
+			git -C "$dir" checkout -q --detach FETCH_HEAD
+		else
+			git clone -q --depth 1 -b "$3" "$2" "$dir"
+		fi
 	fi
 }
 
@@ -69,7 +76,7 @@ sources() {
 	fetch SDL2 https://github.com/libsdl-org/SDL.git release-2.32.10
 	fetch SDL2_mixer https://github.com/libsdl-org/SDL_mixer.git release-2.8.2
 	fetch curl https://github.com/curl/curl.git curl-8_19_0
-	fetch rapidjson https://github.com/Tencent/rapidjson.git master
+	fetch rapidjson https://github.com/Tencent/rapidjson.git 297637bc0a0f00dc504dbc1a47ebdaa577f8ae19
 	fetch vlc https://github.com/videolan/vlc.git 3.0.21
 }
 

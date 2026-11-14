@@ -1,0 +1,1 @@
+pool: zero workers, 32 reuse cycles, exceptions, nested queue, 4000 concurrent jobs, cancellation, restart and exclusions passed

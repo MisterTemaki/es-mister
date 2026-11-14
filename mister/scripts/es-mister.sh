@@ -19,7 +19,7 @@ SIZE=auto
 FPS=60
 BENCH=0
 PROFILE=0
-SLOW_DUMPS=4
+SLOW_DUMPS=0
 STRIP=8
 PLD=256
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
@@ -114,6 +114,7 @@ export ES_SOFT_STATS_FILE=$LOGS/es-mister-stats.txt
 # how long each step of ES's start takes (the previous start's is kept beside it)
 [ -f "$LOGS/es-startup.log" ] && mv -f "$LOGS/es-startup.log" "$LOGS/es-startup.prev.log"
 export ES_STARTUP_TRACE=$LOGS/es-startup.log
+unset ES_SOFT_BENCH ES_PROFILE ES_SOFT_SLOW_DUMP ES_SOFT_SLOW_DUMPS
 [ "$BENCH" = 1 ] && export ES_SOFT_BENCH=1
 # where ES spends the processor (logs/es-profile.txt), for the port's tuning
 [ "$PROFILE" = 1 ] && export ES_PROFILE=$LOGS/es-profile.txt

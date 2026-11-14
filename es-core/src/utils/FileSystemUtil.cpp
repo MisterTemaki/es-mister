@@ -13,6 +13,9 @@
 #include <set>
 #include <shared_mutex>
 #include <thread>
+#include <atomic>
+#include <filesystem>
+#include <memory>
 
 #if defined(_WIN32)
 // because windows...
@@ -20,6 +23,7 @@
 #include <Windows.h>
 #include <mutex>
 #include <io.h> 
+#include <fcntl.h>
 #define getcwd _getcwd
 #define mkdir(x,y) _mkdir(x)
 #define snprintf _snprintf
@@ -1471,47 +1475,92 @@ namespace Utils
 
 		bool copyFile(const std::string& src, const std::string& dst)
 		{
-			std::string path = getGenericPath(src);
-			std::string pathD = getGenericPath(dst);
-
-			// don't remove if it doesn't exists
-			if (!exists(path, false))
-				return true;
-
-			Utils::FileSystem::createDirectory(Utils::FileSystem::getParent(pathD));
-
-			char buf[512];
-			size_t size;
-
+			namespace fs = std::filesystem;
+			std::error_code error;
+			const auto from = fs::u8path(getGenericPath(src));
+			const auto sourceStatus = fs::status(from, error);
+			if (error || !fs::is_regular_file(sourceStatus)) return false;
+			auto to = fs::u8path(getGenericPath(dst));
+			// Preserve destination links, including a link whose target has not been created yet.
+			for (int depth = 0; ; ++depth)
+			{
+				auto status = fs::symlink_status(to, error);
+				if (error && error != std::errc::no_such_file_or_directory) return false;
+				if (!fs::is_symlink(status)) break;
+				if (depth == 40) return false;
+				auto link = fs::read_symlink(to, error);
+				if (error) return false;
+				to = link.is_absolute() ? link : to.parent_path() / link;
+			}
+			to = fs::weakly_canonical(to, error);
+			if (error) return false;
+			const auto destinationStatus = fs::status(to, error);
+			const bool exists = !error && fs::exists(destinationStatus);
+			if (exists && !fs::is_regular_file(destinationStatus)) return false;
+			if (exists && fs::equivalent(from, to, error)) return true;
+			const std::string path = from.u8string(), pathD = to.u8string();
+			if (!createDirectory(getParent(pathD))) return false;
 #if defined(_WIN32)
 			FILE* source = _wfopen(Utils::String::convertToWideString(path).c_str(), L"rb");
 #else
 			FILE* source = fopen(path.c_str(), "rb");
 #endif
-			if (source == nullptr)
-				return false;
-
+			if (!source) return false;
+			auto closeFile = [](FILE* file) { if (file) fclose(file); };
+			std::unique_ptr<FILE, decltype(closeFile)> sourceOwner(source, closeFile);
+			std::unique_ptr<FILE, decltype(closeFile)> destinationOwner(nullptr, closeFile);
+			FILE* dest = nullptr;
+			std::string temporary;
 #if defined(_WIN32)
-			FILE* dest = _wfopen(Utils::String::convertToWideString(pathD).c_str(), L"wb");
-#else
-			FILE* dest = fopen(pathD.c_str(), "wb");
-#endif
-			if (dest == nullptr)
+			static std::atomic<unsigned long long> sequence{0};
+			for (int attempt = 0; attempt < 128 && !dest; ++attempt)
 			{
-				fclose(source);
-				return false;
+				temporary = getParent(pathD) + "/.es-copy-" + std::to_string(GetCurrentProcessId()) + "-" + std::to_string(++sequence);
+				HANDLE handle = CreateFileW(Utils::String::convertToWideString(temporary).c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+				if (handle == INVALID_HANDLE_VALUE)
+				{
+					if (GetLastError() == ERROR_FILE_EXISTS || GetLastError() == ERROR_ALREADY_EXISTS) continue;
+					break;
+				}
+				int descriptor = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_BINARY);
+				if (descriptor < 0) CloseHandle(handle);
+				else { dest = _fdopen(descriptor, "wb"); if (!dest) _close(descriptor); }
+				destinationOwner.reset(dest);
+				if (!dest) { fs::remove(fs::u8path(temporary), error); break; }
 			}
-
-			while (size = fread(buf, 1, 512, source))
-				fwrite(buf, 1, size, dest);
-
-			fclose(dest);
-			fclose(source);
-
-			FileCache::remove(path);
+#else
+			std::string pattern = getParent(pathD) + "/.es-copy-XXXXXX";
+			std::vector<char> name(pattern.begin(), pattern.end()); name.push_back(0);
+			int descriptor = mkstemp(name.data());
+			if (descriptor >= 0)
+			{
+				temporary = name.data(); dest = fdopen(descriptor, "wb");
+				destinationOwner.reset(dest);
+				if (!dest) { close(descriptor); fs::remove(fs::u8path(temporary), error); }
+			}
+#endif
+			if (!dest) return false;
+			std::vector<char> buffer(64 * 1024);
+			bool ok = true;
+			for (size_t n; (n = fread(buffer.data(), 1, buffer.size(), source)) != 0;)
+				if (fwrite(buffer.data(), 1, n, dest) != n) { ok = false; break; }
+			ok = !ferror(source) && ok;
+			if (fflush(dest) != 0) ok = false;
+			if (fclose(destinationOwner.release()) != 0) ok = false;
+			if (fclose(sourceOwner.release()) != 0) ok = false;
+			const auto permissions = (exists ? destinationStatus.permissions() : sourceStatus.permissions()) &
+				(fs::perms::owner_all | fs::perms::group_all | fs::perms::others_all);
+			fs::permissions(fs::u8path(temporary), permissions, error);
+			ok = !error && ok;
+			if (ok) ok = renameFile(temporary, pathD, true);
+			if (!ok)
+			{
+				fs::permissions(fs::u8path(temporary), fs::perms::owner_write, fs::perm_options::add, error);
+				fs::remove(fs::u8path(temporary), error);
+			}
+			FileCache::remove(getGenericPath(dst));
 			FileCache::remove(pathD);
-
-			return true;
+			return ok;
 		} // removeFile
 
 		void deleteDirectoryFiles(const std::string& path, bool deleteDirectory)

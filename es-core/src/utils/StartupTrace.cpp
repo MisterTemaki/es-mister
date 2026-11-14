@@ -237,21 +237,25 @@ namespace StartupTrace
 	namespace
 	{
 		std::atomic<int64_t> pressedAt{ 0 }; // steady clock, ns; 0: none waiting
+		std::atomic<uint32_t> pressedQueueMs{ 0 };
 		int64_t steadyNs() { return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
 	}
 
-	void inputArrived()
+	void inputArrived(uint32_t queuedMs)
 	{
 		int64_t none = 0;
-		pressedAt.compare_exchange_strong(none, steadyNs()); // the first press not yet answered counts
+		if (pressedAt.compare_exchange_strong(none, steadyNs()))
+			pressedQueueMs.store(queuedMs); // first queued press only; both APIs are called on the main thread
 	}
 
-	bool inputAnswered(double& ms)
+	bool inputAnswered(double& ms, double* eventMs)
 	{
 		const int64_t at = pressedAt.exchange(0);
 		if (at == 0)
 			return false;
 		ms = (steadyNs() - at) / 1e6;
+		const uint32_t queued = pressedQueueMs.exchange(0);
+		if (eventMs) *eventMs = ms + queued;
 		return true;
 	}
 

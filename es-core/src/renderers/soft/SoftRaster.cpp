@@ -19,6 +19,11 @@ namespace Renderer
 	{
 		static thread_local CacheTrace* cacheTrace = nullptr;
 		void traceCache(CacheTrace* trace) { cacheTrace = trace; }
+		bool optimizationsEnabled()
+		{
+			static const bool enabled = [] { const char* p = std::getenv("ES_SOFT_OPTIMIZATIONS"); return !p || std::strcmp(p, "0") != 0; }();
+			return enabled;
+		}
 		namespace
 		{
 			int64_t cacheNow()
@@ -33,7 +38,7 @@ namespace Renderer
 			};
 
 			enum TexMode { TEX_NONE = 0, TEX_NEAREST = 1, TEX_LINEAR = 2, TEX_DIRECT = 3 };
-			enum ModMode { MOD_NONE = 0, MOD_CONST = 1, MOD_VARY = 2 };
+			enum ModMode { MOD_NONE = 0, MOD_CONST = 1, MOD_VARY = 2, MOD_ALPHA = 3 };
 			enum BlendMode { BLEND_NORMAL = 0, BLEND_ADD = 1, BLEND_GENERIC = 2 };
 
 			inline uint32_t div255(uint32_t x) { return (x + 128 + ((x + 128) >> 8)) >> 8; }
@@ -375,6 +380,9 @@ namespace Renderer
 					src.val[0] = div255n(vmull_u8(src.val[0], color.val[0]));
 					src.val[1] = div255n(vmull_u8(src.val[1], color.val[1]));
 					src.val[2] = div255n(vmull_u8(src.val[2], color.val[2]));
+				}
+				if (MOD == MOD_CONST || MOD == MOD_ALPHA)
+				{
 					src.val[3] = div255n(vmull_u8(src.val[3], color.val[3]));
 				}
 				uint8x8x4_t d = vld4_u8((const uint8_t*)dst);
@@ -413,7 +421,17 @@ namespace Renderer
 			template<int TEX, int MOD>
 			void spanNeon(uint32_t* dst, const uint8_t* mask, int maskTest, int n, const Tex& tex, Span s)
 			{
-				const SpanFn scalar = &spanT<TEX, MOD, BLEND_NORMAL>;
+				if constexpr (MOD == MOD_CONST && TEX != TEX_NONE)
+				{
+					// Fades use a white RGB tint. Multiplication by 255 and div255 is exactly
+					// identity: preserve RGB and perform only the original alpha arithmetic.
+					if ((s.color & 0xFFFFFF) == 0xFFFFFF && optimizationsEnabled())
+					{
+						spanNeon<TEX, MOD_ALPHA>(dst, mask, maskTest, n, tex, s);
+						return;
+					}
+				}
+				const SpanFn scalar = &spanT<TEX, MOD == MOD_ALPHA ? MOD_CONST : MOD, BLEND_NORMAL>;
 
 				// the pixels whose texels need no clamping or wrapping (all of a 1:1 picture's)
 				int first = 0, last = n;
@@ -938,17 +956,15 @@ namespace Renderer
 			// v0 top left, v1 bottom left, v2 top right, v3 bottom right (as ES makes them); either axis may be reversed
 			float x0 = v[0].x, x1 = v[2].x, y0 = v[0].y, y1 = v[1].y;
 			float u0 = v[0].u, u1 = v[2].u, t0 = v[0].v, t1 = v[1].v;
-			ColorF c00 = unpack(v[0].color), c01 = unpack(v[1].color), c10 = unpack(v[2].color), c11 = unpack(v[3].color);
+			const bool flipX = x1 < x0, flipY = y1 < y0;
 
-			if (x1 < x0)
+			if (flipX)
 			{
 				std::swap(x0, x1); std::swap(u0, u1);
-				std::swap(c00, c10); std::swap(c01, c11);
 			}
-			if (y1 < y0)
+			if (flipY)
 			{
 				std::swap(y0, y1); std::swap(t0, t1);
-				std::swap(c00, c01); std::swap(c10, c11);
 			}
 
 			// its first row and column, unclipped: texels and colours count from them, so a pixel is the same
@@ -961,6 +977,11 @@ namespace Renderer
 			const int py1 = std::min(clip.y1, (int)std::ceil(y1 - 0.5f));
 			if (px0 >= px1 || py0 >= py1)
 				return;
+
+			// Most glyphs do not intersect this 8-row strip: convert colours only after clipping.
+			ColorF c00 = unpack(v[0].color), c01 = unpack(v[1].color), c10 = unpack(v[2].color), c11 = unpack(v[3].color);
+			if (flipX) { std::swap(c00, c10); std::swap(c01, c11); }
+			if (flipY) { std::swap(c00, c01); std::swap(c10, c11); }
 
 			mStats.quads++;
 

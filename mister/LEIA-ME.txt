@@ -38,11 +38,20 @@ Usar
 Ajustes
 -------
 /media/fat/emulationstation/es-mister.ini:
-  SIZE=640x360   tamanho em que o EmulationStation desenha (640x360 preenche
-                 1080p e 720p exatos); maior fica mais nítido e mais lento
+  SIZE=auto      resolução nativa do framebuffer; numa TV configurada em
+                 1080p, desenha em 1920x1080, sem redução da imagem
   FPS=60         limite de quadros por segundo
   BENCH=0        1 = redesenha a tela inteira em todo quadro, para medir o
                  custo do desenho (veja logs/es-mister-stats.txt)
+  PROFILE=0      diagnóstico de CPU; deixe desligado no uso normal
+  SLOW_DUMPS=0   diagnóstico que redesenha quadros; deixe desligado no uso normal
+  STRIP=8        desenha em faixas de oito linhas para aproveitar o cache
+  PLD=256        prefetch de memória dos loops NEON e cópia
+
+FPS=60 é o limite, não uma promessa de 60 quadros novos por segundo. O tema
+Carbon em 1080p pode exigir mais de 16,7 ms quando toda a tela muda.
+O helper reconhece o framebuffer já ativo ao reabrir pelo SSH; não é preciso
+fazer login no console exibido pela TV para iniciar o frontend.
 
 O que mandar de volta depois do teste
 -------------------------------------

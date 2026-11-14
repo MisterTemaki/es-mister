@@ -1,0 +1,17 @@
+wait 14000
+shot carousel
+key Return
+settle 15000
+shot games
+key Down
+wait 800
+shot selection
+key Escape
+settle 15000
+key Space
+wait 1500
+shot menu
+key Escape
+wait 1000
+stats
+quit

@@ -22,6 +22,7 @@
 // lines do, to put ES's steps on the same clock as theirs.
 
 #include <string>
+#include <cstdint>
 
 namespace StartupTrace
 {
@@ -30,8 +31,8 @@ namespace StartupTrace
 	void frameShown();
 	void finish();
 	bool onMainThread();
-	void inputArrived();
-	bool inputAnswered(double& ms);
+	void inputArrived(uint32_t queuedMs = 0);
+	bool inputAnswered(double& ms, double* eventMs = nullptr);
 	double inputWaitingMs(); // how long the press not yet answered has waited; -1: none
 
 	class Scope

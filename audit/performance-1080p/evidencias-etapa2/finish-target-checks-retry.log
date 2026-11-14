@@ -1,0 +1,37 @@
+collected /media/fat/emulationstation/codex-performance-20261113/quality-final
+
+QUALITY FINISHED
+START threads-one
+quit API URLError
+console 0 0 1920x1080
+
+started 9249 isolated HOME /tmp/codex-perf-threads-one
+
+collected /media/fat/emulationstation/codex-performance-20261113/threads-one
+
+DONE threads-one
+START startup-control-final
+quit API URLError
+console 0 0 1920x1080
+
+started 9354 isolated HOME /tmp/codex-perf-startup-control-final
+
+collected /media/fat/emulationstation/codex-performance-20261113/startup-control-final
+
+DONE startup-control-final
+START startup-fast-final
+quit API URLError
+console 0 0 1920x1080
+
+started 9432 isolated HOME /tmp/codex-perf-startup-fast-final
+
+collected /media/fat/emulationstation/codex-performance-20261113/startup-fast-final
+
+DONE startup-fast-final
+
+3098648
+
+similarity: 1240 exact reference scores, bounded prefix and 100000-byte metadata passed
+search workload 0: 717.845 ms (2000 pairs)
+search workload 1: 17.762 ms (2000 pairs)
+ALL TARGET CHECKS FINISHED

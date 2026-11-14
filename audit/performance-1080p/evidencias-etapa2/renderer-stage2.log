@@ -1,0 +1,21 @@
+optimizations 0 exit 0
+red a4f3b4ea75214b83
+no-draw-keeps-red a4f3b4ea75214b83
+transparent-only-clears 3b6f2bb102c34b83
+no-draw-keeps-clear 3b6f2bb102c34b83
+blue-with-transparent-texture 98161014907d6183
+mixed-alpha-kept 641beb1221edadb4
+additive-zero-alpha-kept 4b7f520020d78383
+transparent-stencil-kept e9bf2d656f154b83
+
+optimizations 1 exit 0
+red a4f3b4ea75214b83
+no-draw-keeps-red a4f3b4ea75214b83
+transparent-only-clears 3b6f2bb102c34b83
+no-draw-keeps-clear 3b6f2bb102c34b83
+blue-with-transparent-texture 98161014907d6183
+mixed-alpha-kept 641beb1221edadb4
+additive-zero-alpha-kept 4b7f520020d78383
+transparent-stencil-kept e9bf2d656f154b83
+
+Backend: transparent-only frames, empty swaps, mixed alpha, additive blend and stencil preserve output; ASan/UBSan/LSan passed.

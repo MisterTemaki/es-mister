@@ -1,0 +1,488 @@
+{
+  "all_active": {
+    "ui_ms": {
+      "n": 293,
+      "min": 1.874,
+      "median": 3.525,
+      "mean": 18.788,
+      "p95_sample": 53.187,
+      "max": 885.714
+    },
+    "dirty_ms": {
+      "n": 293,
+      "min": 0.001,
+      "median": 0.098,
+      "mean": 0.113,
+      "p95_sample": 0.182,
+      "max": 0.72
+    },
+    "execute_ms": {
+      "n": 293,
+      "min": 4.95,
+      "median": 98.914,
+      "mean": 85.181,
+      "p95_sample": 115.187,
+      "max": 217.321
+    },
+    "post_ms": {
+      "n": 293,
+      "min": 0.005,
+      "median": 0.01,
+      "mean": 0.01,
+      "p95_sample": 0.019,
+      "max": 0.057
+    },
+    "diagnostics_ms": {
+      "n": 293,
+      "min": 0.011,
+      "median": 0.013,
+      "mean": 0.193,
+      "p95_sample": 0.098,
+      "max": 7.607
+    },
+    "pacing_ms": {
+      "n": 293,
+      "min": 0.296,
+      "median": 16.752,
+      "mean": 16.08,
+      "p95_sample": 16.903,
+      "max": 19.664
+    },
+    "draw_max_ms": {
+      "n": 293,
+      "min": 4.459,
+      "median": 88.551,
+      "mean": 77.124,
+      "p95_sample": 107.199,
+      "max": 207.44
+    },
+    "copy_max_ms": {
+      "n": 293,
+      "min": 0.09,
+      "median": 10.669,
+      "mean": 9.845,
+      "p95_sample": 14.756,
+      "max": 19.416
+    },
+    "wake_max_ms": {
+      "n": 293,
+      "min": 0.056,
+      "median": 0.112,
+      "mean": 0.371,
+      "p95_sample": 1.955,
+      "max": 5.04
+    },
+    "off_cpu_draw_max_ms": {
+      "n": 293,
+      "min": 0.049,
+      "median": 5.401,
+      "mean": 6.962,
+      "p95_sample": 15.632,
+      "max": 64.659
+    }
+  },
+  "navigation": {
+    "ui_ms": {
+      "n": 252,
+      "min": 1.874,
+      "median": 3.486,
+      "mean": 4.548,
+      "p95_sample": 7.297,
+      "max": 52.042
+    },
+    "dirty_ms": {
+      "n": 252,
+      "min": 0.04,
+      "median": 0.1,
+      "mean": 0.113,
+      "p95_sample": 0.18,
+      "max": 0.686
+    },
+    "execute_ms": {
+      "n": 252,
+      "min": 4.95,
+      "median": 99.824,
+      "mean": 94.044,
+      "p95_sample": 115.187,
+      "max": 217.321
+    },
+    "post_ms": {
+      "n": 252,
+      "min": 0.008,
+      "median": 0.01,
+      "mean": 0.011,
+      "p95_sample": 0.019,
+      "max": 0.057
+    },
+    "diagnostics_ms": {
+      "n": 252,
+      "min": 0.011,
+      "median": 0.013,
+      "mean": 0.089,
+      "p95_sample": 0.029,
+      "max": 3.914
+    },
+    "pacing_ms": {
+      "n": 252,
+      "min": 0.449,
+      "median": 16.752,
+      "mean": 16.318,
+      "p95_sample": 16.795,
+      "max": 17.588
+    },
+    "draw_max_ms": {
+      "n": 252,
+      "min": 4.459,
+      "median": 89.766,
+      "mean": 85.059,
+      "p95_sample": 107.199,
+      "max": 207.44
+    },
+    "copy_max_ms": {
+      "n": 252,
+      "min": 0.09,
+      "median": 11.02,
+      "mean": 11.011,
+      "p95_sample": 14.702,
+      "max": 18.722
+    },
+    "wake_max_ms": {
+      "n": 252,
+      "min": 0.056,
+      "median": 0.109,
+      "mean": 0.189,
+      "p95_sample": 0.751,
+      "max": 2.313
+    },
+    "off_cpu_draw_max_ms": {
+      "n": 252,
+      "min": 0.049,
+      "median": 5.302,
+      "mean": 6.238,
+      "p95_sample": 14.126,
+      "max": 30.723
+    }
+  },
+  "full_navigation": {
+    "ui_ms": {
+      "n": 240,
+      "min": 1.874,
+      "median": 3.508,
+      "mean": 4.661,
+      "p95_sample": 7.502,
+      "max": 52.042
+    },
+    "dirty_ms": {
+      "n": 240,
+      "min": 0.081,
+      "median": 0.101,
+      "mean": 0.117,
+      "p95_sample": 0.182,
+      "max": 0.686
+    },
+    "execute_ms": {
+      "n": 240,
+      "min": 62.996,
+      "median": 100.081,
+      "mean": 98.161,
+      "p95_sample": 115.488,
+      "max": 217.321
+    },
+    "post_ms": {
+      "n": 240,
+      "min": 0.008,
+      "median": 0.01,
+      "mean": 0.011,
+      "p95_sample": 0.019,
+      "max": 0.057
+    },
+    "diagnostics_ms": {
+      "n": 240,
+      "min": 0.011,
+      "median": 0.013,
+      "mean": 0.093,
+      "p95_sample": 0.031,
+      "max": 3.914
+    },
+    "pacing_ms": {
+      "n": 240,
+      "min": 16.716,
+      "median": 16.752,
+      "mean": 16.762,
+      "p95_sample": 16.795,
+      "max": 17.588
+    },
+    "draw_max_ms": {
+      "n": 240,
+      "min": 50.532,
+      "median": 90.151,
+      "mean": 88.746,
+      "p95_sample": 107.684,
+      "max": 207.44
+    },
+    "copy_max_ms": {
+      "n": 240,
+      "min": 8.578,
+      "median": 11.14,
+      "mean": 11.547,
+      "p95_sample": 14.707,
+      "max": 18.722
+    },
+    "wake_max_ms": {
+      "n": 240,
+      "min": 0.056,
+      "median": 0.11,
+      "mean": 0.193,
+      "p95_sample": 0.764,
+      "max": 2.313
+    },
+    "off_cpu_draw_max_ms": {
+      "n": 240,
+      "min": 2.387,
+      "median": 5.39,
+      "mean": 6.521,
+      "p95_sample": 14.72,
+      "max": 30.723
+    }
+  },
+  "partial_navigation": {
+    "ui_ms": {
+      "n": 12,
+      "min": 2.156,
+      "median": 2.222,
+      "mean": 2.287,
+      "p95_sample": 2.64,
+      "max": 2.64
+    },
+    "dirty_ms": {
+      "n": 12,
+      "min": 0.04,
+      "median": 0.046,
+      "mean": 0.047,
+      "p95_sample": 0.056,
+      "max": 0.056
+    },
+    "execute_ms": {
+      "n": 12,
+      "min": 4.95,
+      "median": 12.521,
+      "mean": 11.712,
+      "p95_sample": 19.008,
+      "max": 19.008
+    },
+    "post_ms": {
+      "n": 12,
+      "min": 0.008,
+      "median": 0.009,
+      "mean": 0.009,
+      "p95_sample": 0.01,
+      "max": 0.01
+    },
+    "diagnostics_ms": {
+      "n": 12,
+      "min": 0.012,
+      "median": 0.013,
+      "mean": 0.013,
+      "p95_sample": 0.015,
+      "max": 0.015
+    },
+    "pacing_ms": {
+      "n": 12,
+      "min": 0.449,
+      "median": 6.357,
+      "mean": 7.426,
+      "p95_sample": 16.754,
+      "max": 16.754
+    },
+    "draw_max_ms": {
+      "n": 12,
+      "min": 4.459,
+      "median": 12.138,
+      "mean": 11.329,
+      "p95_sample": 18.592,
+      "max": 18.592
+    },
+    "copy_max_ms": {
+      "n": 12,
+      "min": 0.09,
+      "median": 0.314,
+      "mean": 0.286,
+      "p95_sample": 0.454,
+      "max": 0.454
+    },
+    "wake_max_ms": {
+      "n": 12,
+      "min": 0.056,
+      "median": 0.088,
+      "mean": 0.099,
+      "p95_sample": 0.189,
+      "max": 0.189
+    },
+    "off_cpu_draw_max_ms": {
+      "n": 12,
+      "min": 0.049,
+      "median": 0.534,
+      "mean": 0.575,
+      "p95_sample": 1.093,
+      "max": 1.093
+    }
+  },
+  "sampled_command_groups_by_sum_worker_wall_time": [
+    {
+      "label": "texture 1600x32, vertices 690, first alpha 0",
+      "ms": 477.439,
+      "calls": 2160,
+      "samples": 125
+    },
+    {
+      "label": "texture 1920x1080, vertices 4, first alpha 255",
+      "ms": 286.942,
+      "calls": 2052,
+      "samples": 32
+    },
+    {
+      "label": "texture 1600x32, vertices 684, first alpha 0",
+      "ms": 155.595,
+      "calls": 720,
+      "samples": 45
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 224",
+      "ms": 99.725,
+      "calls": 405,
+      "samples": 6
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 30",
+      "ms": 99.319,
+      "calls": 405,
+      "samples": 6
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 6",
+      "ms": 95.058,
+      "calls": 408,
+      "samples": 6
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 248",
+      "ms": 91.03,
+      "calls": 408,
+      "samples": 6
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 217",
+      "ms": 80.101,
+      "calls": 272,
+      "samples": 4
+    },
+    {
+      "label": "texture 64x36, vertices 4, first alpha 64",
+      "ms": 79.831,
+      "calls": 64,
+      "samples": 19
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 255",
+      "ms": 78.304,
+      "calls": 425,
+      "samples": 8
+    },
+    {
+      "label": "texture 1600x32, vertices 696, first alpha 0",
+      "ms": 75.616,
+      "calls": 360,
+      "samples": 15
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 90",
+      "ms": 69.13,
+      "calls": 271,
+      "samples": 4
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 37",
+      "ms": 68.171,
+      "calls": 272,
+      "samples": 4
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 164",
+      "ms": 67.672,
+      "calls": 271,
+      "samples": 4
+    },
+    {
+      "label": "texture 0x0, vertices 4, first alpha 64",
+      "ms": 66.196,
+      "calls": 495,
+      "samples": 19
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 219",
+      "ms": 33.292,
+      "calls": 136,
+      "samples": 2
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 91",
+      "ms": 33.117,
+      "calls": 135,
+      "samples": 2
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 35",
+      "ms": 31.055,
+      "calls": 136,
+      "samples": 2
+    },
+    {
+      "label": "texture 1280x720, vertices 4, first alpha 163",
+      "ms": 28.923,
+      "calls": 135,
+      "samples": 2
+    },
+    {
+      "label": "texture 464x173, vertices 4, first alpha 80",
+      "ms": 25.784,
+      "calls": 66,
+      "samples": 3
+    },
+    {
+      "label": "texture 1600x32, vertices 696, first alpha 72",
+      "ms": 25.59,
+      "calls": 95,
+      "samples": 10
+    },
+    {
+      "label": "texture 464x173, vertices 4, first alpha 255",
+      "ms": 24.056,
+      "calls": 69,
+      "samples": 3
+    },
+    {
+      "label": "texture 2x58, vertices 4, first alpha 197",
+      "ms": 22.007,
+      "calls": 142,
+      "samples": 15
+    },
+    {
+      "label": "texture 358x173, vertices 4, first alpha 68",
+      "ms": 19.478,
+      "calls": 60,
+      "samples": 3
+    }
+  ],
+  "sampled_cache_navigation": {
+    "cache_lookups": 3679,
+    "cache_hits": 3679,
+    "cache_misses": 0,
+    "cache_uncached": 0,
+    "ready_rows": 29320,
+    "sampled_rows": 0,
+    "duplicate_rows": 0,
+    "allocated_bytes": 0,
+    "cache_mutex_ns": 12382481,
+    "cache_grid_ns": 0
+  }
+}

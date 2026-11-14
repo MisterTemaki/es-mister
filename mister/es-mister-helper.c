@@ -158,6 +158,31 @@ static int framebuffer_size(int* width, int* height)
 	return ok;
 }
 
+static int framebuffer_command(const char* text)
+{
+	// Never hang when Main_MiSTer is absent or still reopening its command FIFO.
+	int fd = open("/dev/MiSTer_cmd", O_WRONLY | O_NONBLOCK | O_CLOEXEC);
+	if (fd < 0) return 0;
+	const size_t len = strlen(text);
+	const int ok = write(fd, text, len) == (ssize_t)len;
+	close(fd);
+	return ok;
+}
+
+static int framebuffer_exact(int width, int height)
+{
+	char text[96];
+	snprintf(text, sizeof(text), "fb_cmd1 8888 1 %d %d\n", width, height);
+	if (!framebuffer_command(text)) return 0;
+	for (int tries = 0; tries < 30; ++tries)
+	{
+		int w, h;
+		if (framebuffer_size(&w, &h) && w == width && h == height) return 1;
+		sleep_ms(10);
+	}
+	return 0;
+}
+
 static int console_on(const char* size, int presses)
 {
 	int width = 640, height = 360, divisor = 1;
@@ -179,6 +204,27 @@ static int console_on(const char* size, int presses)
 	{
 		fprintf(stderr, "es-mister-helper: the menu core is not loaded (%s)\n", core);
 		return 1;
+	}
+
+	// F9 is ignored while Main considers the terminal owned by a script (VT2). The terminal
+	// can already be visible, so waiting for a new switch to VT1 then fails forever. A small
+	// temporary mode change acknowledges that Main accepts fb_cmd, without toggling F9.
+	int previousW, previousH;
+	if (framebuffer_size(&previousW, &previousH) && previousW > 120 &&
+		framebuffer_exact(previousW - 1, previousH))
+	{
+		if (automatic)
+		{
+			// Query the display's native size, rather than dividing an earlier app's reduced mode.
+			if (!framebuffer_command("fb_cmd0 8888 1 1\n")) return 1;
+			sleep_ms(100);
+			if (!framebuffer_size(&width, &height)) return 1;
+			width /= divisor;
+			height /= divisor;
+		}
+		if (!framebuffer_exact(width, height)) return 1;
+		printf("%dx%d\n", width, height);
+		return 0;
 	}
 
 	int kbd = keyboard_open();
@@ -230,15 +276,11 @@ static int console_on(const char* size, int presses)
 	}
 
 	// the framebuffer at that size, 32 bits a pixel
-	FILE* cmd = fopen("/dev/MiSTer_cmd", "w");
-	if (!cmd)
+	if (!framebuffer_exact(width, height))
 	{
-		perror("es-mister-helper: /dev/MiSTer_cmd");
+		fprintf(stderr, "es-mister-helper: Main_MiSTer did not acknowledge framebuffer %dx%d\n", width, height);
 		return 1;
 	}
-	fprintf(cmd, "fb_cmd1 8888 1 %d %d\n", width, height);
-	fclose(cmd);
-	sleep_ms(300); // Main_MiSTer sets the framebuffer driver's mode
 	printf("%dx%d\n", width, height);
 	return 0;
 }

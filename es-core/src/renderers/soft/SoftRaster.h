@@ -82,6 +82,8 @@ namespace Renderer
 		};
 		// A worker-local destination, set only during explicitly sampled profiling frames.
 		void traceCache(CacheTrace* trace);
+		// 0 keeps the original paths for controlled comparisons on the same executable.
+		bool optimizationsEnabled();
 
 		class Raster
 		{

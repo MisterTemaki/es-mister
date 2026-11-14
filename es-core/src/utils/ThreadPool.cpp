@@ -1,236 +1,170 @@
 #include "ThreadPool.h"
 #include "utils/Platform.h"
-
+#include "Log.h"
+#include <algorithm>
+#include <chrono>
+#include <cstdint>
 #if WIN32
 #include <Windows.h>
 #include "StringUtil.h"
-#endif
-
-#include <stdlib.h>
-#if defined(__linux__)
+#elif defined(__linux__)
 #include <pthread.h>
 #endif
-#include <algorithm>
-#include <chrono>
-#include "Log.h"
 
 namespace Utils
 {
-	ThreadPool::ThreadPool(const std::string& poolName, int threadByCore) : mRunning(false), mWaiting(false), mNumWork(0)
-	{
-		mPoolName = poolName;
-		mThreadByCore = threadByCore;
-	}
+    void WorkItem::complete()
+    {
+        { std::lock_guard<std::mutex> lock(mReadyMutex); mDone = true; }
+        mReady.notify_all();
+    }
+    void WorkItem::wait() const
+    {
+        std::unique_lock<std::mutex> lock(mReadyMutex);
+        mReady.wait(lock, [&] { return mDone.load(); });
+    }
+    ThreadPool::ThreadPool(const std::string& name, int byCore)
+        : mRunning(false), mNumWork(0), mPoolName(name), mThreadByCore(byCore) {}
+    ThreadPool::~ThreadPool() { stop(); }
 
-	void ThreadPool::start()
-	{
-		mRunning = true;
-
-		size_t num_threads = mThreadByCore < 0 ? abs(mThreadByCore) : std::thread::hardware_concurrency() * mThreadByCore;
-
-		auto doWork = [&](size_t id)
-		{
+    void ThreadPool::start()
+    {
+        std::lock_guard<std::mutex> lifecycle(mLifecycleMutex);
+        if (mRunning) return;
+        for (auto& thread : mThreads) if (thread.joinable()) thread.join();
+        mThreads.clear();
+        size_t count;
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            const uint64_t requested = mThreadByCore < 0 ? (uint64_t)-(int64_t)mThreadByCore :
+                (uint64_t)std::max(1u, std::thread::hardware_concurrency()) * (uint64_t)mThreadByCore;
+            count = (size_t)std::max<uint64_t>(1, requested);
+            mAccepting = true;
+            mRunning = true;
+        }
+        auto worker = [this](size_t id) {
 #if WIN32
-			if (Utils::Platform::isWindows10())
-			{
-				if (!mPoolName.empty())
-				{
-					std::wstring name = Utils::String::convertToWideString("ThreadPool::thread(" + mPoolName + ")");
-					SetThreadDescription(GetCurrentThread(), name.c_str());
-				}
-				else
-					SetThreadDescription(GetCurrentThread(), L"ThreadPool::thread");
-			}
-
-			auto mask = (static_cast<DWORD_PTR>(1) << id);
-			SetThreadAffinityMask(GetCurrentThread(), mask);
+            if (Utils::Platform::isWindows10())
+            {
+                std::wstring name = Utils::String::convertToWideString("ThreadPool::thread(" + mPoolName + ")");
+                SetThreadDescription(GetCurrentThread(), name.c_str());
+            }
+            if (id < sizeof(DWORD_PTR) * 8)
+                SetThreadAffinityMask(GetCurrentThread(), static_cast<DWORD_PTR>(1) << id);
 #elif defined(__linux__)
-			// the pool's name on the thread, for ps and /proc (at most 15 characters)
-			pthread_setname_np(pthread_self(), ("pool " + mPoolName).substr(0, 15).c_str());
+            pthread_setname_np(pthread_self(), ("pool " + mPoolName).substr(0, 15).c_str());
 #endif
-
-			while (mRunning)
-			{
-				_mutex.lock();
-				if (!mWorkQueue.empty())
-				{
-					auto entry = mWorkQueue.front();
-					mWorkQueue.pop();
-					_mutex.unlock();
-
-					try
-					{
-						entry.fn();
-					}
-					catch (std::exception& e)
-					{
-						LOG(LogError) << "Exception occured. ThreadPool::" << mPoolName << " : " << e.what();
-					}
-
-					entry.item->mDone.store(true);
-					mNumWork--;
-				}
-				else
-				{
-					_mutex.unlock();
-
-					// Extra code : Exit finished threads
-					if (mWaiting)
-						return;
-
-					std::this_thread::yield();
-					std::this_thread::sleep_for(std::chrono::milliseconds(1));
-				}
-			}
-		};
-
-		mThreads.reserve(num_threads);
-
-		for (size_t i = 0; i < num_threads; i++)
-			mThreads.push_back(std::thread(doWork, i));
-	}
-
-	ThreadPool::~ThreadPool()
-	{
-		mRunning = false;
-
-		for (std::thread& t : mThreads)
-			if (t.joinable())
-				t.join();
-	}
-
-	WorkItemPtr  ThreadPool::queueWorkItem(work_function work)
-	{
-		auto item = std::make_shared<WorkItem>();
-
-		_mutex.lock();
-		mWorkQueue.push({ work, item });
-		mAllItems.push_back(item);
-		mNumWork++;
-		_mutex.unlock();
-
-		return item;
-	}
-	
-	void ThreadPool::wait()
-	{
-		if (!mRunning)
-			start();
-
-		mWaiting = true;
-		while (mNumWork.load() > 0)
-			std::this_thread::yield();
-
-		_mutex.lock();
-		mAllItems.clear();
-		_mutex.unlock();
-	}
-
-	void ThreadPool::wait(work_function work, int delay)
-	{
-		if (!mRunning)
-			start();
-
-		mWaiting = true;
-
-		while (mNumWork.load() > 0)
-		{
-			work();
-
-			std::this_thread::yield();
-			std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-		}		
-
-		_mutex.lock();
-		mAllItems.clear();
-		_mutex.unlock();
-
-	}
-
-	void WorkItem::wait() const
-	{
-		while (!mDone.load())
-		{
-			std::this_thread::yield();
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
-		}
-	}
-
-	void ThreadPool::cleanupDoneItems()
-	{
-		_mutex.lock();
-
-		mAllItems.erase(
-			std::remove_if(mAllItems.begin(), mAllItems.end(), [](const std::shared_ptr<WorkItem>& item) { return item->isDone(); }), 
-			mAllItems.end());
-
-		_mutex.unlock();
-	}
-
-	void ThreadPool::waitAll(std::initializer_list<WorkItemPtr> items)
-	{
-		if (!mRunning)
-			start();
-
-		for (const auto& item : items)
-			item->wait();
-
-		cleanupDoneItems();
-	}
-
-	void ThreadPool::waitAllExcept(WorkItemPtr excluded)
-	{
-		waitAllExcept({ excluded });
-	}
-
-	void ThreadPool::waitAllExcept(std::initializer_list<WorkItemPtr> excluded)
-	{
-		if (!mRunning)
-			start();
-
-		std::vector<WorkItemPtr> toWait;
-
-		_mutex.lock();
-		for (auto& item : mAllItems)
-		{
-			bool isExcluded = false;
-			for (const auto& ex : excluded)
-			{
-				if (ex == item)
-				{
-					isExcluded = true; 
-					break;
-				}
-			}
-
-			if (!isExcluded)
-				toWait.push_back(item);
-		}
-		_mutex.unlock();
-
-		for (const auto& item : toWait)
-			item->wait();
-
-		cleanupDoneItems();
-	}
-
-	void ThreadPool::stop()
-	{
-		_mutex.lock();
-
-		while (!mWorkQueue.empty())
-		{
-			mNumWork--;
-			mWorkQueue.pop();
-		}
-		
-		_mutex.unlock();
-		mWaiting = true;
-
-		while (mNumWork.load() > 0)
-		{
-			std::this_thread::yield();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		}
-	}
+            for (;;)
+            {
+                WorkEntry entry;
+                {
+                    std::unique_lock<std::mutex> lock(_mutex);
+                    mAvailable.wait(lock, [&] { return !mRunning || !mWorkQueue.empty(); });
+                    if (!mRunning) return;
+                    entry = std::move(mWorkQueue.front());
+                    mWorkQueue.pop();
+                }
+                try { entry.fn(); }
+                catch (const std::exception& e) { LOG(LogError) << "ThreadPool::" << mPoolName << " : " << e.what(); }
+                catch (...) { LOG(LogError) << "ThreadPool::" << mPoolName << " : unknown exception"; }
+                entry.item->complete();
+                { std::lock_guard<std::mutex> lock(_mutex); --mNumWork; }
+                mFinished.notify_all();
+            }
+        };
+        try
+        {
+            mThreads.reserve(count);
+            for (size_t i = 0; i < count; ++i) mThreads.emplace_back(worker, i);
+        }
+        catch (...)
+        {
+            cancel();
+            for (auto& thread : mThreads) if (thread.joinable()) thread.join();
+            mThreads.clear();
+            throw;
+        }
+    }
+    WorkItemPtr ThreadPool::queueWorkItem(work_function work)
+    {
+        auto item = std::make_shared<WorkItem>();
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            if (!mAccepting) { item->complete(); return item; }
+            mWorkQueue.push({std::move(work), item});
+            mAllItems.push_back(item);
+            ++mNumWork;
+        }
+        mAvailable.notify_one();
+        return item;
+    }
+    void ThreadPool::wait()
+    {
+        start();
+        std::unique_lock<std::mutex> lock(_mutex);
+        mFinished.wait(lock, [&] { return mNumWork.load() == 0; });
+        mAllItems.clear();
+    }
+    void ThreadPool::wait(work_function update, int delay)
+    {
+        start();
+        std::unique_lock<std::mutex> lock(_mutex);
+        while (mNumWork.load())
+        {
+            lock.unlock(); update(); lock.lock();
+            mFinished.wait_for(lock, std::chrono::milliseconds(std::max(1, delay)), [&] { return mNumWork.load() == 0; });
+        }
+        mAllItems.clear();
+    }
+    void ThreadPool::cleanupDoneItems()
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        mAllItems.erase(std::remove_if(mAllItems.begin(), mAllItems.end(),
+            [](const WorkItemPtr& item) { return item->isDone(); }), mAllItems.end());
+    }
+    void ThreadPool::waitAll(std::initializer_list<WorkItemPtr> items)
+    {
+        start();
+        for (const auto& item : items) if (item) item->wait();
+        cleanupDoneItems();
+    }
+    void ThreadPool::waitAllExcept(WorkItemPtr item) { waitAllExcept({item}); }
+    void ThreadPool::waitAllExcept(std::initializer_list<WorkItemPtr> excluded)
+    {
+        start();
+        std::vector<WorkItemPtr> waiting;
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            for (const auto& item : mAllItems)
+                if (std::find(excluded.begin(), excluded.end(), item) == excluded.end()) waiting.push_back(item);
+        }
+        for (const auto& item : waiting) item->wait();
+        cleanupDoneItems();
+    }
+    void ThreadPool::cancel()
+    {
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            mRunning = false;
+            mAccepting = false;
+            while (!mWorkQueue.empty())
+            {
+                mWorkQueue.front().item->complete();
+                mWorkQueue.pop();
+                --mNumWork;
+            }
+        }
+        mAvailable.notify_all();
+        mFinished.notify_all();
+    }
+    void ThreadPool::stop()
+    {
+        std::lock_guard<std::mutex> lifecycle(mLifecycleMutex);
+        cancel();
+        for (auto& thread : mThreads) if (thread.joinable()) thread.join();
+        mThreads.clear();
+        std::lock_guard<std::mutex> lock(_mutex);
+        mAllItems.clear();
+        mAccepting = true;
+    }
 }

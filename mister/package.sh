@@ -18,7 +18,7 @@ VERSION=${VERSION:-$(git -C "$ROOT" describe --always --dirty 2>/dev/null || ech
 
 # Batocera's theme and controller database, at the versions batocera.linux pins
 THEME_COMMIT=a897233e9bf6b9cca5c248ffceebf443882de926
-BATOCERA_COMMIT=${BATOCERA_COMMIT:-master}
+BATOCERA_COMMIT=${BATOCERA_COMMIT:-9356af353575a16befabf279edc0bb4f96442ad1}
 
 [ -f "$WORK/out/emulationstation" ] || { echo "build the binary first: mister/build.sh es" >&2; exit 1; }
 
@@ -28,8 +28,15 @@ fi
 git -C "$SRC/es-theme-carbon" checkout -q "$THEME_COMMIT"
 
 if [ ! -d "$SRC/batocera.linux" ]; then
-	git clone -q --depth 1 --filter=blob:none --sparse -b "$BATOCERA_COMMIT" https://github.com/batocera-linux/batocera.linux.git "$SRC/batocera.linux"
+	git clone -q --depth 1 --filter=blob:none --sparse https://github.com/batocera-linux/batocera.linux.git "$SRC/batocera.linux"
 	git -C "$SRC/batocera.linux" sparse-checkout set package/batocera/emulationstation/batocera-emulationstation/controllers
+fi
+if [ "$(git -C "$SRC/batocera.linux" rev-parse HEAD)" != "$BATOCERA_COMMIT" ]; then
+	[ -z "$(git -C "$SRC/batocera.linux" status --porcelain)" ] || { echo "controller source has local changes" >&2; exit 1; }
+	git -C "$SRC/batocera.linux" fetch -q --depth 1 origin "$BATOCERA_COMMIT"
+	git -C "$SRC/batocera.linux" checkout -q --detach FETCH_HEAD
+else
+	git -C "$SRC/batocera.linux" checkout -q "$BATOCERA_COMMIT"
 fi
 
 rm -rf "$STAGE"
@@ -39,6 +46,7 @@ mkdir -p "$ES/defaults" "$ES/logs" "$ES/home/.emulationstation/themes" "$STAGE/S
 echo "== program"
 llvm-strip -o "$ES/emulationstation" "$WORK/out/emulationstation"
 "$TOOLS/zcc" -O2 -s -static -o "$ES/es-mister-helper" "$ROOT/mister/es-mister-helper.c"
+"$TOOLS/zcc" -O3 -s -static -pthread -o "$ES/es-mister-bench" "$ROOT/mister/es-mister-bench.c"
 cp "$ROOT/mister/scripts/es-mister.sh" "$ROOT/mister/scripts/mister-launch.sh" "$ROOT/mister/systems.tsv" "$ES/"
 cp "$ROOT/mister/scripts/emulationstation.sh" "$STAGE/Scripts/"
 cat >"$ES/es-mister.ini" <<'EOF'
@@ -63,12 +71,15 @@ PROFILE=0
 
 # The first frames that take long to draw (up to this many each start) written with each draw's time to
 # logs/es-slow-frame-N.txt, to see what to make faster; 0: none
-SLOW_DUMPS=4
+SLOW_DUMPS=0
 
 # Rows of the screen drawn at a time through all its layers, so they stay in the processor's cache
-# between them (the memory is what a 1080p frame waits for). 16 by default; to compare, 8 or 32, or 0
+# between them (the memory is what a 1080p frame waits for). 8 by default; to compare, 16 or 32, or 0
 # (each band whole, as before), then logs/es-mister-stats.txt and logs/es-slow-frame-N.txt
-STRIP=16
+STRIP=8
+
+# Memory requested ahead by the NEON pixel and copy loops (bytes).
+PLD=256
 
 # Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of
 # other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.
@@ -123,7 +134,7 @@ with zipfile.ZipFile(sys.argv[1], "w", zipfile.ZIP_DEFLATED) as z:
                 path = os.path.join(folder, name)
                 info = zipfile.ZipInfo.from_file(path)
                 info.compress_type = zipfile.ZIP_DEFLATED
-                if name in ("emulationstation", "es-mister-helper") or name.endswith(".sh"):
+                if name in ("emulationstation", "es-mister-helper", "es-mister-bench") or name.endswith(".sh"):
                     info.external_attr = 0o100755 << 16
                 with open(path, "rb") as f:
                     z.writestr(info, f.read())

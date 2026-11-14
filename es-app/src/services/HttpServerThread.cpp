@@ -1,4 +1,5 @@
 #include "HttpServerThread.h"
+#include "HttpServerWorker.h"
 #include "httplib.h"
 #include "Log.h"
 
@@ -67,28 +68,18 @@ HttpServerThread::HttpServerThread(Window* window) : mWindow(window)
 {
 	LOG(LogDebug) << "HttpServerThread : Starting";
 
-	mHttpServer = nullptr;
-
-	// creer le thread
-	mFirstRun = true;
-	mRunning = true;
-	mThread = new std::thread(&HttpServerThread::run, this);
+	mWorker.reset(new HttpServerWorker([this](httplib::Server& server, const std::atomic<bool>& stopRequested) {
+		run(server, stopRequested);
+	}));
 }
 
 HttpServerThread::~HttpServerThread()
 {
 	LOG(LogDebug) << "HttpServerThread : Exit";
 
-	if (mHttpServer != nullptr)
-	{
-		mHttpServer->stop();
-		delete mHttpServer;
-		mHttpServer = nullptr;
-	}
-
-	mRunning = false;
-	mThread->join();
-	delete mThread;
+	mWorker->stop();
+	if (mWorker->failed()) { LOG(LogError) << "HttpServerThread : worker failed"; }
+	mWorker.reset();
 }
 
 static std::map<std::string, std::string> mimeTypes = 
@@ -139,9 +130,9 @@ static bool isAllowed(const httplib::Request& req, httplib::Response& res)
 	return true;
 }
 
-void HttpServerThread::run()
+void HttpServerThread::run(httplib::Server& server, const std::atomic<bool>& stopRequested)
 {
-	mHttpServer = new httplib::Server();
+	auto* mHttpServer = &server;
 	
 	mHttpServer->new_task_queue = [] {
 		return new httplib::ThreadPool(2, CPPHTTPLIB_THREAD_POOL_COUNT);
@@ -846,7 +837,7 @@ void HttpServerThread::run()
 		if (Settings::getInstance()->getBool("PublicWebAccess"))
 			ip = "0.0.0.0";
 
-		mHttpServer->listen(ip.c_str(), 1234);
+		if (!stopRequested) mHttpServer->listen(ip.c_str(), 1234);
 	}
 	catch (...)
 	{

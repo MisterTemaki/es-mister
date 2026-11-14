@@ -908,7 +908,7 @@ int main(int argc, char* argv[])
 				if ((event.type == SDL_KEYDOWN && !event.key.repeat) || event.type == SDL_JOYBUTTONDOWN || event.type == SDL_CONTROLLERBUTTONDOWN ||
 					(event.type == SDL_JOYHATMOTION && event.jhat.value != SDL_HAT_CENTERED) ||
 					(event.type == SDL_JOYAXISMOTION && (event.jaxis.value > 23000 || event.jaxis.value < -23000)))
-					StartupTrace::inputArrived();
+					StartupTrace::inputArrived(event.common.timestamp ? (uint32_t)(SDL_GetTicks() - event.common.timestamp) : 0);
 
 				TRYCATCH("InputManager::parseEvent", InputManager::getInstance()->parseEvent(event, &window));
 

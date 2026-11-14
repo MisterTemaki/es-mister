@@ -10,6 +10,7 @@
 #include <vector>
 #include <initializer_list>
 #include <string>
+#include <condition_variable>
 
 namespace Utils
 {
@@ -24,6 +25,9 @@ namespace Utils
 	private:
 		friend class ThreadPool;
 		std::atomic<bool> mDone;
+		mutable std::mutex mReadyMutex;
+		mutable std::condition_variable mReady;
+		void complete();
 	};
 
 	using WorkItemPtr = std::shared_ptr<WorkItem>;
@@ -47,14 +51,15 @@ namespace Utils
 		void waitAllExcept(WorkItemPtr excluded);
 		void waitAllExcept(std::initializer_list<WorkItemPtr> excluded);
 
-		void cancel() { mRunning = false; }
+		// Cancel queued work (its items become done); running functions finish normally.
+		void cancel();
 		void stop();
 
-		bool isRunning() { return mRunning; }
+		bool isRunning() const { return mRunning.load(); }
 
 	private:
-		bool mRunning;
-		bool mWaiting;
+		std::atomic<bool> mRunning;
+		bool mAccepting = true; // protected by _mutex; start() reopens a cancelled pool
 
 		struct WorkEntry
 		{
@@ -65,6 +70,8 @@ namespace Utils
 		std::queue<WorkEntry> mWorkQueue;
 		std::atomic<size_t> mNumWork;
 		std::mutex _mutex;
+		std::mutex mLifecycleMutex;
+		std::condition_variable mAvailable, mFinished;
 		std::vector<std::thread> mThreads;
 		std::string mPoolName;
 		int mThreadByCore;

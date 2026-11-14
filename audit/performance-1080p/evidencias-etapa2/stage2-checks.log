@@ -1,0 +1,84 @@
+regressions-stage2 0 , in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/usr/lib/python3.14/socket.py", line 725, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+  File "/usr/lib/python3.14/ssl.py", line 1304, in recv_into
+    return self.read(nbytes, buffer)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/ssl.py", line 1138, in read
+    return self._sslobj.read(len, buffer)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+ConnectionResetError: [Errno 104] Connection reset by peer
+----------------------------------------
+CASE 1 header http://127.0.0.1:35109 exit 0
+PASS header
+CASE 2 header-reset http://127.0.0.1:35109 exit 0
+PASS header-reset
+CASE 3 custom-headers http://127.0.0.1:35109 exit 0
+PASS custom-headers
+CASE 4 write-count http://127.0.0.1:35109 exit 0
+PASS write-count
+CASE 5 download-preserve http://127.0.0.1:35109 exit 0
+PASS download-preserve
+CASE 6 flush-error http://127.0.0.1:35109 exit 0
+PASS flush-error
+CASE 7 download-ok http://127.0.0.1:35109 exit 0
+PASS download-ok
+CASE 8 download-fail http://127.0.0.1:35109/missing exit 0
+PASS download-fail
+CASE 9 download-fail http://127.0.0.1:35109/partial exit 0
+PASS download-fail
+CASE 10 tls-reject https://127.0.0.1:34869/ exit 0
+PASS tls-reject
+CASE 11 tls-trusted https://127.0.0.1:34869/ /tmp/es-audit-id_3as9t/cert.pem exit 0
+PASS tls-trusted
+CASE 12 zip-list /tmp/es-audit-id_3as9t/cp437.zip exit 0
+PASS zip-list
+CASE 13 zip-reload /tmp/es-audit-id_3as9t/cp437.zip /tmp/es-audit-id_3as9t/utf8.zip exit 0
+PASS zip-reload
+CASE 14 zip-traversal /tmp/es-audit-id_3as9t/unsafe.zip /tmp/es-audit-id_3as9t/extract exit 0
+PASS zip-traversal
+CASE 15 zip-nested /tmp/es-audit-id_3as9t/nested.zip /tmp/es-audit-id_3as9t/extract exit 0
+PASS zip-nested
+CASE 16 rename-contracts /tmp/es-audit-id_3as9t/rename-source.bin exit 0
+PASS rename-contracts
+CASE cross-filesystem rename exit 0
+PASS rename-fail
+17/17 cases passed
+
+settings-stage2 0 PASS settings: failed create, retry, preserved replacement, XML round trip, script events
+
+renderer-stage2 0 optimizations 0 exit 0
+red a4f3b4ea75214b83
+no-draw-keeps-red a4f3b4ea75214b83
+transparent-only-clears 3b6f2bb102c34b83
+no-draw-keeps-clear 3b6f2bb102c34b83
+blue-with-transparent-texture 98161014907d6183
+mixed-alpha-kept 641beb1221edadb4
+additive-zero-alpha-kept 4b7f520020d78383
+transparent-stencil-kept e9bf2d656f154b83
+
+optimizations 1 exit 0
+red a4f3b4ea75214b83
+no-draw-keeps-red a4f3b4ea75214b83
+transparent-only-clears 3b6f2bb102c34b83
+no-draw-keeps-clear 3b6f2bb102c34b83
+blue-with-transparent-texture 98161014907d6183
+mixed-alpha-kept 641beb1221edadb4
+additive-zero-alpha-kept 4b7f520020d78383
+transparent-stencil-kept e9bf2d656f154b83
+
+Backend: transparent-only frames, empty swaps, mixed alpha, additive blend and stencil preserve output; ASan/UBSan/LSan passed.
+
+http-server-stage2 0 server: 64 immediate starts/stops, active handler beyond stop timeout and startup exception passed
+
+thread-pool-stage2 0 pool: zero workers, 32 reuse cycles, exceptions, nested queue, 4000 concurrent jobs, cancellation, restart and exclusions passed
+
+copy-file-stage2 0 copy: missing source, replacement, permissions, self/hardlink, links, nested path and real write failure passed
+
+similarity-stage2 0 similarity: 1240 exact reference scores, bounded prefix and 100000-byte metadata passed
+
+theme-stage2 0 theme: CRC failure, traversal rejection, forced publication failure/rollback and replacement passed
+
