@@ -80,6 +80,9 @@ de frequência. Referências primárias:
   foi retomada por novas conexões, conferindo 16/16 e 1.000/1.000 respostas.
   O acompanhamento host antigo foi encerrado antes da coleta manual final.
   Os logs de transporte e da conclusão manual foram preservados.
+- A data deste relatório vem do host. O relógio civil do aparelho estava sem
+  sincronização e não foi ajustado; todos os intervalos de latência usam relógio
+  monotônico, inclusive o pareamento uinput/renderer.
 
 <!-- KERNEL RESULTS BEGIN -->
 ### Resposta ao primeiro redesenho (ms)
