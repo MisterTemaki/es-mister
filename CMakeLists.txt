@@ -610,6 +610,18 @@ add_subdirectory("external")
 add_subdirectory("es-core")
 add_subdirectory("es-app")
 
+if(MISTER)
+  # the port's tests, not part of "all": ninja es-mister-tests && ./es-mister-tests (mister/tests)
+  add_executable(es-mister-tests EXCLUDE_FROM_ALL
+    mister/tests/TestMain.cpp
+    mister/tests/paths-test.cpp
+    mister/tests/raster-clip-test.cpp
+    mister/tests/ApiSystemStub.cpp
+  )
+  target_include_directories(es-mister-tests PRIVATE ${COMMON_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/mister/tests ${CMAKE_CURRENT_SOURCE_DIR}/es-app/src)
+  target_link_libraries(es-mister-tests es-core ${COMMON_LIBRARIES})
+endif()
+
 if(MSGFMT_EXECUTABLE AND MSGMERGE_EXECUTABLE AND XGETTEXT_EXECUTABLE AND Intl_FOUND)
   add_subdirectory (locale)
 endif()
