@@ -149,6 +149,12 @@ namespace Renderer
 					line >> name;
 					mDump = (mShots.empty() ? std::string(".") : mShots) + "/" + name + ".txt";
 				}
+				else if (command == "capture")
+				{
+					std::string name;
+					line >> name;
+					mCapture = (mShots.empty() ? std::string(".") : mShots) + "/" + name + ".escf";
+				}
 				else if (command == "stats")
 					mStats = true;
 				else if (command == "log")

@@ -302,12 +302,14 @@ if(SOFTWARE)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftRaster.h
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftOutput.h
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScript.h
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftCapture.h
 	)
 	LIST(APPEND CORE_SOURCES
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/Renderer_Soft.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftRaster.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftOutput.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScript.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftCapture.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/stb_impl.cpp
 	)
 endif()

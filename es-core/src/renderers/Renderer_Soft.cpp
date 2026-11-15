@@ -3,6 +3,7 @@
 
 #ifdef RENDERER_SOFTWARE
 
+#include "renderers/soft/SoftCapture.h"
 #include "renderers/soft/SoftOutput.h"
 #include "renderers/soft/SoftRaster.h"
 #include "renderers/soft/SoftScript.h"
@@ -186,6 +187,7 @@ namespace Renderer
 			Script script;
 			bool scriptLoaded = false;
 			std::string pendingDump; // the file the next drawn frame's commands go to
+			std::string pendingCapture; // the file the next drawn frame is captured to (SoftCapture.h)
 			bool statsNow = false;    // the test script's "stats"
 
 			int statsEvery = 600;
@@ -789,6 +791,38 @@ namespace Renderer
 			fclose(out);
 		}
 
+		// The frame's commands, vertices and textures in a file (SoftCapture.h), for es-mister-replay
+		void captureFrame(const std::string& path)
+		{
+			SoftState& s = S();
+			Soft::Capture capture;
+			capture.width = s.raster.width();
+			capture.height = s.raster.height();
+			std::map<const Soft::Texture*, int> index;
+			for (const Command& command : s.commands)
+			{
+				Soft::CapturedCommand c;
+				c.stencil = command.stencil;
+				c.topology = command.topology;
+				c.state = command.state;
+				c.state.texture = nullptr;
+				if (command.texture)
+				{
+					auto found = index.find(command.texture.get());
+					if (found == index.end())
+					{
+						found = index.emplace(command.texture.get(), (int)capture.textures.size()).first;
+						capture.textures.push_back(command.texture);
+					}
+					c.texture = found->second;
+				}
+				c.vertices.assign(s.vertices.begin() + command.first, s.vertices.begin() + command.first + command.count);
+				capture.commands.push_back(std::move(c));
+			}
+			if (!Soft::saveCapture(path, capture))
+				LOG(LogError) << "SoftRenderer: cannot write the frame capture " << path;
+		}
+
 		void execute()
 		{
 			SoftState& s = S();
@@ -1277,6 +1311,11 @@ namespace Renderer
 			st.drawn++;
 			dumpCommands(s.pendingDump);
 			s.pendingDump.clear();
+			if (!s.pendingCapture.empty())
+			{
+				captureFrame(s.pendingCapture);
+				s.pendingCapture.clear();
+			}
 
 			// ES_SOFT_SLOW_DUMP=PREFIX: the first frames that took long to draw (ES_SOFT_SLOW_MS, default 120 ms;
 			// ES_SOFT_SLOW_DUMPS of them, default 4), each draw with what it drew and its time on one thread,
@@ -1295,6 +1334,10 @@ namespace Renderer
 						100.0 * redrawn / std::max(1, s.width * s.height), s.partial ? s.rects.size() : (size_t)1,
 						copyMs, esMs, s.width, s.height);
 					dumpCommands(std::string(slowPrefix) + std::to_string(++written) + ".txt", header);
+					// ES_SOFT_SLOW_CAPTURE=1: the frame itself too, to draw again with es-mister-replay
+					static const bool slowCapture = getenv("ES_SOFT_SLOW_CAPTURE") != nullptr && strcmp(getenv("ES_SOFT_SLOW_CAPTURE"), "0") != 0;
+					if (slowCapture)
+						captureFrame(std::string(slowPrefix) + std::to_string(written) + ".escf");
 				}
 			}
 			// the first frame on the screen (the splash), in the startup trace
@@ -1355,6 +1398,9 @@ namespace Renderer
 			const std::string dump = s.script.takeDump();
 			if (!dump.empty())
 				s.pendingDump = dump;
+			const std::string capture = s.script.takeCapture();
+			if (!capture.empty())
+				s.pendingCapture = capture;
 			if (s.script.takeStats())
 				s.statsNow = true;
 		}

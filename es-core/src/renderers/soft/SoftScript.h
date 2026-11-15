@@ -15,6 +15,7 @@
 //   shot NAME       the frame as NAME.png
 //   log TEXT        a line in ES's log
 //   stats           the renderer's numbers since the last ones written now (ES_SOFT_STATS_FILE), and begun again
+//   capture NAME    the next frame drawn, its commands and textures, as NAME.escf (es-mister-replay draws it again)
 //   quit            ES closes
 
 #include <cstdint>
@@ -34,6 +35,8 @@ namespace Renderer
 			void frame(const uint32_t* pixels, int width, int height, bool drewNew);
 			// "dump NAME": the file the next drawn frame's commands are written to, once ("" when none)
 			std::string takeDump() { std::string path; path.swap(mDump); return path; }
+			// "capture NAME": the file the next drawn frame is captured to, once ("" when none)
+			std::string takeCapture() { std::string path; path.swap(mCapture); return path; }
 			// "stats": whether the renderer's numbers are to be written now (once)
 			bool takeStats() { const bool wanted = mStats; mStats = false; return wanted; }
 
@@ -51,6 +54,7 @@ namespace Renderer
 			std::vector<Release> mReleases;
 			std::string mShots;
 			std::string mDump;
+			std::string mCapture;
 			bool mStats = false;
 		};
 	}
