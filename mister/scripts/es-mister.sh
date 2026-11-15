@@ -38,6 +38,8 @@ if pidof emulationstation >/dev/null 2>&1; then
 	killall emulationstation 2>/dev/null
 	sleep 1
 	killall -9 emulationstation 2>/dev/null
+	# killed, it left the console in graphics mode, where no console switch (F9) happens
+	"$ES/es-mister-helper" text
 fi
 
 # first start: the default settings and controllers
@@ -104,11 +106,12 @@ if [ -z "$DRAWN" ]; then
 fi
 
 cd "$ES"
-rm -f /tmp/es-mister-stats.txt
 export HOME=$HOME_DIR
 export SDL_AUDIODRIVER=alsa
 export ES_SOFT_FPS=$FPS
 export ES_SOFT_STATS=600
+# the drawing times, a line every 600 frames (the previous start's kept beside it: ES adds to the file)
+[ -f "$LOGS/es-mister-stats.txt" ] && mv -f "$LOGS/es-mister-stats.txt" "$LOGS/es-mister-stats.prev.txt"
 export ES_SOFT_STATS_FILE=$LOGS/es-mister-stats.txt
 # how long each step of ES's start takes (the previous start's is kept beside it)
 [ -f "$LOGS/es-startup.log" ] && mv -f "$LOGS/es-startup.log" "$LOGS/es-startup.prev.log"
@@ -129,6 +132,10 @@ export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
 echo "starting ES at $DRAWN (SIZE=$SIZE, uptime $(uptime) s)"
 ./emulationstation
 echo "ES closed ($?)"
+# ES ended by a signal (killall, a crash, out of memory: 128 + the signal above) leaves the console in
+# graphics mode, where the kernel ignores console switches: no F9, and no script shown from the MiSTer
+# menu, until a reboot. Text mode again, whatever the way ES ended (after a normal end, nothing changes).
+"$ES/es-mister-helper" text
 
 rm -f /tmp/es-mister.pid
 # back to the MiSTer menu

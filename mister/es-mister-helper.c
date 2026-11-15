@@ -12,6 +12,7 @@
 //   es-mister-helper console SIZE PRESSES  at most PRESSES presses of F9 (default 30, about 10 s)
 //   es-mister-helper key NAME               a key pressed and let go (F9, F12, ESC, ENTER)
 //   es-mister-helper core                   the core loaded now (/tmp/CORENAME)
+//   es-mister-helper text                   the console back in text mode, after ES ended (see text_mode)
 
 #include <fcntl.h>
 #include <linux/fb.h>
@@ -139,6 +140,28 @@ static int chvt(int n)
 	for (int wait = 0; ok && wait < 20 && active_console() != n; wait++)
 		sleep_ms(50);
 	return ok && active_console() == n;
+}
+
+// The console in text mode again. ES puts it in graphics mode while it draws and puts it back when it
+// closes; ended by a signal (killall, a crash, the kernel out of memory) it leaves it in graphics mode,
+// where the kernel ignores console switches: F9 no longer showed the Linux framebuffer, and the MiSTer
+// menu could not show a script, until the next reboot. es-mister.sh runs this once ES has ended.
+static int text_mode(void)
+{
+	int fd = open("/dev/tty0", O_RDWR | O_CLOEXEC);
+	if (fd < 0)
+	{
+		perror("es-mister-helper: /dev/tty0");
+		return 1;
+	}
+	int mode = KD_TEXT;
+	if (ioctl(fd, KDGETMODE, &mode) == 0 && mode == KD_GRAPHICS)
+		fprintf(stderr, "es-mister-helper: the console was left in graphics mode: back to text mode\n");
+	const int ok = ioctl(fd, KDSETMODE, KD_TEXT) == 0;
+	if (!ok)
+		perror("es-mister-helper: KDSETMODE");
+	close(fd);
+	return ok ? 0 : 1;
 }
 
 // the Linux framebuffer's size as it is now; 0 when it cannot be read
@@ -275,6 +298,9 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto | key NAME | core\n", argv[0]);
+	if (argc >= 2 && !strcmp(argv[1], "text"))
+		return text_mode();
+
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto | key NAME | core | text\n", argv[0]);
 	return 2;
 }

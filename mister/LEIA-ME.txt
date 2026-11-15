@@ -68,7 +68,12 @@ Se algo travar
 - Se a tela do EmulationStation não aparecer, aperte F9 (mostra o Linux) ou F12
   (volta ao menu do MiSTer).
 - Para encerrar à força pelo SSH:  killall emulationstation
-  e depois: echo "load_core /media/fat/menu.rbf" > /dev/MiSTer_cmd
+  O es-mister.sh devolve o console ao modo texto e recarrega o menu do MiSTer
+  sozinho. Se ele também tiver sido encerrado, faça à mão:
+    /media/fat/emulationstation/es-mister-helper text
+    echo "load_core /media/fat/menu.rbf" > /dev/MiSTer_cmd
+  (sem o primeiro comando, o F9 e os scripts do menu deixam de funcionar até
+  reiniciar o MiSTer)
 
 Limitações desta versão
 -----------------------
