@@ -767,7 +767,9 @@ namespace Utils
 				}
 				else if (c == '.')
 				{
-					if (pointset)
+					if (twopointset)
+						twopointset = false; // three dots or more ("...") are a folder's name, not the folder above
+					else if (pointset)
 					{
 						twopointset = true;
 						pointset = false;
