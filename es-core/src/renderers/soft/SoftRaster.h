@@ -35,6 +35,14 @@ namespace Renderer
 		// A texture's clear runs (Texture::clear), after a whole upload
 		void findClearRuns(Texture& texture);
 
+		// A part of the frame, in pixels, half-open
+		struct Bounds
+		{
+			int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+			bool empty() const { return x0 >= x1 || y0 >= y1; }
+			bool meets(const Bounds& o) const { return x0 < o.x1 && o.x0 < x1 && y0 < o.y1 && o.y0 < y1; }
+		};
+
 		// A vertex in target pixels (top left origin) with its texture coordinates and colour (0xAARRGGBB)
 		struct SVertex
 		{
@@ -127,6 +135,11 @@ namespace Renderer
 			std::vector<int32_t> mColX0, mColX1;
 			std::vector<uint16_t> mColFx;
 		};
+
+		// Where a draw or a stencil shape of a width x height frame may reach (empty: nowhere): its vertices'
+		// box, a pixel more each side for the rounding (two for lines), in its scissor and the frame. A part
+		// of the frame it does not meet is left as it was by a draw, and marked nowhere by a stencil shape.
+		Bounds drawBounds(const SVertex* vertices, int count, Topology topology, const DrawState& state, int width, int height);
 
 		// Big pictures drawn scaled keep their scaled pixels (ES_SOFT_SCALED_MB, default 40; 0: none): after
 		// each drawn frame, those not drawn for a while are let go of

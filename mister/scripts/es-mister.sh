@@ -20,7 +20,9 @@ FPS=60
 BENCH=0
 PROFILE=0
 SLOW_DUMPS=4
-STRIP=16
+STRIP=auto
+PLD=256
+CAPTURE=0
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
@@ -122,10 +124,15 @@ export ES_STARTUP_TRACE=$LOGS/es-startup.log
 export ES_ARCADE_SKIP="$ARCADE_SKIP"
 # rows drawn at a time through all the layers (they stay in the processor's cache); 0: a band at once
 export ES_SOFT_STRIP="$STRIP"
+# memory asked for ahead of the drawing and the copy to the screen, in bytes (0: not)
+export ES_SOFT_PLD="$PLD"
 # the first frames slow to draw, with each draw's time (logs/es-slow-frame-N.txt), to see what to make faster
 if [ "$SLOW_DUMPS" -gt 0 ] 2>/dev/null; then
 	rm -f "$LOGS"/es-slow-frame-*.txt
+	rm -f "$LOGS"/es-slow-frame-*.escf
 	export ES_SOFT_SLOW_DUMP=$LOGS/es-slow-frame- ES_SOFT_SLOW_DUMPS=$SLOW_DUMPS
+	# and the frames themselves, to draw again with es-mister-replay
+	[ "$CAPTURE" = 1 ] && export ES_SOFT_SLOW_CAPTURE=1
 fi
 # keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 export SDL_EVDEV_IGNORE="$INPUT_IGNORE"

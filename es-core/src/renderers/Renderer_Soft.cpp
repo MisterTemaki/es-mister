@@ -73,7 +73,7 @@ namespace Renderer
 			DrawState state;
 			std::shared_ptr<Soft::Texture> texture;
 			uint64_t sig = 0;      // all that makes what it draws: two draws with the same draw the same pixels
-			Box box;               // where it may draw (none for a stencil shape)
+			Box box;               // where it may draw (a stencil shape: where it may mark)
 		};
 
 		// a draw of the last frame drawn, to see what changed
@@ -169,7 +169,7 @@ namespace Renderer
 			// frame drawn, and the parts of it where this frame's draws are not the last one's are drawn again
 			bool dirty = true;
 			bool dirtyCheck = false;          // ES_SOFT_DIRTY_CHECK=1: each part-drawn frame checked against a whole one
-			int stripRows = 16;               // ES_SOFT_STRIP: rows drawn at a time through all the commands (executeBand)
+			int stripRows = 24;               // ES_SOFT_STRIP: rows drawn at a time through all the commands (executeBand)
 			bool lastValid = false;           // the raster holds the frame of lastDrawn
 			std::vector<Drawn> lastDrawn;
 			std::vector<Box> rects;           // this frame's parts to draw (when drawn in part)
@@ -307,37 +307,10 @@ namespace Renderer
 			command.sig = h;
 			s.hash = hashValue(s.hash, h);
 
-			// where it may draw: its vertices' box (a pixel's centre is inside the shape: a pixel more each
-			// side for the rounding, two for lines), in the scissor and the frame
-			if (!stencil)
+			// where it may draw (a stencil shape: where it may mark): its vertices' box, in the scissor and the frame
 			{
-				Box box = { 0, 0, s.width, s.height };
-				const SVertex* v = &s.vertices[command.first];
-				float x0 = v[0].x, y0 = v[0].y, x1 = v[0].x, y1 = v[0].y;
-				bool finite = true;
-				for (unsigned int i = 0; i < count; i++)
-				{
-					finite = finite && std::isfinite(v[i].x) && std::isfinite(v[i].y);
-					x0 = std::min(x0, v[i].x); x1 = std::max(x1, v[i].x);
-					y0 = std::min(y0, v[i].y); y1 = std::max(y1, v[i].y);
-				}
-				if (finite)
-				{
-					const int margin = topology == Topology::Lines ? 2 : 1;
-					auto limit = [](float value, int size) { return std::max(-8.0f, std::min((float)size + 8.0f, value)); };
-					box.x0 = std::max(box.x0, (int)std::floor(limit(x0, s.width)) - margin);
-					box.y0 = std::max(box.y0, (int)std::floor(limit(y0, s.height)) - margin);
-					box.x1 = std::min(box.x1, (int)std::ceil(limit(x1, s.width)) + margin);
-					box.y1 = std::min(box.y1, (int)std::ceil(limit(y1, s.height)) + margin);
-				}
-				if (command.state.scissor)
-				{
-					box.x0 = std::max(box.x0, command.state.sx0);
-					box.y0 = std::max(box.y0, command.state.sy0);
-					box.x1 = std::min(box.x1, command.state.sx1);
-					box.y1 = std::min(box.y1, command.state.sy1);
-				}
-				command.box = box.empty() ? Box() : box;
+				const Soft::Bounds b = Soft::drawBounds(&s.vertices[command.first], (int)count, topology, command.state, s.width, s.height);
+				command.box = { b.x0, b.y0, b.x1, b.y1 };
 			}
 
 			s.commands.push_back(std::move(command));
@@ -351,9 +324,14 @@ namespace Renderer
 			raster.clearBox(part.x0, part.y0, part.x1, part.y1, 0);
 			for (const Command& command : s.commands)
 			{
-				// a stencil shape is always set: it also clears the last one
-				if (!command.stencil && !command.box.meets(part))
+				if (!command.box.meets(part))
+				{
+					// a stencil shape that marks nothing here still ends the last one: its marks cleared (it was
+					// set in every part, every strip of 8 rows: the grids' rounded corners, one a tile)
+					if (command.stencil)
+						raster.resetStencil();
 					continue;
+				}
 				DrawState state = command.state;
 				if (state.scissor)
 				{
@@ -377,7 +355,7 @@ namespace Renderer
 		}
 
 		// The frame's commands, in one band: all of it, or (drawn in part) each part. A few rows at a time
-		// (ES_SOFT_STRIP, default 16; 0: the whole band or part at once), every command over them before the
+		// (ES_SOFT_STRIP, default by the width: 24 at 1080p; 0: the whole band or part at once), every command over them before the
 		// next rows: the rows stay in the processor's cache between the layers (a background, another over it
 		// in a fade, a shade...), and go to memory once instead of once a layer. On the MiSTer the memory is
 		// what a frame waits for (the FPGA reads the screen from the same DDR3): a 1080p frame took as long
@@ -971,8 +949,15 @@ namespace Renderer
 		s.dirty = dirty == nullptr || strcmp(dirty, "0") != 0;
 		const char* check = getenv("ES_SOFT_DIRTY_CHECK");
 		s.dirtyCheck = check != nullptr && strcmp(check, "0") != 0;
+		// rows a strip: ES_SOFT_STRIP, or by itself ("auto", the default) as many as make 180 KB of a row's
+		// pixels, two bands' strips staying in the Cortex-A9's 512 KB L2 cache: 24 rows at 1920 pixels a row.
+		// Measured on the DE10-Nano with real frames (es-mister-replay, 11 frames of the carousel and the
+		// grids at 1080p): 24 rows 1766 ms, 8 rows 1904-1984, 16 rows 1912, 32 rows 1838, a band at once 1818.
 		const char* strip = getenv("ES_SOFT_STRIP");
-		s.stripRows = strip != nullptr ? std::max(0, atoi(strip)) : 16;
+		if (strip != nullptr && *strip != 0 && strcmp(strip, "auto") != 0)
+			s.stripRows = std::max(0, atoi(strip));
+		else
+			s.stripRows = std::max(8, std::min(64, 46080 / std::max(1, s.width)));
 
 		const char* stats = getenv("ES_SOFT_STATS");
 		if (stats != nullptr)

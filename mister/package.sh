@@ -67,9 +67,17 @@ PROFILE=0
 SLOW_DUMPS=4
 
 # Rows of the screen drawn at a time through all its layers, so they stay in the processor's cache
-# between them (the memory is what a 1080p frame waits for). 16 by default; to compare, 8 or 32, or 0
-# (each band whole, as before), then logs/es-mister-stats.txt and logs/es-slow-frame-N.txt
-STRIP=16
+# between them (the memory is what a 1080p frame waits for). auto: by the screen's width, 24 rows at
+# 1080p (the fastest measured on the DE10-Nano with real frames); or a number of rows, 0: each band whole
+STRIP=auto
+
+# Bytes of memory asked for ahead of the drawing and of the copy to the screen (256 by default, the
+# DE10-Nano measured fastest from 64 to 1024); 0: not asked for, to compare
+PLD=256
+
+# 1: the slow frames dumped (SLOW_DUMPS) also captured whole, as logs/es-slow-frame-N.escf, to draw them
+# again with es-mister-replay (a few MB each); 0 in normal use
+CAPTURE=0
 
 # Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of
 # other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.

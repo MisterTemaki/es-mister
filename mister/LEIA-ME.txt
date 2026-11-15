@@ -44,7 +44,11 @@ Ajustes
   FPS=60         limite de quadros por segundo
   BENCH=0        1 = redesenha a tela inteira em todo quadro, para medir o
                  custo do desenho (veja logs/es-mister-stats.txt)
-  STRIP=16       linhas de cada faixa do desenho (0 = uma camada por vez)
+  STRIP=auto     linhas de cada faixa do desenho: auto escolhe pela largura da
+                 tela (24 em 1080p), ou um número (0 = uma camada por vez)
+  PLD=256        bytes pedidos à memória adiantado (0 = desligado, para comparar)
+  CAPTURE=0      1 = grava também os quadros lentos inteiros (logs/es-slow-frame-N.escf),
+                 para medir com o es-mister-replay
 
 Medir o desenho no seu MiSTer
 -----------------------------

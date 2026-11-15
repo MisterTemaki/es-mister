@@ -3,7 +3,7 @@
 // the draw unclipped. Random scenes (pictures 1:1, scaled, stretched big enough for the scaled-picture
 // cache, repeated, tinted, desaturated; text-like strips; triangles, fans, lines; the stencil; every
 // blend; scissors) are drawn whole, then again a part at a time into band rasters, as executePart does
-// (each part cleared, every command clipped to it), and compared pixel by pixel. With the sanitizers it
+// (each part cleared, every command that meets it clipped to it), and compared pixel by pixel. With the sanitizers it
 // also checks that no draw touches memory outside the frame or the textures, whatever the coordinates.
 #include "TestMain.h"
 #include "renderers/soft/SoftRaster.h"
@@ -73,7 +73,11 @@ namespace
 		t->linear = r.chance(70);
 		t->repeat = r.chance(25);
 		t->pixels.resize((size_t)t->width * t->height);
-		const int kind = r.range(0, 3); // opaque, alpha, clear runs (an overlay), font-like (white, alpha)
+		// opaque, alpha, clear runs (an overlay), font-like (white, alpha), a nine-patch's (a border that
+		// varies around a flat middle, a shadow's or a frame's), flat with a few odd texels
+		const int kind = r.range(0, 5);
+		const uint32_t flat = r.chance(50) ? r.color() : (r.chance(50) ? 0xFFFFFFFFu : 0xFF000000u | (uint32_t)r.range(0, 0xFFFFFF));
+		const int border = r.range(1, std::max(1, std::min(t->width, t->height) / 3));
 		bool opaque = true;
 		for (int y = 0; y < t->height; y++)
 			for (int x = 0; x < t->width; x++)
@@ -85,6 +89,10 @@ namespace
 					c &= 0x00FFFFFF; // long clear runs
 				else if (kind == 3)
 					c = (c & 0xFF000000) | 0x00FFFFFF;
+				else if (kind == 4 && x >= border && y >= border && x < t->width - border && y < t->height - border)
+					c = flat;
+				else if (kind == 5 && !r.chance(2))
+					c = flat;
 				opaque = opaque && (c >> 24) == 255;
 				t->pixels[(size_t)y * t->width + x] = c;
 			}
@@ -96,7 +104,13 @@ namespace
 	void setColors(Random& r, std::vector<SVertex>& v)
 	{
 		const int mode = r.range(0, 3); // one colour, white, a vertical gradient, all different
-		const uint32_t a = r.color(), b = r.color();
+		uint32_t a = r.color(), b = r.color();
+		const bool black = r.chance(15); // a black tint (a shade): its alpha alone
+		if (black)
+		{
+			a &= 0xFF000000;
+			b &= 0xFF000000;
+		}
 		for (size_t i = 0; i < v.size(); i++)
 		{
 			switch (mode)
@@ -104,7 +118,7 @@ namespace
 			case 0: v[i].color = a; break;
 			case 1: v[i].color = 0xFFFFFFFF; break;
 			case 2: v[i].color = (i % 2 == 0) ? a : b; break; // v0, v2 top; v1, v3 bottom
-			default: v[i].color = r.color(); break;
+			default: v[i].color = black ? r.color() & 0xFF000000 : r.color(); break;
 			}
 		}
 	}
@@ -147,6 +161,12 @@ namespace
 			if (map == 1 && size == 1) { u0 = 0; u1 = 1; v0 = 1; v1 = 0; }           // uploaded bottom up, as ES does
 			else if (map == 2) { u0 = r.real(-1, 1); u1 = r.real(-1, 3); v0 = r.real(-1, 1); v1 = r.real(-1, 3); } // repeat, partial
 			else if (map == 3) { u0 = r.real(0.4f, 0.5f); u1 = u0; v0 = 0.5f; v1 = 0.5f; } // one texel stretched (a flat part)
+			if (r.chance(30))
+			{
+				// a nine-patch's middle or edge: a part of the texture, stretched or made a little smaller
+				u0 = r.real(0.0f, 0.45f); u1 = r.real(0.55f, 1.0f); v0 = r.real(0.0f, 0.45f); v1 = r.real(0.55f, 1.0f);
+				if (r.chance(20)) std::swap(v0, v1);
+			}
 		}
 		std::vector<SVertex> v(4);
 		v[0] = { x0, y0, u0, v0, 0 };
@@ -268,8 +288,17 @@ namespace
 	void drawPart(Raster& band, const Scene& scene, int x0, int y0, int x1, int y1)
 	{
 		band.clearBox(x0, y0, x1, y1, 0);
+		const Bounds part = { x0, y0, x1, y1 };
 		for (const Command& c : scene.commands)
 		{
+			// as executePart: a command that does not meet the part is left out (a stencil shape only ends the
+			// last one)
+			if (!drawBounds(c.vertices.data(), (int)c.vertices.size(), c.topology, c.state, scene.width, scene.height).meets(part))
+			{
+				if (c.stencil)
+					band.resetStencil();
+				continue;
+			}
 			DrawState state = c.state;
 			if (state.scissor)
 			{
@@ -290,6 +319,9 @@ TEST(clipped_draws_leave_the_same_pixels)
 {
 	const int scenes = getenv("RASTER_SCENES") ? atoi(getenv("RASTER_SCENES")) : 3000;
 	int differing = 0;
+	// a hash of every scene drawn whole: the same before and after a change to the rasterizer means the
+	// change left every pixel of every scene as it was (RASTER_HASH=1 prints it)
+	uint64_t allPixels = 1469598103934665603ULL;
 	for (int i = 0; i < scenes; i++)
 	{
 		Random r(0x5eed0000u + (uint32_t)i);
@@ -328,6 +360,8 @@ TEST(clipped_draws_leave_the_same_pixels)
 
 		const uint32_t* a = whole.pixels();
 		const uint32_t* b = owner.pixels();
+		for (size_t k = 0; k < (size_t)scene.width * scene.height; k++)
+			allPixels = (allPixels ^ a[k]) * 1099511628211ULL;
 		for (int y = 0; y < scene.height; y++)
 			for (int x = 0; x < scene.width; x++)
 				if (a[(size_t)y * scene.width + x] != b[(size_t)y * scene.width + x])
@@ -341,5 +375,7 @@ TEST(clipped_draws_leave_the_same_pixels)
 				}
 		scaledFrame();
 	}
+	if (getenv("RASTER_HASH") != nullptr)
+		printf("  pixels of the %d scenes: %016llx\n", scenes, (unsigned long long)allPixels);
 	CHECK_EQ(differing, 0);
 }

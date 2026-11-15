@@ -140,6 +140,47 @@ namespace Renderer
 					out[i] = lerp8(top[i], bottom[i], w);
 			}
 
+			// How far ahead the memory is asked for (PLD) in the spans and copies, in pixels (ES_SOFT_PLD, in
+			// bytes, default 256; 0: not asked for). Measured on the DE10-Nano (es-mister-bench): a faded
+			// layer 1.7 times faster, the copy to the screen 1.25; from 64 to 1024 bytes nearly the same. Only a
+			// hint to the processor: no pixel changes.
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+			int aheadPixels()
+			{
+				static const int ahead = []
+				{
+					const char* value = getenv("ES_SOFT_PLD");
+					const int bytes = value != nullptr ? atoi(value) : 256;
+					return std::max(0, std::min(4096, bytes)) / 4;
+				}();
+				return ahead;
+			}
+#endif
+
+			// n pixels copied, the source asked for ahead (memcpy elsewhere)
+			inline void copyPixels(uint32_t* to, const uint32_t* from, int n)
+			{
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+				const int ahead = aheadPixels();
+				int i = 0;
+				for (; i + 16 <= n; i += 16)
+				{
+					if (ahead)
+						__builtin_prefetch(from + i + ahead, 0);
+					const uint32x4_t a = vld1q_u32(from + i), b = vld1q_u32(from + i + 4);
+					const uint32x4_t c = vld1q_u32(from + i + 8), d = vld1q_u32(from + i + 12);
+					vst1q_u32(to + i, a);
+					vst1q_u32(to + i + 4, b);
+					vst1q_u32(to + i + 8, c);
+					vst1q_u32(to + i + 12, d);
+				}
+				if (i < n)
+					memcpy(to + i, from + i, (size_t)(n - i) * 4);
+#else
+				memcpy(to, from, (size_t)n * 4);
+#endif
+			}
+
 			struct Tex
 			{
 				const uint32_t* px = nullptr;
@@ -406,8 +447,16 @@ namespace Renderer
 				alignas(16) uint32_t c00[8], c10[8], c01[8], c11[8];
 				alignas(16) uint16_t wx[8], wy[8];
 
+				const int ahead = aheadPixels();
 				for (int i = first; i < end; i += 8)
 				{
+					// a cache line (8 pixels) a step: the frame's row to be written, and a 1:1 picture's row
+					if (ahead)
+					{
+						__builtin_prefetch(dst + i + ahead, 1);
+						if (TEX == TEX_DIRECT)
+							__builtin_prefetch(direct + i + ahead, 0);
+					}
 					uint8x8x4_t src;
 					if (TEX == TEX_NONE)
 						src = color;
@@ -451,29 +500,72 @@ namespace Renderer
 				if (end < n)
 					scalar(dst + end, mask ? mask + end : nullptr, maskTest, n - end, tex, at(end));
 			}
+
+			// A span tested against the stencil: its runs of pixels the test lets through, each drawn by the
+			// NEON span (a pixel's value does not depend on where its span starts, as with clipping); the others
+			// left as they are, as spanT leaves them. Pictures with rounded corners (Carbon's game grids) are
+			// stencil-tested, and drew a pixel at a time.
+			template<int TEX, int MOD>
+			void spanNeonMasked(uint32_t* dst, const uint8_t* mask, int maskTest, int n, const Tex& tex, Span s)
+			{
+				if (mask == nullptr || maskTest == 0)
+				{
+					spanNeon<TEX, MOD>(dst, nullptr, 0, n, tex, s);
+					return;
+				}
+				const bool inside = maskTest == 1; // drawn where (mask == 1) is inside
+				int i = 0;
+				while (i < n)
+				{
+					while (i < n && (mask[i] == 1) != inside)
+						i++;
+					int j = i;
+					while (j < n && (mask[j] == 1) == inside)
+						j++;
+					if (j > i)
+					{
+						Span t = s;
+						t.u = (int)(s.u + (int64_t)i * s.du);
+						t.v = (int)(s.v + (int64_t)i * s.dv);
+						spanNeon<TEX, MOD>(dst + i, nullptr, 0, j - i, tex, t);
+					}
+					i = j;
+				}
+			}
 #endif
 
-			// spanT, or its NEON version where there is one: plain is no stencil and no desaturation
-			SpanFn pickSpanFor(int tex, int mod, int blend, bool plain)
+			// spanT, or its NEON version where there is one (blended normally, not desaturated; tested against
+			// the stencil, by runs)
+			SpanFn pickSpanFor(int tex, int mod, int blend, bool masked, bool desaturated)
 			{
 #ifdef SOFT_NEON
-				if (plain && blend == BLEND_NORMAL && neonEnabled())
+				if (!desaturated && blend == BLEND_NORMAL && neonEnabled())
 				{
 					if (tex == TEX_NONE && mod != MOD_VARY)
-						return &spanNeon<TEX_NONE, MOD_CONST>;
+						return masked ? &spanNeonMasked<TEX_NONE, MOD_CONST> : &spanNeon<TEX_NONE, MOD_CONST>;
 					if (mod == MOD_NONE || mod == MOD_CONST)
 					{
 						const bool constant = mod == MOD_CONST;
 						switch (tex)
 						{
-						case TEX_DIRECT: return constant ? &spanNeon<TEX_DIRECT, MOD_CONST> : &spanNeon<TEX_DIRECT, MOD_NONE>;
-						case TEX_NEAREST: return constant ? &spanNeon<TEX_NEAREST, MOD_CONST> : &spanNeon<TEX_NEAREST, MOD_NONE>;
-						case TEX_LINEAR: return constant ? &spanNeon<TEX_LINEAR, MOD_CONST> : &spanNeon<TEX_LINEAR, MOD_NONE>;
+						case TEX_DIRECT:
+							if (masked)
+								return constant ? &spanNeonMasked<TEX_DIRECT, MOD_CONST> : &spanNeonMasked<TEX_DIRECT, MOD_NONE>;
+							return constant ? &spanNeon<TEX_DIRECT, MOD_CONST> : &spanNeon<TEX_DIRECT, MOD_NONE>;
+						case TEX_NEAREST:
+							if (masked)
+								return constant ? &spanNeonMasked<TEX_NEAREST, MOD_CONST> : &spanNeonMasked<TEX_NEAREST, MOD_NONE>;
+							return constant ? &spanNeon<TEX_NEAREST, MOD_CONST> : &spanNeon<TEX_NEAREST, MOD_NONE>;
+						case TEX_LINEAR:
+							if (masked)
+								return constant ? &spanNeonMasked<TEX_LINEAR, MOD_CONST> : &spanNeonMasked<TEX_LINEAR, MOD_NONE>;
+							return constant ? &spanNeon<TEX_LINEAR, MOD_CONST> : &spanNeon<TEX_LINEAR, MOD_NONE>;
 						}
 					}
 				}
 #endif
-				(void)plain;
+				(void)masked;
+				(void)desaturated;
 				return pickSpan(tex, mod, blend);
 			}
 
@@ -817,6 +909,18 @@ namespace Renderer
 			if (clip.x0 >= clip.x1 || clip.y0 >= clip.y1)
 				return;
 
+			// Blended normally with no alpha at any vertex: every pixel it reaches keeps its value (its alpha,
+			// interpolated or times a texel's, is 0). Texts and pictures faded out entirely are still drawn by
+			// ES: Carbon's system texts, five passes each, in every frame of the carousel's move.
+			if (blendModeOf(state) == BLEND_NORMAL)
+			{
+				bool seen = false;
+				for (int i = 0; i < count && !seen; i++)
+					seen = (vertices[i].color >> 24) != 0;
+				if (!seen)
+					return;
+			}
+
 			if (topology == Topology::Lines)
 			{
 				for (int i = 0; i + 1 < count; i += 2)
@@ -946,6 +1050,13 @@ namespace Renderer
 			const int uStart = (int)((int64_t)toFixed(texelU0) + (int64_t)skip * du);
 			const int uxStart = (int)std::floor(texelU0) + skip; // the same, 1:1
 
+			// An opaque picture tinted black (a shade over the screen, Carbon's grid): every texel times the
+			// tint is the tint's alpha and black (an opaque texel's alpha is 255, x * 255 / 255 is x, and its
+			// colour times 0 is 0, desaturated or not), whatever the picture: the quad is drawn untextured, with
+			// the same colours, and nothing is sampled.
+			if (texMode != TEX_NONE && state.texture->opaque && ((v[0].color | v[1].color | v[2].color | v[3].color) & 0x00FFFFFF) == 0)
+				texMode = TEX_NONE;
+
 			int mod = MOD_VARY;
 			if (sameColor)
 			{
@@ -1002,7 +1113,7 @@ namespace Renderer
 				for (int y = py0; y < py1; y++)
 				{
 					const int vy = (int)std::floor(texelV0 + (y - qy0) * texelDv);
-					memcpy(mPx + (size_t)y * mWidth + px0, tex.px + (size_t)vy * tex.w + ux, (size_t)(px1 - px0) * 4);
+					copyPixels(mPx + (size_t)y * mWidth + px0, tex.px + (size_t)vy * tex.w + ux, px1 - px0);
 				}
 				mStats.pixels += (uint64_t)(px1 - px0) * (py1 - py0);
 				mStats.kinds[PX_COPY] += (uint64_t)(px1 - px0) * (py1 - py0);
@@ -1042,7 +1153,7 @@ namespace Renderer
 				if (columns <= 0)
 					return;
 				const bool copy = state.texture->opaque && mod == MOD_NONE && blend == BLEND_NORMAL && s.saturation == 256 && maskTest == 0;
-				const SpanFn finish = pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest == 0 && s.saturation == 256);
+				const SpanFn finish = pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest != 0, s.saturation != 256);
 				Tex row;
 				row.w = columns;
 				row.h = 1;
@@ -1053,7 +1164,7 @@ namespace Renderer
 					const size_t offset = (size_t)y * mWidth + px0;
 					if (copy)
 					{
-						memcpy(mPx + offset, sampled, (size_t)columns * 4);
+						copyPixels(mPx + offset, sampled, columns);
 						continue;
 					}
 					if (mod == MOD_VARY)
@@ -1069,12 +1180,14 @@ namespace Renderer
 				return;
 			}
 
-			// A picture sampled (bilinear or nearest) and not made smaller: every row of the quad reads the same
+			// A picture sampled (bilinear or nearest) and not made much smaller: every row of the quad reads the same
 			// texture columns, so the columns' texels and weights are worked out once, each texture row is
 			// sampled once, and the frame rows that fall on it reuse it; then the row is drawn as a 1:1 picture.
 			// The pixels are fetchLinear's and fetchNearest's.
 			static const bool rowsSampled = getenv("ES_SOFT_ROWS") == nullptr || strcmp(getenv("ES_SOFT_ROWS"), "0") != 0; // 0: per pixel, to compare
-			if (rowsSampled && (texMode == TEX_LINEAR || texMode == TEX_NEAREST) && px1 - px0 >= 8 && std::fabs(texelDv) < 1.0f)
+			// (made a little smaller too, a logo in the carousel, a picture shrunk to its tile: with fewer than 1.5
+			// texture rows a frame row, the two rows kept still save sampling, and the pixels are the same)
+			if (rowsSampled && (texMode == TEX_LINEAR || texMode == TEX_NEAREST) && px1 - px0 >= 8 && std::fabs(texelDv) < 1.5f)
 			{
 				const int n = px1 - px0;
 				const bool linear = texMode == TEX_LINEAR;
@@ -1129,15 +1242,79 @@ namespace Renderer
 				// texture row as the one above is the same as it
 				const bool covers = state.texture->opaque && blend == BLEND_NORMAL && maskTest == 0 &&
 					(mod == MOD_NONE || (mod == MOD_CONST && (s.color >> 24) == 255));
-				const SpanFn finish = pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest == 0 && s.saturation == 256);
+				const SpanFn finish = pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest != 0, s.saturation != 256);
 				Tex row;
 				row.w = n;
 				row.h = 1;
 				int lastKey = -1; // the texture row (nearest) the row above drew
 
+				// A flat middle (a nine-patch's: a shadow's, a frame's), whose border varies: the columns
+				// [flatX0, flatX1) whose taps, in the texture rows [flatY0, flatY1], all read texels of one value
+				// draw that value's colour, as a flat quad does (a bilinear sample of four equal texels is that
+				// texel); the rest is sampled as before. The pixels are the same.
+				int flatX0 = 0, flatX1 = 0, flatY0 = 0, flatY1 = -1;
+				uint32_t flatTexel = 0;
+				const bool flatMiddle = !copy && rowMod != MOD_VARY && !tex.repeat && n >= 16 && py1 - py0 >= 4 && [&]
+				{
+					auto rowsAt = [&](int y, int& r0, int& r1)
+					{
+						const int vy = toFixed(texelV0 + (y - qy0) * texelDv);
+						r0 = wrapCoord(vy >> 16, tex.h, false);
+						r1 = linear ? wrapCoord((vy >> 16) + 1, tex.h, false) : r0;
+					};
+					const int32_t* x0s = mColX0.data();
+					const int32_t* x1s = linear ? mColX1.data() : mColX0.data();
+					int a0, a1, b0, b1, c0, c1;
+					rowsAt(py0, a0, a1);
+					rowsAt(py1 - 1, b0, b1);
+					rowsAt((py0 + py1) / 2, c0, c1);
+					const int rowLo = std::min(a0, b0), rowHi = std::max(a1, b1);
+					const int colLo = std::min(x0s[0], x0s[n - 1]), colHi = std::max(x1s[0], x1s[n - 1]);
+					const int ic = n / 2, cx = x0s[ic];
+					const uint32_t texel = tex.px[(size_t)c0 * tex.w + cx];
+					auto at = [&](int x, int y) { return tex.px[(size_t)y * tex.w + x]; };
+					int budget = 65536; // texels looked at, at most
+					int ay = c0, by = c0;
+					while (ay > rowLo && at(cx, ay - 1) == texel) ay--;
+					while (by < rowHi && at(cx, by + 1) == texel) by++;
+					budget -= by - ay + 1;
+					auto columnFlat = [&](int x)
+					{
+						budget -= by - ay + 1;
+						for (int y = ay; y <= by; y++)
+							if (at(x, y) != texel)
+								return false;
+						return true;
+					};
+					int ax = cx, bx = cx;
+					while (ax > colLo && budget > 0 && columnFlat(ax - 1)) ax--;
+					while (bx < colHi && budget > 0 && columnFlat(bx + 1)) bx++;
+					if (budget <= 0)
+						return false;
+					auto inside = [&](int i) { return x0s[i] >= ax && x0s[i] <= bx && x1s[i] >= ax && x1s[i] <= bx; };
+					if (!inside(ic))
+						return false;
+					int ia = ic, ib = ic + 1;
+					while (ia > 0 && inside(ia - 1)) ia--;
+					while (ib < n && inside(ib)) ib++;
+					if (ib - ia < 16)
+						return false;
+					flatX0 = ia; flatX1 = ib; flatY0 = ay; flatY1 = by;
+					flatTexel = s.saturation < 256 ? desaturate(texel, s.saturation) : texel;
+					return true;
+				}();
+				const SpanFn flatFill = pickSpanFor(TEX_NONE, MOD_CONST, blend, maskTest != 0, false);
+
 				for (int y = py0; y < py1; y++)
 				{
 					const int v = toFixed(texelV0 + (y - qy0) * texelDv);
+					// this row's taps in the flat middle's texture rows
+					bool flatRow = false;
+					if (flatMiddle)
+					{
+						const int r0 = wrapCoord(v >> 16, tex.h, false), r1 = linear ? wrapCoord((v >> 16) + 1, tex.h, false) : r0;
+						flatRow = r0 >= flatY0 && r0 <= flatY1 && r1 >= flatY0 && r1 <= flatY1;
+					}
 					if (!linear && covers)
 					{
 						const int key = wrapCoord(v >> 16, tex.h, tex.repeat);
@@ -1156,14 +1333,22 @@ namespace Renderer
 						const int r0 = wrapCoord(v >> 16, tex.h, tex.repeat), r1 = wrapCoord((v >> 16) + 1, tex.h, tex.repeat);
 						const uint32_t* top = rowOf(r0, r1);
 						const uint32_t* bottom = rowOf(r1, r0);
-						lerpRows(out, top, bottom, ((uint32_t)v >> 8) & 0xFF, n);
+						const uint32_t fy = ((uint32_t)v >> 8) & 0xFF;
+						if (flatRow)
+						{
+							// the flat middle is not sampled
+							lerpRows(out, top, bottom, fy, flatX0);
+							lerpRows(out + flatX1, top + flatX1, bottom + flatX1, fy, n - flatX1);
+						}
+						else
+							lerpRows(out, top, bottom, fy, n);
 						sampled = out;
 					}
 
 					const size_t offset = (size_t)y * mWidth + px0;
 					if (copy)
 					{
-						memcpy(mPx + offset, sampled, (size_t)n * 4);
+						copyPixels(mPx + offset, sampled, n);
 						continue;
 					}
 					if (mod == MOD_VARY)
@@ -1172,7 +1357,21 @@ namespace Renderer
 					fs.u = 0; fs.du = 1 << 16; // the row read 1:1
 					fs.v = 0; fs.dv = 0;
 					row.px = sampled;
-					finish(mPx + offset, stencil ? stencil + offset : nullptr, maskTest, n, row, fs);
+					uint32_t* const to = mPx + offset;
+					const uint8_t* const mask = stencil ? stencil + offset : nullptr;
+					if (!flatRow)
+					{
+						finish(to, mask, maskTest, n, row, fs);
+						continue;
+					}
+					// sampled left of the flat middle, its colour across it (the texel as the row's colour tints
+					// it), sampled right of it
+					finish(to, mask, maskTest, flatX0, row, fs);
+					Span flat = s;
+					flat.color = rowMod == MOD_CONST ? modulate(flatTexel, s.color) : flatTexel;
+					flatFill(to + flatX0, mask ? mask + flatX0 : nullptr, maskTest, flatX1 - flatX0, row, flat);
+					fs.u = flatX1 << 16;
+					finish(to + flatX1, mask ? mask + flatX1 : nullptr, maskTest, n - flatX1, row, fs);
 				}
 
 				mStats.pixels += (uint64_t)n * (py1 - py0);
@@ -1180,7 +1379,7 @@ namespace Renderer
 				return;
 			}
 
-			const SpanFn fn = pickSpanFor(texMode, rowMod, blend, maskTest == 0 && s.saturation == 256);
+			const SpanFn fn = pickSpanFor(texMode, rowMod, blend, maskTest != 0, s.saturation != 256);
 
 			// a picture 1:1 with clear runs (an overlay that leaves much of the frame as it is): drawn
 			// between them (blending a clear texel leaves the pixel as it was)
@@ -1319,7 +1518,7 @@ namespace Renderer
 
 			const uint8_t* stencil = state.stencil != StencilTest::Off ? mSt : nullptr;
 			const int maskTest = state.stencil == StencilTest::Inside ? 1 : (state.stencil == StencilTest::Outside ? 2 : 0);
-			const SpanFn fn = pickSpanFor(texMode, mod, blend, maskTest == 0 && s.saturation == 256);
+			const SpanFn fn = pickSpanFor(texMode, mod, blend, maskTest != 0, s.saturation != 256);
 
 			// each row's values at its own first column, then a step a column the clip left out, so a pixel is
 			// the same however the triangle is clipped
@@ -1398,6 +1597,38 @@ namespace Renderer
 				});
 			}
 			mStencilBox = box.x0 < box.x1 && box.y0 < box.y1 ? box : Clip{ 0, 0, 0, 0 };
+		}
+
+		Bounds drawBounds(const SVertex* v, int count, Topology topology, const DrawState& state, int width, int height)
+		{
+			Bounds box = { 0, 0, width, height };
+			if (count <= 0)
+				return Bounds();
+			float x0 = v[0].x, y0 = v[0].y, x1 = v[0].x, y1 = v[0].y;
+			bool finite = true;
+			for (int i = 0; i < count; i++)
+			{
+				finite = finite && std::isfinite(v[i].x) && std::isfinite(v[i].y);
+				x0 = std::min(x0, v[i].x); x1 = std::max(x1, v[i].x);
+				y0 = std::min(y0, v[i].y); y1 = std::max(y1, v[i].y);
+			}
+			if (finite)
+			{
+				const int margin = topology == Topology::Lines ? 2 : 1;
+				auto limit = [](float value, int size) { return std::max(-8.0f, std::min((float)size + 8.0f, value)); };
+				box.x0 = std::max(box.x0, (int)std::floor(limit(x0, width)) - margin);
+				box.y0 = std::max(box.y0, (int)std::floor(limit(y0, height)) - margin);
+				box.x1 = std::min(box.x1, (int)std::ceil(limit(x1, width)) + margin);
+				box.y1 = std::min(box.y1, (int)std::ceil(limit(y1, height)) + margin);
+			}
+			if (state.scissor)
+			{
+				box.x0 = std::max(box.x0, state.sx0);
+				box.y0 = std::max(box.y0, state.sy0);
+				box.x1 = std::min(box.x1, state.sx1);
+				box.y1 = std::min(box.y1, state.sy1);
+			}
+			return box.empty() ? Bounds() : box;
 		}
 
 		void findClearRuns(Texture& texture)
