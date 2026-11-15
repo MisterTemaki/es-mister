@@ -232,14 +232,9 @@ namespace Renderer
 			if (!s.output->open(width, height, error))
 			{
 				LOG(LogError) << "SoftRenderer: " << error << "; drawing in memory only";
-				s.output.reset(nullptr);
-				const char* old = getenv("ES_SOFT_OUTPUT");
-				setenv("ES_SOFT_OUTPUT", "null", 1);
-				s.output = createOutput();
-				if (old != nullptr)
-					setenv("ES_SOFT_OUTPUT", old, 1);
-				else
-					unsetenv("ES_SOFT_OUTPUT");
+				// (asked for by name: setenv here raced with the threads main() has started, which read the
+				// environment)
+				s.output = createOutput("null");
 				if (!s.output->open(width, height, error))
 					return false;
 			}
@@ -1085,7 +1080,9 @@ namespace Renderer
 		if (_data == nullptr)
 			opaque = false;
 
-		if (_data != nullptr && texture->width > 0)
+		// a part that starts past the texture's right edge (GL refuses it): nothing to write (the count below
+		// would wrap around and write past the row)
+		if (_data != nullptr && texture->width > 0 && x < (unsigned int)texture->width)
 		{
 			const uint8_t* src = (const uint8_t*)_data;
 			for (unsigned int row = 0; row < _height; row++)

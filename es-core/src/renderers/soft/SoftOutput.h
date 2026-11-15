@@ -44,7 +44,8 @@ namespace Renderer
 			int64_t mCopied = 0;
 		};
 
-		std::unique_ptr<Output> createOutput();
+		// The output ES_SOFT_OUTPUT names (kind: that one in its place, as "null")
+		std::unique_ptr<Output> createOutput(const char* kind = nullptr);
 	}
 }
 

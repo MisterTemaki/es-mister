@@ -124,7 +124,17 @@ namespace Renderer
 
 					mSize = (size_t)mPitch * mHeight;
 					if (fix.smem_len > 0 && mSize > fix.smem_len)
+					{
+						// a framebuffer's memory smaller than its mode: only the rows it holds are written
 						mSize = fix.smem_len;
+						mHeight = (int)(mSize / mPitch);
+					}
+					if (mPitch <= 0 || mWidth <= 0 || mHeight <= 0 || (size_t)mWidth * (mBpp / 8) > (size_t)mPitch)
+					{
+						error = "unusable framebuffer mode " + std::to_string(mWidth) + "x" + std::to_string(mHeight) + ", " + std::to_string(mPitch) + " bytes a row";
+						close();
+						return false;
+					}
 
 					void* map = mmap(nullptr, mSize, PROT_READ | PROT_WRITE, MAP_SHARED, mFd, 0);
 					if (map == MAP_FAILED)
@@ -254,9 +264,9 @@ namespace Renderer
 #endif
 		}
 
-		std::unique_ptr<Output> createOutput()
+		std::unique_ptr<Output> createOutput(const char* requested)
 		{
-			std::string kind = env("ES_SOFT_OUTPUT");
+			std::string kind = requested != nullptr ? requested : env("ES_SOFT_OUTPUT");
 #if defined(__linux__)
 			if (kind.empty())
 				kind = access("/dev/fb0", F_OK) == 0 ? "fbdev" : "null";
