@@ -253,6 +253,19 @@ namespace Renderer
 			if (count == 0 || vertices == nullptr)
 				return;
 
+			// A draw blended normally with no alpha at any vertex changes no pixel (the rasterizer leaves it out
+			// too): not recorded, so not transformed, hashed, matched or gone through again in every strip.
+			// ES draws many: Carbon's carousel fades texts and logos out entirely, thousands of vertices a frame.
+			// (A stencil shape is not a draw: always recorded.)
+			if (!stencil && src == Blend::SRC_ALPHA && dst == Blend::ONE_MINUS_SRC_ALPHA)
+			{
+				bool seen = false;
+				for (unsigned int i = 0; i < count && !seen; i++)
+					seen = (vertices[i].col >> 24) != 0; // a Vertex's colour is R, G, B, A in memory: A on top
+				if (!seen)
+					return;
+			}
+
 			SoftState& s = S();
 			Command command;
 			command.stencil = stencil;
