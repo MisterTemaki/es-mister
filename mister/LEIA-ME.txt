@@ -59,6 +59,14 @@ Sair) e, pelo SSH, logo em seguida:
   /media/fat/emulationstation/es-mister-bench | tee /media/fat/emulationstation/logs/es-mister-bench.txt
 Leva uns 2 minutos. Mande de volta o logs/es-mister-bench.txt.
 
+Medir com os quadros do próprio EmulationStation
+------------------------------------------------
+Com CAPTURE=1 no es-mister.ini, os quadros lentos também são gravados inteiros
+(logs/es-slow-frame-N.escf). Feche o EmulationStation e, pelo SSH:
+  /media/fat/emulationstation/es-mister-replay logs/es-slow-frame-*.escf
+Ele desenha cada quadro de novo e mostra o tempo do desenho e um código dos
+pixels: duas versões que dão o mesmo código desenharam a mesma imagem.
+
 O que mandar de volta depois do teste
 -------------------------------------
 - /media/fat/emulationstation/logs/es-mister.log
