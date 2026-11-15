@@ -1379,7 +1379,14 @@ namespace Renderer
 			// clear what the last shape marked
 			resetStencil();
 
+			// A clip with nothing in it (a scissor that misses this band or part: the renderer narrows each
+			// command's scissor to the part it draws) marks nothing. Its box below would start inverted in both
+			// axes and pass for a marked one, and the next resetStencil cleared it: rows of the other band
+			// (drawing at the same time) or, with a scissor off the screen's left or top, memory before or
+			// after the stencil.
 			const Clip clip = clipOf(state);
+			if (clip.x0 >= clip.x1 || clip.y0 >= clip.y1)
+				return;
 			Clip box = { clip.x1, clip.y1, clip.x0, clip.y0 };
 			for (int i = 1; i + 1 < count; i++)
 			{
@@ -1390,7 +1397,7 @@ namespace Renderer
 					box.y0 = std::min(box.y0, y); box.y1 = std::max(box.y1, y + 1);
 				});
 			}
-			mStencilBox = box.x0 < box.x1 ? box : Clip{ 0, 0, 0, 0 };
+			mStencilBox = box.x0 < box.x1 && box.y0 < box.y1 ? box : Clip{ 0, 0, 0, 0 };
 		}
 
 		void findClearRuns(Texture& texture)
