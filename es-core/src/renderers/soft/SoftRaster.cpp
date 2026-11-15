@@ -116,6 +116,37 @@ namespace Renderer
 				return out;
 			}
 
+			// into[i] = lerp8(src[x0s[i]], src[x1s[i]], fxs[i]) for n pixels: a texture row sampled across, the first
+			// step of a bilinear sample (the rows path's and the scaled pictures'). NEON: four pixels at a time, the
+			// same sums (each channel a * (256 - w) + b * w, at most 255 * 256, shifted down 8), so the same pixels.
+			inline void sampleAcross(uint32_t* into, const uint32_t* src, const int32_t* x0s, const int32_t* x1s, const uint16_t* fxs, int n)
+			{
+				int i = 0;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+				const uint16x8_t full = vdupq_n_u16(256);
+				for (; i + 4 <= n; i += 4)
+				{
+					uint32x4_t a = vdupq_n_u32(src[x0s[i]]), b = vdupq_n_u32(src[x1s[i]]);
+					a = vsetq_lane_u32(src[x0s[i + 1]], a, 1); b = vsetq_lane_u32(src[x1s[i + 1]], b, 1);
+					a = vsetq_lane_u32(src[x0s[i + 2]], a, 2); b = vsetq_lane_u32(src[x1s[i + 2]], b, 2);
+					a = vsetq_lane_u32(src[x0s[i + 3]], a, 3); b = vsetq_lane_u32(src[x1s[i + 3]], b, 3);
+					// each pixel's weight on its four bytes: w0 w0 w0 w0 w1 w1 w1 w1 | w2 ... w3
+					const uint16x4_t w4 = vld1_u16(fxs + i);
+					const uint16x4x2_t pairs = vzip_u16(w4, w4);
+					const uint16x4x2_t first = vzip_u16(pairs.val[0], pairs.val[0]);
+					const uint16x4x2_t second = vzip_u16(pairs.val[1], pairs.val[1]);
+					const uint16x8_t wlo = vcombine_u16(first.val[0], first.val[1]);
+					const uint16x8_t whi = vcombine_u16(second.val[0], second.val[1]);
+					const uint8x16_t a8 = vreinterpretq_u8_u32(a), b8 = vreinterpretq_u8_u32(b);
+					const uint16x8_t lo = vmlaq_u16(vmulq_u16(vmovl_u8(vget_low_u8(a8)), vsubq_u16(full, wlo)), vmovl_u8(vget_low_u8(b8)), wlo);
+					const uint16x8_t hi = vmlaq_u16(vmulq_u16(vmovl_u8(vget_high_u8(a8)), vsubq_u16(full, whi)), vmovl_u8(vget_high_u8(b8)), whi);
+					vst1q_u8((uint8_t*)(into + i), vcombine_u8(vshrn_n_u16(lo, 8), vshrn_n_u16(hi, 8)));
+				}
+#endif
+				for (; i < n; i++)
+					into[i] = lerp8(src[x0s[i]], src[x1s[i]], fxs[i]);
+			}
+
 			// out = lerp8(top, bottom, w) for n pixels: a bilinear sample's last step, on two rows already
 			// interpolated across
 			inline void lerpRows(uint32_t* out, const uint32_t* top, const uint32_t* bottom, uint32_t w, int n)
@@ -757,11 +788,7 @@ namespace Renderer
 				auto sample = [&](int y, uint32_t* into)
 				{
 					const uint32_t* src = t->pixels.data() + (size_t)y * t->width;
-					const int32_t* x0s = sc.x0s.data();
-					const int32_t* x1s = sc.x1s.data();
-					const uint16_t* fxs = sc.fxs.data();
-					for (int i = 0; i < columns; i++)
-						into[i] = lerp8(src[x0s[i]], src[x1s[i]], fxs[i]);
+					sampleAcross(into, src, sc.x0s.data(), sc.x1s.data(), sc.fxs.data(), columns);
 				};
 				auto rowOf = [&](int y, int other) -> const uint32_t*
 				{
@@ -1185,9 +1212,11 @@ namespace Renderer
 			// sampled once, and the frame rows that fall on it reuse it; then the row is drawn as a 1:1 picture.
 			// The pixels are fetchLinear's and fetchNearest's.
 			static const bool rowsSampled = getenv("ES_SOFT_ROWS") == nullptr || strcmp(getenv("ES_SOFT_ROWS"), "0") != 0; // 0: per pixel, to compare
-			// (made a little smaller too, a logo in the carousel, a picture shrunk to its tile: with fewer than 1.5
-			// texture rows a frame row, the two rows kept still save sampling, and the pixels are the same)
-			if (rowsSampled && (texMode == TEX_LINEAR || texMode == TEX_NEAREST) && px1 - px0 >= 8 && std::fabs(texelDv) < 1.5f)
+			// Made smaller too (a logo in the carousel, a picture shrunk to its tile), however much: a frame row
+			// samples at most two texture rows across, as many sums as a pixel's own sample takes, and the rows are
+			// sampled four pixels at a time (sampleAcross); the v of each row and the u of each column are the
+			// per-pixel path's own, so the pixels are the same.
+			if (rowsSampled && (texMode == TEX_LINEAR || texMode == TEX_NEAREST) && px1 - px0 >= 8)
 			{
 				const int n = px1 - px0;
 				const bool linear = texMode == TEX_LINEAR;
@@ -1217,12 +1246,7 @@ namespace Renderer
 					const uint32_t* src = tex.px + (size_t)r * tex.w;
 					const int32_t* x0s = mColX0.data();
 					if (linear)
-					{
-						const int32_t* x1s = mColX1.data();
-						const uint16_t* fxs = mColFx.data();
-						for (int i = 0; i < n; i++)
-							into[i] = lerp8(src[x0s[i]], src[x1s[i]], fxs[i]);
-					}
+						sampleAcross(into, src, x0s, mColX1.data(), mColFx.data(), n);
 					else
 						for (int i = 0; i < n; i++)
 							into[i] = src[x0s[i]];
