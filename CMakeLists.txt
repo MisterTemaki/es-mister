@@ -564,7 +564,9 @@ else()
     endif()
 endif()
 
-if(NOT WIN32)
+# (not for the MiSTer: ES reads the .po files itself, ES_BUILTIN_TRANSLATIONS; its i18n target, run in the
+# build folder there, failed a whole build when gettext was installed)
+if(NOT WIN32 AND NOT MISTER)
 	# batocera / i18n
 	# i18n
 	find_program (MSGFMT_EXECUTABLE msgfmt)

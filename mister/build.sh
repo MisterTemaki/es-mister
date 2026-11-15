@@ -181,7 +181,6 @@ es() {
 	# the MiSTer build leaves its binary in its build folder
 	mkdir -p "$WORK/out"
 	cp -f "$build/emulationstation" "$WORK/out/emulationstation"
-	git -C "$ROOT" checkout -q -- locale/ 2>/dev/null || true
 	file "$WORK/out/emulationstation"
 }
 
