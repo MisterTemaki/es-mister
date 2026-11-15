@@ -6,6 +6,7 @@
 #include "guis/GuiMsgBox.h"
 #include "utils/FileSystemUtil.h"
 #include "views/ViewController.h"
+#include "views/SystemView.h"
 #include "CollectionSystemManager.h"
 #include "EmulationStation.h"
 #include "InputManager.h"
@@ -832,6 +833,10 @@ int main(int argc, char* argv[])
 	int ps_time = SDL_GetTicks();
 
 	bool running = true;
+	StartupTrace::mainLoopEntered();
+	const char* phaseTrace = getenv("ES_SOFT_TRACE");
+	const bool tracePhases = phaseTrace != nullptr && *phaseTrace;
+	const bool probeInput = getenv("ES_STARTUP_INPUT_PROBE") != nullptr;
 
 #ifdef BATOCERA
 	bool hotkeyPressed = false;
@@ -840,6 +845,8 @@ int main(int argc, char* argv[])
 	while(running)
 	{
 		SDL_Event event;
+		StartupTrace::FrameTimes framePhases;
+		const int64_t waitStart = tracePhases ? StartupTrace::frameClock() : 0;
 
 		int screenSaverTimeout = screensaver.getNextUpdateTimeout();
 		bool screenSaverWait = screenSaverTimeout > 0;
@@ -857,6 +864,8 @@ int main(int argc, char* argv[])
 			eventResult = SDL_WaitEventTimeout(&event, PowerSaver::getTimeout());
 		else
 			eventResult = SDL_PollEvent(&event);
+		const int64_t inputStart = tracePhases ? StartupTrace::frameClock() : 0;
+		framePhases.wait = inputStart - waitStart;
 
 		if (eventResult)
 		{
@@ -910,7 +919,17 @@ int main(int argc, char* argv[])
 					(event.type == SDL_JOYAXISMOTION && (event.jaxis.value > 23000 || event.jaxis.value < -23000)))
 					StartupTrace::inputArrived(event.common.timestamp ? (uint32_t)(SDL_GetTicks() - event.common.timestamp) : 0);
 
+				std::shared_ptr<SystemView> probedSystemView;
+				int cursorBefore = -1;
+				if (probeInput && event.type == SDL_KEYDOWN && !event.key.repeat &&
+					ViewController::get()->getState().viewing == ViewController::SYSTEM_SELECT)
+				{
+					probedSystemView = ViewController::get()->getSystemListView();
+					cursorBefore = probedSystemView->getCursorIndex();
+				}
 				TRYCATCH("InputManager::parseEvent", InputManager::getInstance()->parseEvent(event, &window));
+				if (probedSystemView)
+					StartupTrace::mark("input selection result", std::to_string(cursorBefore) + " -> " + std::to_string(probedSystemView->getCursorIndex()));
 
 				if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED && Settings::getInstance()->getBool("Windowed"))
 				{
@@ -982,8 +1001,21 @@ int main(int argc, char* argv[])
 			deltaTime = 100;
 #endif
 
-		TRYCATCH("Window.update" ,window.update(deltaTime))	
+		const int64_t updateStart = tracePhases ? StartupTrace::frameClock() : 0;
+		framePhases.input = updateStart - inputStart;
+		TRYCATCH("Window.update" ,window.update(deltaTime))
+		if (tracePhases && ViewController::get()->getState().viewing == ViewController::SYSTEM_SELECT)
+		{
+			auto systemView = ViewController::get()->getSystemListView();
+			framePhases.systemCursor = systemView->getCursorIndex();
+			if (systemView->isAnimationPlaying(0))
+				framePhases.systemAnimation = systemView->getAnimationTime(0);
+		}
+		const int64_t recordStart = tracePhases ? StartupTrace::frameClock() : 0;
+		framePhases.update = recordStart - updateStart;
 		TRYCATCH("Window.render", window.render())
+		const int64_t limitStart = tracePhases ? StartupTrace::frameClock() : 0;
+		framePhases.record = limitStart - recordStart;
 
 		int fpsLimit = Settings::FpsLimit();
 		if (fpsLimit > 0)
@@ -998,7 +1030,8 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		Renderer::swapBuffers();		
+		if (tracePhases) { framePhases.limit = StartupTrace::frameClock() - limitStart; StartupTrace::frameTimes(framePhases); }
+		Renderer::swapBuffers();
 	}
 
 	if (Utils::Platform::isFastShutdown())

@@ -2,6 +2,8 @@
 #include "../../es-core/src/renderers/Renderer_Soft.cpp"
 #include <cassert>
 #include <iostream>
+#undef assert
+#define assert(condition) do { if (!(condition)) { std::cerr << "CHECK FAILED: " << #condition << '\n'; std::abort(); } } while (0)
 
 // Only external services unused by this test are isolated. Recording, dirty regions, workers,
 // rasterization, texture upload, stencil, output and frame pacing use production implementations.
@@ -9,6 +11,8 @@ Settings::Settings() : mWasChanged(false), mLoaded(false) {}
 Settings* Settings::getInstance() { static Settings settings; return &settings; }
 bool Settings::getBool(const std::string& name) { assert(name == "VSync"); return true; }
 namespace StartupTrace {
+FrameTimes frameTimes() { return {}; } void frameTimes(const FrameTimes&) {}
+void interactiveFrameShown() {}
 void frameShown() {} bool enabled() { return false; }
 bool inputAnswered(double&, double*) { return false; } double inputWaitingMs() { return -1; }
 void mark(const std::string&, const std::string&) {}
@@ -67,6 +71,39 @@ int main()
     renderer.drawTriangleStrips(red.data(),4);renderer.disableStencil();renderer.swapBuffers();snapshot("transparent-stencil-kept");
     assert(Renderer::S().raster.pixels()[0]==0xFFFF0000);
     assert(Renderer::S().raster.pixels()[47+31*48]==0);
+    renderer.bindTexture(tex);
+    auto halfRed=box(0x800000FF),quarterBlue=box(0x40FF0000);
+    renderer.drawTriangleStrips(halfRed.data(),4);renderer.drawTriangleStrips(quarterBlue.data(),4);
+    renderer.swapBuffers();uniform(0x40600040);snapshot("two-translucent-layers");
+    unsigned char pattern[16]={255,31,100,0,7,211,2,1,24,19,252,127,180,90,22,255};
+    const auto overlay=renderer.createTexture(Renderer::Texture::RGBA,true,false,2,2,pattern);
+    renderer.bindTexture(tex);renderer.drawTriangleStrips(halfRed.data(),4);
+    auto shifted=quarterBlue;for(auto& v:shifted)v.pos=Vector2f(v.pos.x()+.75f,v.pos.y());
+    renderer.drawTriangleStrips(shifted.data(),4);
+    renderer.bindTexture(overlay);auto whiteLayer=box(0xFFFFFFFF);renderer.drawTriangleStrips(whiteLayer.data(),4);
+    renderer.swapBuffers();snapshot("three-shifted-alpha-layers");
+    renderer.bindTexture(tex);renderer.drawTriangleStrips(halfRed.data(),4);
+    auto gradient=quarterBlue;gradient[3].col=0xCC336699;renderer.drawTriangleStrips(gradient.data(),4);
+    renderer.swapBuffers();snapshot("gradient-fallback");
+    // Exercise the actual upload API, its source row pitch, clipping and conservative
+    // opacity tracking. External comparisons also run these scenes with the old backend.
+    std::vector<unsigned char> uploaded(24*6*4,255);
+    auto uploadedTexture=renderer.createTexture(Renderer::Texture::RGBA,true,false,24,6,uploaded.data());
+    assert(Renderer::S().textures.at(uploadedTexture)->opaque);
+    std::vector<unsigned char> changed(29*4*4);
+    for(size_t i=0;i<changed.size();++i)changed[i]=(unsigned char)(i*37+11);
+    renderer.updateTexture(uploadedTexture,Renderer::Texture::RGBA,3,4,29,4,changed.data());
+    assert(!Renderer::S().textures.at(uploadedTexture)->opaque);
+    renderer.bindTexture(uploadedTexture);renderer.drawTriangleStrips(whiteLayer.data(),4);
+    renderer.swapBuffers();snapshot("clipped-rgba-upload");
+    renderer.updateTexture(uploadedTexture,Renderer::Texture::RGBA,0,0,24,6,uploaded.data());
+    assert(!Renderer::S().textures.at(uploadedTexture)->opaque);
+    renderer.bindTexture(uploadedTexture);renderer.drawTriangleStrips(whiteLayer.data(),4);
+    renderer.swapBuffers();snapshot("partial-opaque-stays-conservative");
+    renderer.updateTexture(uploadedTexture,Renderer::Texture::RGBA,(unsigned)-1,(unsigned)-1,24,6,uploaded.data());
+    assert(Renderer::S().textures.at(uploadedTexture)->opaque);
+    renderer.bindTexture(uploadedTexture);renderer.drawTriangleStrips(halfRed.data(),4);
+    renderer.swapBuffers();snapshot("whole-upload-restores-opacity");
     renderer.drawTriangleStrips(clear.data(),4);renderer.destroyContext();
     renderer.createContext();renderer.swapBuffers();assert(!Renderer::S().hadCommands);
     renderer.destroyContext();

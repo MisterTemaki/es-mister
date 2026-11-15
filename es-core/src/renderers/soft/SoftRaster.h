@@ -76,6 +76,7 @@ namespace Renderer
 
 		struct CacheTrace
 		{
+			uint64_t opaqueFadePixels = 0;
 			uint64_t lookups = 0, hits = 0, misses = 0, uncached = 0;
 			uint64_t readyRows = 0, sampledRows = 0, duplicateRows = 0, allocatedBytes = 0;
 			int64_t mutexNs = 0, gridNs = 0;

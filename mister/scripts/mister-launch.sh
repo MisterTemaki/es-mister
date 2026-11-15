@@ -10,6 +10,12 @@
 ES=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 LOG=$ES/logs/es-mister.log
 exec >>"$LOG" 2>&1
+startup_mark() {
+	if [ -n "${ES_WRAPPER_TRACE:-}" ]; then
+		printf '%s %s\n' "$(cut -d' ' -f1 /proc/uptime)" "$*" >>"$ES_WRAPPER_TRACE"
+	fi
+}
+startup_mark launch_begin
 
 SIZE=auto
 [ -f "$ES/es-mister.ini" ] && . "$ES/es-mister.ini"
@@ -42,6 +48,7 @@ else
 	cat "$target"
 fi
 
+startup_mark core_request
 echo "load_core $target" >/dev/MiSTer_cmd
 
 # the core starts (Main_MiSTer starts again, and names it)
@@ -56,20 +63,27 @@ for i in $(seq 30); do
 done
 
 if [ $started = 1 ]; then
+	startup_mark "core_started name=$core"
 	echo "core $core started"
 	# the game runs until the menu core is loaded again (the OSD's Reset or Exit)
 	while [ "$(cat /tmp/CORENAME 2>/dev/null)" != "MENU" ]; do
 		sleep 1
 	done
 	echo "back in the menu"
+	startup_mark return_fixed_wait_begin
 	sleep 2 # Main_MiSTer starting again
+	startup_mark return_fixed_wait_end
 else
 	echo "the core did not start"
+	startup_mark core_not_started
 fi
 
 for attempt in 1 2 3; do
-	DRAWN=$("$ES/es-mister-helper" console "$SIZE") && break
+	startup_mark "return_helper_begin attempt=$attempt"
+	DRAWN=$("$ES/es-mister-helper" console "$SIZE") && { startup_mark "return_helper_end attempt=$attempt result=ok"; break; }
+	startup_mark "return_helper_end attempt=$attempt result=failed"
 	echo "the framebuffer is not on yet (try $attempt)"
 	sleep 3
 done
 echo "framebuffer $DRAWN"
+startup_mark "return_complete framebuffer=$DRAWN"

@@ -12,6 +12,12 @@ LOG=$LOGS/es-mister.log
 exec >>"$LOG" 2>&1
 # times since the machine started (as ES's startup trace has them): from here to ES on the screen
 uptime() { cut -d' ' -f1 /proc/uptime; }
+startup_mark() {
+	if [ -n "${ES_WRAPPER_TRACE:-}" ]; then
+		printf '%s %s\n' "$(uptime)" "$*" >>"$ES_WRAPPER_TRACE"
+	fi
+}
+startup_mark wrapper_begin
 echo "== $(date '+%F %T') es-mister.sh (uptime $(uptime) s)"
 
 # settings (es-mister.ini): SIZE, FPS, GAMES_ROOTS
@@ -82,18 +88,25 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 fi
 
 # the menu core is loaded (ES starts from the Scripts menu, or after a game)
+startup_mark config_ready
+startup_mark menu_wait_begin
 for i in $(seq 30); do
 	[ "$(cat /tmp/CORENAME 2>/dev/null)" = "MENU" ] && break
 	sleep 1
 done
+startup_mark "menu_wait_end core=$(cat /tmp/CORENAME 2>/dev/null)"
 
 # the framebuffer ES draws in: at SIZE, or with auto at the size Main_MiSTer gives it for the menu.
 # Started from the Scripts menu, Main_MiSTer is still closing the script's screen and does not take F9
 # yet: a moment first, then short tries (8 presses, about 4 s each) until it does, for up to ~30 s.
+startup_mark fixed_wait_begin
 sleep 2
+startup_mark fixed_wait_end
 DRAWN=""
 for attempt in 1 2 3 4 5 6 7; do
-	DRAWN=$("$ES/es-mister-helper" console "$SIZE" 8) && break
+	startup_mark "helper_begin attempt=$attempt"
+	DRAWN=$("$ES/es-mister-helper" console "$SIZE" 8) && { startup_mark "helper_end attempt=$attempt result=ok"; break; }
+	startup_mark "helper_end attempt=$attempt result=failed"
 	DRAWN=""
 	echo "the framebuffer is not on yet (try $attempt)"
 	sleep 1
@@ -131,8 +144,11 @@ fi
 # keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
 echo "starting ES at $DRAWN (SIZE=$SIZE, uptime $(uptime) s)"
+startup_mark process_begin
 ./emulationstation
-echo "ES closed ($?)"
+ES_RESULT=$?
+startup_mark "process_end result=$ES_RESULT"
+echo "ES closed ($ES_RESULT)"
 
 rm -f /tmp/es-mister.pid
 # back to the MiSTer menu

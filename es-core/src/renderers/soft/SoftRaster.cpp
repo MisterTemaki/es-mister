@@ -38,7 +38,7 @@ namespace Renderer
 			};
 
 			enum TexMode { TEX_NONE = 0, TEX_NEAREST = 1, TEX_LINEAR = 2, TEX_DIRECT = 3 };
-			enum ModMode { MOD_NONE = 0, MOD_CONST = 1, MOD_VARY = 2, MOD_ALPHA = 3 };
+			enum ModMode { MOD_NONE = 0, MOD_CONST = 1, MOD_VARY = 2, MOD_ALPHA = 3, MOD_OPAQUE_ALPHA = 4 };
 			enum BlendMode { BLEND_NORMAL = 0, BLEND_ADD = 1, BLEND_GENERIC = 2 };
 
 			inline uint32_t div255(uint32_t x) { return (x + 128 + ((x + 128) >> 8)) >> 8; }
@@ -199,6 +199,7 @@ namespace Renderer
 				const uint32_t* px = nullptr;
 				int w = 1, h = 1;
 				bool repeat = false;
+				bool opaque = false;
 			};
 
 			inline int wrapCoord(int x, int size, bool repeat)
@@ -381,7 +382,9 @@ namespace Renderer
 					src.val[1] = div255n(vmull_u8(src.val[1], color.val[1]));
 					src.val[2] = div255n(vmull_u8(src.val[2], color.val[2]));
 				}
-				if (MOD == MOD_CONST || MOD == MOD_ALPHA)
+				if (MOD == MOD_OPAQUE_ALPHA)
+					src.val[3] = color.val[3]; // div255(255 * alpha) is exactly alpha.
+				else if (MOD == MOD_CONST || MOD == MOD_ALPHA)
 				{
 					src.val[3] = div255n(vmull_u8(src.val[3], color.val[3]));
 				}
@@ -427,11 +430,26 @@ namespace Renderer
 					// identity: preserve RGB and perform only the original alpha arithmetic.
 					if ((s.color & 0xFFFFFF) == 0xFFFFFF && optimizationsEnabled())
 					{
+						static const bool opaqueFade = [] {
+							const char* value = std::getenv("ES_SOFT_OPAQUE_FADE");
+							if (value) return std::strcmp(value, "1") == 0;
+#ifdef MISTER
+							return true;
+#else
+							return false;
+#endif
+						}();
+						if (opaqueFade && tex.opaque)
+						{
+							if (cacheTrace) cacheTrace->opaqueFadePixels += n;
+							spanNeon<TEX, MOD_OPAQUE_ALPHA>(dst,mask,maskTest,n,tex,s);
+							return;
+						}
 						spanNeon<TEX, MOD_ALPHA>(dst, mask, maskTest, n, tex, s);
 						return;
 					}
 				}
-				const SpanFn scalar = &spanT<TEX, MOD == MOD_ALPHA ? MOD_CONST : MOD, BLEND_NORMAL>;
+				const SpanFn scalar = &spanT<TEX, (MOD == MOD_ALPHA || MOD == MOD_OPAQUE_ALPHA) ? MOD_CONST : MOD, BLEND_NORMAL>;
 
 				// the pixels whose texels need no clamping or wrapping (all of a 1:1 picture's)
 				int first = 0, last = n;
@@ -1006,6 +1024,7 @@ namespace Renderer
 				tex.w = t->width;
 				tex.h = t->height;
 				tex.repeat = t->repeat;
+				tex.opaque = t->opaque;
 
 				texelDu = (u1 - u0) * t->width / w;
 				texelDv = (t1 - t0) * t->height / h;
@@ -1145,6 +1164,7 @@ namespace Renderer
 				Tex row;
 				row.w = columns;
 				row.h = 1;
+				row.opaque = state.texture->opaque;
 				for (int y = py0; y < py1; y++)
 				{
 					const int r = std::min(y - qy0, scaled->h);
@@ -1232,6 +1252,7 @@ namespace Renderer
 				Tex row;
 				row.w = n;
 				row.h = 1;
+				row.opaque = state.texture->opaque;
 				int lastKey = -1; // the texture row (nearest) the row above drew
 
 				for (int y = py0; y < py1; y++)
@@ -1382,6 +1403,7 @@ namespace Renderer
 				tex.w = t->width;
 				tex.h = t->height;
 				tex.repeat = t->repeat;
+				tex.opaque = t->opaque;
 				gradient(a.u * t->width, b.u * t->width, c.u * t->width, uDx, uDy);
 				gradient(a.v * t->height, b.v * t->height, c.v * t->height, vDx, vDy);
 				uA = a.u * t->width;

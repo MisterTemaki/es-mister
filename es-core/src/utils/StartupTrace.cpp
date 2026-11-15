@@ -234,6 +234,14 @@ namespace StartupTrace
 			s->lastFrame = now();
 	}
 
+	namespace { std::atomic<bool> mainLoopReady{false}, interactiveShown{false}; }
+	void mainLoopEntered() { mainLoopReady = true; }
+	void interactiveFrameShown()
+	{
+		if (mainLoopReady && !interactiveShown && !interactiveShown.exchange(true))
+			mark("first interactive frame shown");
+	}
+
 	namespace
 	{
 		std::atomic<int64_t> pressedAt{ 0 }; // steady clock, ns; 0: none waiting
@@ -247,6 +255,11 @@ namespace StartupTrace
 		if (pressedAt.compare_exchange_strong(none, steadyNs()))
 			pressedQueueMs.store(queuedMs); // first queued press only; both APIs are called on the main thread
 	}
+
+	namespace { thread_local FrameTimes phases; }
+	int64_t frameClock() { return steadyNs(); }
+	void frameTimes(const FrameTimes& times) { phases=times; }
+	FrameTimes frameTimes() { return phases; }
 
 	bool inputAnswered(double& ms, double* eventMs)
 	{

@@ -44,11 +44,29 @@ namespace Renderer
 					const int bytes = value != nullptr ? atoi(value) : 256;
 					return (size_t)std::max(0, std::min(bytes, 4096));
 				}();
+				static const bool pairedPrefetch = []
+				{
+					const char* value = getenv("ES_SOFT_COPY_PLD_PAIR");
+					const char* optimizations = getenv("ES_SOFT_OPTIMIZATIONS");
+					if (optimizations && strcmp(optimizations, "0") == 0) return false;
+					if (value) return strcmp(value, "1") == 0;
+#ifdef MISTER
+					return true;
+#else
+					return false;
+#endif
+				}();
 				size_t i = 0;
 				for (; i + 64 <= n; i += 64)
 				{
 					if (ahead)
+					{
 						__builtin_prefetch(from + i + ahead, 0);
+						// The existing 64-byte block spans two Cortex-A9 cache lines.
+						// Keep the configured lookahead and request its second line too.
+						if (pairedPrefetch && n - i > ahead + 32)
+							__builtin_prefetch(from + i + ahead + 32, 0);
+					}
 					const uint32x4_t a = vld1q_u32((const uint32_t*)(from + i)), b = vld1q_u32((const uint32_t*)(from + i + 16));
 					const uint32x4_t c = vld1q_u32((const uint32_t*)(from + i + 32)), d = vld1q_u32((const uint32_t*)(from + i + 48));
 					vst1q_u32((uint32_t*)(to + i), a);

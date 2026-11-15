@@ -1,10 +1,12 @@
 #include "Renderer_Soft.h"
 #include "utils/StartupTrace.h"
+#include "utils/TextureTrace.h"
 
 #ifdef RENDERER_SOFTWARE
 
 #include "renderers/soft/SoftOutput.h"
 #include "renderers/soft/SoftRaster.h"
+#include "renderers/soft/SoftTextureUpload.h"
 #include "renderers/soft/SoftScript.h"
 #include "renderers/soft/SoftTrace.h"
 #include "math/Transform4x4f.h"
@@ -1122,6 +1124,9 @@ namespace Renderer
 		}
 
 		const bool whole = _x == (unsigned int)-1 && _y == (unsigned int)-1;
+		auto textureTrace = whole && _type == Texture::RGBA && (uint64_t)_width * _height >= 65536 ? TextureTrace::get() : nullptr;
+		const int64_t allocationStart = textureTrace ? TextureTrace::now() : 0;
+		const std::string textureLabel = textureTrace ? std::to_string(_texture) + " " + std::to_string(_width) + "x" + std::to_string(_height) : "";
 
 		// replaced while the frame being recorded draws it: the frame keeps the old one, as it was drawn
 		// (a part updated in place is a font's new glyphs, in a place nothing drew yet)
@@ -1145,8 +1150,20 @@ namespace Renderer
 			x = 0;
 			y = 0;
 		}
+		if (textureTrace) textureTrace->stage('A', textureLabel, TextureTrace::now() - allocationStart);
+		const int64_t conversionStart = textureTrace ? TextureTrace::now() : 0;
 
 		bool opaque = whole ? true : texture->opaque;
+		static const bool uploadNeon = [] {
+			const char* value = std::getenv("ES_SOFT_UPLOAD_NEON");
+			if (value) return std::strcmp(value, "1") == 0;
+#ifdef MISTER
+			return true;
+#else
+			return false;
+#endif
+		}();
+		const bool useUploadNeon = uploadNeon && Soft::optimizationsEnabled();
 		if (_data == nullptr)
 			opaque = false;
 
@@ -1171,6 +1188,11 @@ namespace Renderer
 				else
 				{
 					const uint8_t* line = src + (size_t)row * _width * 4;
+					if (useUploadNeon)
+					{
+						opaque = Soft::uploadRgba(dst, line, count, opaque);
+						continue;
+					}
 					for (unsigned int i = 0; i < count; i++)
 					{
 						const uint8_t* p = line + i * 4;
@@ -1183,6 +1205,8 @@ namespace Renderer
 
 		texture->opaque = opaque;
 		texture->generation++;
+		if (textureTrace) textureTrace->stage('C', textureLabel, TextureTrace::now() - conversionStart);
+		const int64_t runsStart = textureTrace ? TextureTrace::now() : 0;
 		// its clear runs, for a whole picture (a part updated: a font's glyphs, none)
 		if (whole)
 			Soft::findClearRuns(*texture);
@@ -1191,6 +1215,7 @@ namespace Renderer
 			texture->clearAt.clear();
 			texture->clear.clear();
 		}
+		if (textureTrace) textureTrace->stage('R', textureLabel, TextureTrace::now() - runsStart);
 	}
 
 	void SoftRenderer::bindTexture(const unsigned int _texture)
@@ -1319,6 +1344,14 @@ namespace Renderer
 		const bool recorded = s.hadCommands;
 		const bool redraw = recorded && (s.forceRedraw || s.bench || s.hash != s.lastHash);
 		s.trace.begin(redraw && s.open, s.commands.size());
+		if (s.trace.active)
+		{
+			const auto phases = StartupTrace::frameTimes();
+			s.trace.frame.wait = phases.wait; s.trace.frame.input = phases.input; s.trace.frame.update = phases.update;
+			s.trace.frame.record = phases.record; s.trace.frame.limit = phases.limit;
+			s.trace.frame.systemCursor = phases.systemCursor; s.trace.frame.systemAnimation = phases.systemAnimation;
+			StartupTrace::frameTimes({});
+		}
 		if (redraw && s.open)
 		{
 			const double esMs = s.frameStarted ? msSince(s.frameStart) : 0;
@@ -1396,6 +1429,7 @@ namespace Renderer
 			}
 
 			// the time from a press to the frame that shows its effect, and the frames over a 60 Hz frame's time
+			StartupTrace::interactiveFrameShown();
 			double answeredMs, eventMs;
 			if (StartupTrace::inputAnswered(answeredMs, &eventMs))
 			{

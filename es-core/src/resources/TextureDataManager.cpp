@@ -5,7 +5,9 @@
 #include "Settings.h"
 #include "Log.h"
 #include "utils/Platform.h"
+#include "utils/TextureTrace.h"
 #include <algorithm>
+#include <cstdlib>
 #include <SDL.h>
 
 TextureDataManager::TextureDataManager()
@@ -16,6 +18,7 @@ TextureDataManager::TextureDataManager()
 TextureDataManager::~TextureDataManager()
 {
 	delete mLoader;
+	if (auto trace = TextureTrace::get()) trace->save();
 }
 
 std::shared_ptr<TextureData> TextureDataManager::add(const TextureResource* key, bool tiled, bool linear)
@@ -139,11 +142,8 @@ void TextureDataManager::cleanupVRAM()
 	size_t maxVRAM = (size_t)Settings::getInstance()->getInt("MaxVRAM") * 1024 * 1024;
 	size_t size = TextureResource::getTotalMemoryUsage(MemoryUsageType::Allocated);
 
-	if (size < maxVRAM)
-		return;
-
 	// Perform cleanup on textures
-	for (auto it = mTextures.crbegin(); it != mTextures.crend(); ++it)
+	for (auto it = mTextures.crbegin(); size >= maxVRAM && it != mTextures.crend(); ++it)
 	{
 		auto tex = *it;
 		if (!tex->isReloadable() || tex->isRequired() || !tex->isLoaded())
@@ -157,21 +157,23 @@ void TextureDataManager::cleanupVRAM()
 
 		tex->releaseVRAM();
 		tex->releaseRAM();
+		if (auto trace = TextureTrace::get()) trace->evicted(tex->getPath());
 
 		size -= textureSize;
 		if (size <= maxVRAM)
 			break;
 	}
 
-	// On x86 platforms, perform cleanup on textures stored in RAM, limit to 250Mb
-	if (sizeof(void*) == 4)
+	// This is an independent decoded-buffer limit on every 32-bit platform, including ARM.
+	// Allocated below MaxVRAM must not bypass it when MaxVRAM itself exceeds 250 MiB.
+	if (sizeof(void*) == 4 && size > 250u * 1024 * 1024)
 	{
 		size_t maxRAM = 250 * 1024 * 1024;
 		size = TextureResource::getTotalMemoryUsage(MemoryUsageType::RAM);
 
 		if (size > maxRAM)
 		{
-			for (auto it = mTextures.crbegin(); it != mTextures.crend(); ++it)
+			for (auto it = mTextures.crbegin(); size > maxRAM && it != mTextures.crend(); ++it)
 			{
 				auto tex = *it;
 				if (!tex->isReloadable() || tex->isRequired() || !tex->isLoaded())
@@ -184,6 +186,7 @@ void TextureDataManager::cleanupVRAM()
 				LOG(LogDebug) << "Cleanup RAM\tReleased : " << tex->getPath().c_str() << ", " << std::to_string(tex->getSize().x()) << "x" << std::to_string(tex->getSize().y());
 
 				tex->releaseRAM();
+				if (auto trace = TextureTrace::get()) trace->evicted(tex->getPath());
 
 				size -= textureSize;
 				if (size <= maxRAM)
@@ -191,6 +194,12 @@ void TextureDataManager::cleanupVRAM()
 			}
 		}
 	}
+	if (auto trace = TextureTrace::get())
+		if (trace->due()) trace->sample(TextureResource::getTotalMemoryUsage(MemoryUsageType::Allocated),
+			TextureResource::getTotalMemoryUsage(MemoryUsageType::VRAM), TextureResource::getTotalMemoryUsage(MemoryUsageType::RAM),
+			mTextures.size(), (size_t)getQueueSize(),
+			(size_t)std::count_if(mTextures.begin(), mTextures.end(), [](const std::shared_ptr<TextureData>& tex) { return tex->getMemoryUsage(MemoryUsageType::VRAM) != 0; }),
+			(size_t)std::count_if(mTextures.begin(), mTextures.end(), [](const std::shared_ptr<TextureData>& tex) { return tex->getMemoryUsage(MemoryUsageType::RAM) != 0; }));
 }
 
 void TextureDataManager::load(std::shared_ptr<TextureData> tex, bool block)
@@ -217,6 +226,13 @@ TextureLoader::TextureLoader(TextureDataManager* mgr) : mManager(mgr), mExit(fal
 	int num_threads = std::thread::hardware_concurrency() / 2;
 	if (num_threads < 2)
 		num_threads = 2;
+#ifdef MISTER
+	// Candidate policy measured against two workers on the MiSTer's two ARM cores.
+	// Keep an override for reproducing the concurrency comparison.
+	num_threads = 1;
+	if (const char* value = std::getenv("ES_TEXTURE_THREADS"))
+		num_threads = std::max(1, std::min(2, std::atoi(value)));
+#endif
 
 	for (size_t i = 0; i < num_threads; i++)
 		mThreads.push_back(std::thread(&TextureLoader::threadProc, this));
@@ -228,7 +244,10 @@ TextureLoader::~TextureLoader()
 	clearQueue();
 
 	// Exit the thread
-	mExit = true;
+	{
+		std::lock_guard<std::mutex> lock(mLoaderLock);
+		mExit = true;
+	}
 	mEvent.notify_all();
 
 	for (std::thread& t : mThreads)
@@ -264,7 +283,7 @@ void TextureLoader::threadProc()
 	{		
 		// Wait for an event to say there is something in the queue
 		std::unique_lock<std::mutex> lock(mLoaderLock);
-		mEvent.wait(lock, [this]() { return !paused && (mExit || !mTextureDataQ.empty()); });
+		mEvent.wait(lock, [this]() { return mExit || (!paused && !mTextureDataQ.empty()); });
 
 		if (mExit)
 			break;

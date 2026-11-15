@@ -31,9 +31,11 @@ static void drawBand(Raster& raster,const std::vector<Draw>& commands,int width,
     for(int y=raster.bandTop();y<raster.bandBottom();y+=strip)
     {
         int end=std::min(raster.bandBottom(),y+strip);
-        raster.clearBox(0,y,width,end,0);
-        for(const auto& d:commands)
+        size_t first=0;
+        if(!first)raster.clearBox(0,y,width,end,0);
+        for(size_t i=first;i<commands.size();++i)
         {
+            const auto& d=commands[i];
             DrawState s=d.state;
             s.scissor=true;s.sx0=0;s.sx1=width;s.sy0=y;s.sy1=end;
             if(d.state.scissor) {s.sx0=std::max(s.sx0,d.state.sx0);s.sx1=std::min(s.sx1,d.state.sx1);s.sy0=std::max(s.sy0,d.state.sy0);s.sy1=std::min(s.sy1,d.state.sy1);}
@@ -43,21 +45,42 @@ static void drawBand(Raster& raster,const std::vector<Draw>& commands,int width,
 }
 int main(int argc,char** argv)
 {
-    const bool bench=argc>1 && std::string(argv[1])=="bench";
+    const bool cold=argc>1 && std::string(argv[1])=="coldbench";
+    const bool probe=argc>1 && std::string(argv[1])=="probe";
+    const bool bench=probe || cold || (argc>1 && std::string(argv[1])=="bench");
+    const bool extended=argc>1 && std::string(argv[1])=="composite";
     const int width=bench?1920:320,height=bench?1080:180;
-    const int repetitions=bench?12:1;
+    const int repetitions=probe?1:bench?12:1;
     Texture a=texture(1,bench?1280:211,bench?720:117,true);
     Texture b=texture(2,a.width,a.height,true);
     Texture picture=texture(3,width,height,false);
     Texture font=texture(4,160,32,false);
     Raster owner;owner.resize(width,height);
     Raster bands[2]; bands[0].attach(owner,0,height/2);bands[1].attach(owner,height/2,height);
-    for(int scene=0;scene<(bench?3:16);++scene)
+    for(int scene=0;scene<(bench?3:extended?96:16);++scene)
     {
         std::vector<Draw> commands;
         commands.push_back(quad(0,0,width,height,&a,0xD9FFFFFF));
         commands.push_back(quad(scene%3,0,width,height,&b,0x25FFFFFF));
         commands.push_back(quad(0,0,width,height,&picture,0xFFFFFFFF));
+        if(extended)
+        {
+            const unsigned alpha[]={0,1,2,7,64,127,128,199,253,254,255};
+            for(int i=0;i<3;++i)
+            {
+                auto& d=commands[i];
+                for(auto& vertex:d.v)
+                {
+                    vertex.color=(alpha[(scene+i*3)%11]<<24)|(scene%3==0?0xFFFFFF:scene%3==1?0:0xC34578);
+                    if(i<2)vertex.x+=(scene%8-3)*13.25f;
+                    if(scene&1)vertex.v=1-vertex.v;
+                    if(scene&2)vertex.u=.125f+.75f*vertex.u;
+                }
+                if(scene&4){d.state.scissor=true;d.state.sx0=7;d.state.sx1=width-13;d.state.sy0=9;d.state.sy1=height-17;}
+                if((scene&31)==31)d.v[3].color^=0x80000000;
+                if((scene&31)==30)d.state.srcBlend=1,d.state.dstBlend=1;
+            }
+        }
         commands.push_back(quad(0,height/3.f,width,height/3.f,nullptr,0x40000000));
         for(int j=0;j<12;++j)
         {
@@ -75,8 +98,13 @@ int main(int argc,char** argv)
         if(scene&8) d.topology=Topology::Fan;
         commands.push_back(std::move(d));
         std::vector<double> times;
+#ifdef AUDIT_OPAQUE
+        CacheTrace proof;
+        if(probe)traceCache(&proof);
+#endif
         for(int r=-1;r<repetitions;++r)
         {
+            if(cold){a.generation=(uint64_t)(r+2);b.generation=(uint64_t)(r+2);}
             auto start=std::chrono::steady_clock::now();
             if(bench && scene==2)
             {
@@ -87,6 +115,9 @@ int main(int argc,char** argv)
             if(r>=0) times.push_back(std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count());
             scaledFrame();
         }
+#ifdef AUDIT_OPAQUE
+        if(probe){traceCache(nullptr);std::printf("opaque dispatch pixels scene %d: %llu\n",scene,(unsigned long long)proof.opaqueFadePixels);}
+#endif
         uint64_t hash=1469598103934665603ULL;
         for(size_t i=0;i<(size_t)width*height;++i) hash=(hash^owner.pixels()[i])*1099511628211ULL;
         std::sort(times.begin(),times.end());

@@ -42,6 +42,8 @@ struct TraceFrame
     uint32_t commands = 0;
     int64_t ui = 0, dirty = 0, execute = 0, placed = 0, published = 0, joined = 0, finished = 0;
     int64_t post = 0, diagnostics = 0, pacing = 0;
+    int64_t wait = 0, input = 0, update = 0, record = 0, limit = 0;
+    int64_t systemCursor = -1, systemAnimation = -1;
     std::array<TraceWorker, 8> worker{};
 };
 struct TraceCommandSample
@@ -60,13 +62,15 @@ public:
         if (path.empty()) return;
         const char* d = std::getenv("ES_SOFT_TRACE_DETAIL");
         detailEvery = d ? std::max(0, std::atoi(d)) : 0;
+        const char* only = std::getenv("ES_SOFT_TRACE_REDRAWS_ONLY");
+        redrawsOnly = only && std::atoi(only) != 0;
         frames.reserve(8192);
         samples.reserve(65536);
         answers.reserve(8192);
     }
     bool begin(bool redraw, size_t commands)
     {
-        active = !path.empty() && frames.size() < 8192;
+        active = !path.empty() && frames.size() < 8192 && (!redrawsOnly || redraw);
         detail = active && redraw && detailEvery > 0 && redraws++ % detailEvery == 0;
         if (!active) return false;
         frame = TraceFrame{};
@@ -84,7 +88,7 @@ public:
         FILE* out = std::fopen(path.c_str(), "w");
         if (out)
         {
-            std::fprintf(out, "frame,at_ns,redraw,partial,commands,ui_ns,dirty_ns,execute_ns,placed_ns,published_ns,joined_ns,finished_ns,post_ns,diagnostics_ns,pacing_ns,worker,start_ns,drawn_ns,copied_ns,cpu_draw_ns,cpu_copy_ns,clear_ns,visits,culled,parts,cache_lookups,cache_hits,cache_misses,cache_uncached,ready_rows,sampled_rows,duplicate_rows,allocated_bytes,cache_mutex_ns,cache_grid_ns\n");
+            std::fprintf(out, "frame,at_ns,redraw,partial,commands,ui_ns,dirty_ns,execute_ns,placed_ns,published_ns,joined_ns,finished_ns,post_ns,diagnostics_ns,pacing_ns,worker,start_ns,drawn_ns,copied_ns,cpu_draw_ns,cpu_copy_ns,clear_ns,visits,culled,parts,cache_lookups,cache_hits,cache_misses,cache_uncached,ready_rows,sampled_rows,duplicate_rows,allocated_bytes,cache_mutex_ns,cache_grid_ns,event_wait_ns,input_ns,update_ns,record_ns,fps_limit_ns,system_cursor,system_animation_ms\n");
             for (const auto& f : frames) for (unsigned i = 0; i < 8; ++i)
             {
                 const auto& w = f.worker[i];
@@ -97,11 +101,22 @@ public:
                     (long long)w.copied,(long long)w.cpuDraw,(long long)w.cpuCopy,(long long)w.clearNs,
                     (unsigned long long)w.visits,(unsigned long long)w.culled,(unsigned long long)w.parts);
                 const auto& c = w.cache;
-                std::fprintf(out,",%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%lld,%lld\n",
+                std::fprintf(out,",%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld\n",
                     (unsigned long long)c.lookups,(unsigned long long)c.hits,(unsigned long long)c.misses,
                     (unsigned long long)c.uncached,(unsigned long long)c.readyRows,(unsigned long long)c.sampledRows,
-                    (unsigned long long)c.duplicateRows,(unsigned long long)c.allocatedBytes,(long long)c.mutexNs,(long long)c.gridNs);
+                    (unsigned long long)c.duplicateRows,(unsigned long long)c.allocatedBytes,(long long)c.mutexNs,(long long)c.gridNs,
+                    (long long)f.wait,(long long)f.input,(long long)f.update,(long long)f.record,(long long)f.limit,
+                    (long long)f.systemCursor,(long long)f.systemAnimation);
             }
+            std::fclose(out);
+        }
+        out = std::fopen((path + ".opaque.csv").c_str(), "w");
+        if (out)
+        {
+            std::fprintf(out,"frame,worker,opaque_fade_dispatch_pixels\n");
+            for (const auto& f : frames) for (unsigned i = 0; i < 8; ++i)
+                if (f.worker[i].start) std::fprintf(out,"%llu,%u,%llu\n",(unsigned long long)f.id,i,
+                    (unsigned long long)f.worker[i].cache.opaqueFadePixels);
             std::fclose(out);
         }
         out = std::fopen((path + ".commands.csv").c_str(), "w");
@@ -137,6 +152,7 @@ private:
     std::string path;
     uint64_t sequence = 0, redraws = 0;
     int detailEvery = 0;
+    bool redrawsOnly = false;
 };
 inline thread_local TraceWorker* tracedWorker = nullptr;
 inline thread_local std::vector<TraceCommand>* tracedCommands = nullptr;

@@ -1,0 +1,14 @@
+{
+  "commit": "cba2b668f2309d426ebce65f2c69e572088780d3",
+  "files": {
+    "es-app/src/SystemData.cpp": "1de3396ab26ad9ef7c513a031ba2dc53d57d8aa5a2107d0da74b664b847e64eb",
+    "es-core/src/resources/TextureDataManager.cpp": "ad19a4de23ce0205df666dbdaeea15084a6451c13932c6567990727983e5abb3",
+    "es-core/src/resources/TextureDataManager.h": "17a30e2986ade670cb49e5fb78b78297fbf6c0ee520b0dfa70c843e9ff1c453f",
+    "es-core/src/resources/TextureData.cpp": "0a25fc3fa3cf1a58510084d4f07249412be9a00e720e62c7ced98c9716d91686",
+    "es-core/src/resources/TextureData.h": "48d4ac0e4750e0a0072647ec297fe21c68800cdaa8d11d19cf0122e45ded051b",
+    "es-core/src/renderers/soft/SoftRaster.cpp": "3462bb153fd0a4d45423d2f43f87eea75514f2231b86688f1841d00512146304",
+    "es-core/src/renderers/soft/SoftRaster.h": "6d849e171812b2265e2c53af8426c85325432d904778053033e682ffc04befb6",
+    "es-core/src/renderers/Renderer_Soft.cpp": "e7894629f8439e1c9ceffb140542d137f8869bbd22d80c61e83f0972e48ebb4d",
+    "es-core/src/renderers/soft/SoftOutput.cpp": "eb4107ace24b1cb2387429bf48c79da45e1062731e26824003bd989c5e3325e4"
+  }
+}

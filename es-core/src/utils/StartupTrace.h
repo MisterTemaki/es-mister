@@ -26,9 +26,15 @@
 
 namespace StartupTrace
 {
+	struct FrameTimes { int64_t wait=0, input=0, update=0, record=0, limit=0, systemCursor=-1, systemAnimation=-1; };
+	int64_t frameClock();
+	void frameTimes(const FrameTimes& times);
+	FrameTimes frameTimes();
 	bool enabled();
 	void mark(const std::string& step, const std::string& detail = "");
 	void frameShown();
+	void mainLoopEntered();
+	void interactiveFrameShown();
 	void finish();
 	bool onMainThread();
 	void inputArrived(uint32_t queuedMs = 0);

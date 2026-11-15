@@ -23,6 +23,8 @@
 #include <unordered_set>
 #include <chrono>
 #include <algorithm>
+#include <atomic>
+#include <cstdlib>
 #include <functional>
 #include "SaveStateRepository.h"
 #include "Paths.h"
@@ -998,7 +1000,14 @@ bool SystemData::loadConfig(Window* window)
 	// Allow threaded loading only if processor threads > 1 so it does not apply on machines like Pi0.
 	if (std::thread::hardware_concurrency() > 1 && Settings::ThreadedLoading())
 	{
-		pThreadPool = new ThreadPool("loadConfig");
+		int byCore = 2;
+#ifdef MISTER
+		// Two fixed workers avoid oversubscribing the MiSTer's two ARM cores at startup.
+		byCore = -2;
+		if (const char* count = std::getenv("ES_SYSTEM_THREADS"))
+			if (std::atoi(count) > 0) byCore = -std::min(4, std::atoi(count));
+#endif
+		pThreadPool = new ThreadPool("loadConfig", byCore);
 
 		systems = new SystemDataPtr[systemCount];
 		for (int i = 0; i < systemCount; i++)
@@ -1007,7 +1016,7 @@ bool SystemData::loadConfig(Window* window)
 		pThreadPool->queueWorkItem([] { StartupTrace::Scope trace("load collections"); CollectionSystemManager::get()->loadCollectionSystems(); });
 	}
 
-	int processedSystem = 0;
+	std::atomic<int> processedSystem{0};
 
 	for (pugi::xml_node system = systemList.child("system"); system; system = system.next_sibling("system"))
 	{
@@ -1047,7 +1056,7 @@ bool SystemData::loadConfig(Window* window)
 		{
 			pThreadPool->wait([window, &processedSystem, systemCount, &systemsNames]
 			{
-				int px = processedSystem - 1;
+				int px = processedSystem.load() - 1;
 				if (px >= 0 && px < systemsNames.size())
 					window->renderSplashScreen(systemsNames.at(px), (float)px / (float)(systemCount + 2));
 			}, 50);

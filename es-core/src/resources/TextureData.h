@@ -3,6 +3,7 @@
 #define ES_CORE_RESOURCES_TEXTURE_DATA_H
 
 #include <mutex>
+#include <atomic>
 #include <string>
 #include <vector>
 #include "ImageIO.h"
@@ -51,24 +52,14 @@ public:
 	// Release the texture from conventional RAM
 	void releaseRAM();
 
-	// Get the amount of memory used by this texture.
-#if defined(USE_OPENGLES_30)
-	size_t getMemoryUsage(MemoryUsageType type = MemoryUsageType::Allocated);
-#else
+	// Last committed sizes: accounting must not wait for an SVG decoder holding mMutex.
 	size_t getMemoryUsage(MemoryUsageType type = MemoryUsageType::Allocated)
 	{
-		if (type == MemoryUsageType::RAM)
-			return mDataRGBA != nullptr ? mSize.x() * mSize.y() * 4 : 0;
-
-		if (type == MemoryUsageType::VRAM)
-			return mTextureID != 0 ? mSize.x() * mSize.y() * 4 : 0;
-
-		if (type == MemoryUsageType::Estimated)
-			return mSize.x() * mSize.y() * 4;
-
-		return mTextureID != 0 || mDataRGBA != nullptr ? mSize.x() * mSize.y() * 4 : 0;
+		if (type == MemoryUsageType::RAM) return mDecodedBytes.load(std::memory_order_relaxed);
+		if (type == MemoryUsageType::VRAM) return mTextureBytes.load(std::memory_order_relaxed);
+		if (type == MemoryUsageType::Estimated) return mEstimatedBytes.load(std::memory_order_relaxed);
+		return mAllocatedBytes.load(std::memory_order_relaxed);
 	}
-#endif
 
 	const 	Vector2i& getSize() const { return mSize; }
 	const 	Vector2f& getPhysicalSize() const { return mPhysicalSize; }
@@ -98,6 +89,27 @@ public:
 	void setScalable(bool value) { mScalable = value; };
 
 private:
+	// The owner calls this with mMutex held. These counters describe published
+	// buffers, not temporary decoder allocations or the process RSS.
+	void publishMemoryUsage()
+	{
+		mDecodedBytes.store(calculateMemoryUsage(MemoryUsageType::RAM), std::memory_order_relaxed);
+		mTextureBytes.store(calculateMemoryUsage(MemoryUsageType::VRAM), std::memory_order_relaxed);
+		mEstimatedBytes.store(calculateMemoryUsage(MemoryUsageType::Estimated), std::memory_order_relaxed);
+		mAllocatedBytes.store(calculateMemoryUsage(MemoryUsageType::Allocated), std::memory_order_relaxed);
+	}
+#if defined(USE_OPENGLES_30)
+	size_t calculateMemoryUsage(MemoryUsageType type) const;
+#else
+	size_t calculateMemoryUsage(MemoryUsageType type) const
+	{
+		const size_t bytes = (mSize.x() > 0 ? (size_t)mSize.x() : 0) * (mSize.y() > 0 ? (size_t)mSize.y() : 0) * 4;
+		if (type == MemoryUsageType::RAM) return mDataRGBA != nullptr ? bytes : 0;
+		if (type == MemoryUsageType::VRAM) return mTextureID != 0 ? bytes : 0;
+		if (type == MemoryUsageType::Estimated) return bytes;
+		return mTextureID != 0 || mDataRGBA != nullptr ? bytes : 0;
+	}
+#endif
 	bool			mRequired;
 
 	std::mutex		mMutex;
@@ -121,6 +133,7 @@ private:
 	Vector2f		mScalableMinimumSize;
 
 	bool			mIsExternalDataRGBA;
+	std::atomic<size_t> mDecodedBytes{0}, mTextureBytes{0}, mEstimatedBytes{0}, mAllocatedBytes{0};
 };
 
 #endif // ES_CORE_RESOURCES_TEXTURE_DATA_H

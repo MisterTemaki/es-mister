@@ -1,4 +1,5 @@
 #include "components/ImageComponent.h"
+#include "utils/TextureTrace.h"
 
 #include "resources/TextureResource.h"
 #include "Log.h"
@@ -323,6 +324,8 @@ void ImageComponent::setImage(const std::string&  path, bool tile, const MaxSize
 	}
 
 	mPath = canonicalPath;
+	if (!mPath.empty())
+		if (auto trace = TextureTrace::get()) trace->stage('I', mPath, 0);
 
 	if (mTexture != nullptr)
 		mTexture->setRequired(false);

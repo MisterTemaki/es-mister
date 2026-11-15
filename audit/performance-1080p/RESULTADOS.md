@@ -1,5 +1,8 @@
 # Validação no MiSTer em 1080p — 13–14/11/2026
 
+Atualização final de 15/11: decisões incrementais, comparação atual e pendências
+em [FECHAMENTO.md](FECHAMENTO.md). Este arquivo preserva a referência histórica.
+
 Atualização de 14/11: a investigação específica do Linux está em [LINUX.md](LINUX.md).
 O mesmo binário otimizado respondeu a duas novas sequências de 1.000 comandos
 (medianas 97,563 e 97,815 ms), sem mudança de kernel. Não há políticas CPUFreq

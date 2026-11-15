@@ -1,4 +1,5 @@
 #include "resources/TextureData.h"
+#include "utils/TextureTrace.h"
 
 #include "math/Misc.h"
 #include "renderers/Renderer.h"
@@ -66,7 +67,7 @@ TextureData::~TextureData()
 }
 
 #if defined(USE_OPENGLES_30)
-size_t TextureData::getMemoryUsage(MemoryUsageType type)
+size_t TextureData::calculateMemoryUsage(MemoryUsageType type) const
 {
 	const size_t width = mSize.x() > 0 ? static_cast<size_t>(mSize.x()) : 0;
 	const size_t height = mSize.y() > 0 ? static_cast<size_t>(mSize.y()) : 0;
@@ -107,10 +108,12 @@ size_t TextureData::getMemoryUsage(MemoryUsageType type)
 
 void TextureData::initFromPath(const std::string& path)
 {
+	std::lock_guard<std::mutex> lock(mMutex);
 	// Just set the path. It will be loaded later
 	mPath = path;
 	// Only textures with paths are reloadable
 	mReloadable = true;
+	publishMemoryUsage();
 }
 
 bool TextureData::initSVGFromMemory(const unsigned char* fileData, size_t length)
@@ -212,6 +215,7 @@ bool TextureData::initSVGFromMemory(const unsigned char* fileData, size_t length
 		<< " (intrinsic " << svgImage->width << "x" << svgImage->height << ", maxSize " << mMaxSize.x() << "x" << mMaxSize.y() << ")";
 
 	mSize = Vector2i(width, height);
+	publishMemoryUsage();
 
 	if (width * height <= 0)
 	{
@@ -234,6 +238,7 @@ bool TextureData::initSVGFromMemory(const unsigned char* fileData, size_t length
 	ImageIO::flipPixelsVert(dataRGBA, width, height);
 
 	mDataRGBA = dataRGBA;
+	publishMemoryUsage();
 
 	return true;
 }
@@ -259,9 +264,13 @@ bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t leng
 	Vector2i physicalSize;
 	unsigned char* imageRGBA = ImageIO::loadFromMemoryRGBA32((const unsigned char*)(fileData), length, width, height, &maxSize, &physicalSize, &size, subImageIndex);
 	
-	mPhysicalSize = Vector2f(physicalSize.x(), physicalSize.y());
-	mSize = size.empty() ? physicalSize : size;
-	mScalable = false;
+	{
+		std::lock_guard<std::mutex> lock(mMutex);
+		mPhysicalSize = Vector2f(physicalSize.x(), physicalSize.y());
+		mSize = size.empty() ? physicalSize : size;
+		mScalable = false;
+		publishMemoryUsage();
+	}
 
 	if (imageRGBA == nullptr)
 	{
@@ -299,6 +308,7 @@ bool TextureData::initFromRGBA(unsigned char* dataRGBA, size_t width, size_t hei
 
 	if (copyData)
 		mPhysicalSize = Vector2f(mSize.x(), mSize.y());
+	publishMemoryUsage();
 
 	return true;
 }
@@ -333,6 +343,7 @@ bool TextureData::updateFromExternalRGBA(unsigned char* dataRGBA, size_t width, 
 			Renderer::updateTexture(mTextureID, Renderer::Texture::RGBA, 0, 0, width, height, mDataRGBA);
 	}
 
+	publishMemoryUsage();
 	return true;
 }
 
@@ -524,6 +535,7 @@ bool TextureData::load()
 
 	LOG(LogDebug) << "TextureData::load " << mPath;
 	WaitedLoad waited(mPath);
+	TextureTrace::Load loadTrace(mPath);
 	mScalable = false;
 
 	std::string ext = Utils::String::toLower(Utils::FileSystem::getExtension(mPath));
@@ -592,15 +604,18 @@ bool TextureData::uploadAndBind()
 		// updated every frame (video/external pixels, fonts, and render targets never enter here).
 		const bool useMipmaps = mReloadable && !mIsExternalDataRGBA && mLinear && !mTile &&
 			!Utils::FileSystem::isVideo(mPath) && (mSize.x() >= 256 || mSize.y() >= 256);
+		const int64_t uploadStart = TextureTrace::get() ? TextureTrace::now() : 0;
 		mTextureID = useMipmaps
 			? Renderer::createMipmappedTexture(Renderer::Texture::RGBA, mLinear, mTile, mSize.x(), mSize.y(), mDataRGBA)
 			: Renderer::createTexture(Renderer::Texture::RGBA, mLinear, mTile, mSize.x(), mSize.y(), mDataRGBA);
 #else
 		// Legacy renderers retain their original single-level texture path.
+		const int64_t uploadStart = TextureTrace::get() ? TextureTrace::now() : 0;
 		mTextureID = Renderer::createTexture(Renderer::Texture::RGBA, mLinear, mTile, mSize.x(), mSize.y(), mDataRGBA);
 #endif
 		if (mTextureID == 0)
 			return false;
+		if (auto trace = TextureTrace::get()) trace->uploaded(mPath, TextureTrace::now() - uploadStart);
 #if defined(USE_OPENGLES_30)
 		mMipmapped = useMipmaps;
 #endif
@@ -611,6 +626,7 @@ bool TextureData::uploadAndBind()
 		mDataRGBA = nullptr;
 	}
 
+	publishMemoryUsage();
 	return true;
 }
 
@@ -625,6 +641,7 @@ void TextureData::releaseVRAM()
 		mMipmapped = false;
 #endif
 	}
+	publishMemoryUsage();
 }
 
 void TextureData::releaseRAM()
@@ -635,6 +652,7 @@ void TextureData::releaseRAM()
 		delete[] mDataRGBA;
 
 	mDataRGBA = 0;
+	publishMemoryUsage();
 }
 
 void TextureData::setMaxSize(const MaxSizeInfo& maxSize)

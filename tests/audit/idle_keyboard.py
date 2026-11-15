@@ -19,8 +19,13 @@ def main():
     parser.add_argument("run_dir", type=Path)
     parser.add_argument("--trials", type=int, default=16)
     parser.add_argument("--idle", type=float, default=15.0)
+    parser.add_argument("--startup", action="store_true", help="Inject once as soon as the first interactive frame is reported")
+    parser.add_argument("--startup-log", choices=("startup.log", "es-startup.log"), default="startup.log")
     args = parser.parse_args()
-    if not 1 <= args.trials <= 128 or not 1 <= args.idle <= 120:
+    if args.startup:
+        args.trials = 1
+        args.idle = 0
+    if not 1 <= args.trials <= 128 or (not args.startup and not 1 <= args.idle <= 120):
         parser.error("require 1..128 trials and 1..120 idle seconds")
     if Path("/tmp/CORENAME").read_text().strip() != "MENU":
         raise RuntimeError("MENU core required")
@@ -36,7 +41,9 @@ def main():
         for key in range(1, 256):
             fcntl.ioctl(fd, 0x40045565, key)  # UI_SET_KEYBIT; full keyboard classification.
         name = b"Codex performance keyboard"
-        os.write(fd, struct.pack("80sHHHHI", name, 3, 0x1209, 0x0001, 1, 0) + bytes(4 * 64 * 4))
+        # BUS_VIRTUAL, no USB vendor identity. 1209:0001 is recognized as an
+        # X-Gunner by Main_MiSTer and must not be borrowed by this keyboard.
+        os.write(fd, struct.pack("80sHHHHI", name, 6, 0, 1, 1, 0) + bytes(4 * 64 * 4))
         fcntl.ioctl(fd, 0x5501)  # UI_DEV_CREATE
         created = True
         deadline = time.monotonic() + 5
@@ -49,8 +56,9 @@ def main():
         deadline = time.monotonic() + 120
         while True:
             try:
-                ready = any(line.rstrip().endswith(" ready")
-                            for line in (args.run_dir / "startup.log").read_text().splitlines())
+                marker = " first interactive frame shown" if args.startup else " ready"
+                ready = any(line.rstrip().endswith(marker)
+                            for line in (args.run_dir / args.startup_log).read_text().splitlines())
                 pid = int((args.run_dir / "pid").read_text())
                 if ready and Path("/proc", str(pid)).exists():
                     break
@@ -58,8 +66,10 @@ def main():
                 pass
             if time.monotonic() > deadline:
                 raise RuntimeError("frontend readiness timeout")
-            time.sleep(.05)
-        time.sleep(3)  # Allow initial animations to finish; this is not a startup-TTI test.
+            time.sleep(.01 if args.startup else .05)
+        ready_seen = time.monotonic_ns()
+        if not args.startup:
+            time.sleep(3)  # Allow initial animations to finish; separate from the fixed idle interval.
 
         def event(kind, code, value):
             # Native Linux input_event: 16 bytes on ARMv7, 24 on 64-bit hosts.
@@ -70,7 +80,8 @@ def main():
             if not Path("/proc", str(pid)).exists():
                 raise RuntimeError("frontend exited before all trials")
             idle_begin = time.monotonic_ns()
-            time.sleep(args.idle)
+            if args.idle:
+                time.sleep(args.idle)
             at = time.monotonic_ns()
             key = 106 if trial % 2 == 0 else 105  # Linux KEY_RIGHT / KEY_LEFT.
             event(1, key, 1)
@@ -79,9 +90,10 @@ def main():
             event(1, key, 0)
             event(0, 0, 0)
             rows.append(dict(trial=trial, idle_begin_ns=idle_begin, inject_ns=at,
-                             idle_ns=at - idle_begin, key=key))
+                             idle_ns=at - idle_begin, key=key, ready_seen_ns=ready_seen,
+                             mode="startup" if args.startup else "idle"))
             print("injected", trial + 1, "after", round((at - idle_begin) / 1e9, 6), "s idle", flush=True)
-            time.sleep(3)  # Separate settling time from the fixed idle interval above.
+            time.sleep(1 if args.startup else 3)  # Capture subsequent animation work separately.
         print(urllib.request.urlopen("http://127.0.0.1:1234/quit", timeout=5).read().decode(), flush=True)
     finally:
         (args.run_dir / "injections.json").write_text(json.dumps(rows, indent=2))
