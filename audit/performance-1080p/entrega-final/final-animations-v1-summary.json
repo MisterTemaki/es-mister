@@ -1,0 +1,556 @@
+{
+  "conditions": {
+    "config": {
+      "es_settings.cfg": "6fcf469ef8cb195ce74cfd4298a2de11cd3d965b1b7152cb361e55e936ce9785",
+      "es_input.cfg": "2f675dd8fcc54de41323f4a1442748055b5d9e0c5fd733045512d943d8b7ddb0",
+      "es_systems.cfg": "e9c015755bd81a0733e92614e64e08122ca7133e84a1a4e95b859730f9ef97f2"
+    },
+    "ordered_systems_and_game_counts": "sega32x 37, arcade 3560, atari7800 60, gb 1627, gba 3054, intellivision 4, mastersystem 291, megadrive 1740, segacd 149, neogeo 153, neogeocd 100, n64 962, nes 2465, pcengine 438, pcenginecd 91, psx 578, saturn 184, snes 3791, all 19284, favorites 0",
+    "navigation_sha256": "091aa83348ed408142adda0cfc4a370db056265e3282188a65bc3d3cbdecb181",
+    "environment": {
+      "SDL_EVDEV_IGNORE": "MiSTer virtual input,Zaparoo",
+      "ES_SOFT_FPS": "60",
+      "ES_SOFT_STRIP": "8",
+      "ES_SOFT_PLD": "256",
+      "ES_SOFT_STATS": "600",
+      "ES_SOFT_TRACE_DETAIL": "0",
+      "ES_SOFT_OPTIMIZATIONS": "1",
+      "ES_SOFT_THREADS": "2",
+      "ES_SOFT_TILE_X": "0",
+      "ES_SOFT_COMPOSITE": "0",
+      "ES_SOFT_PACKED": "0",
+      "ES_SOFT_SAMPLE_NEON": "0"
+    }
+  },
+  "reference_sha": "1c29852e682db65a01590674986e00c937ee14a63dc44d053700ff4a325393a6",
+  "candidate_sha": "872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55",
+  "runs": [
+    {
+      "run": "final-animations-v1-1-reference",
+      "implementation": "reference",
+      "responded": 16,
+      "boot_id": "77b3a328-ba56-4551-81a1-99be43bf35cb",
+      "uptime_before_spawn_s": 706.03,
+      "initial_system_cursor": 4,
+      "verified_selection_changes": 16,
+      "visited_cursors": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "first_injection_ns": 720347599448,
+      "last_response_ns": 751861842545,
+      "sdl_first_redraw_ms": {
+        "n": 16,
+        "median": 128.072,
+        "p95": 179.367,
+        "p99": 179.367,
+        "max": 179.367
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 16,
+        "median": 113.572,
+        "p95": 164.367,
+        "p99": 164.367,
+        "max": 164.367
+      },
+      "full_renderer_ms": {
+        "n": 90,
+        "median": 81.717,
+        "p95": 143.451,
+        "p99": 190.668,
+        "max": 190.668
+      },
+      "drawn_frame_work_ms": {
+        "n": 298,
+        "median": 19.108,
+        "p95": 121.556,
+        "p99": 184.815,
+        "max": 197.643
+      },
+      "drawn_frames": 298,
+      "full_frames": 90,
+      "drawn_above_16_7_ms": 185,
+      "full_stages": {
+        "input_ns": {
+          "n": 90,
+          "median": 0.018,
+          "p95": 2.923,
+          "p99": 4.803,
+          "max": 4.803
+        },
+        "update_ns": {
+          "n": 90,
+          "median": 0.445,
+          "p95": 0.653,
+          "p99": 0.844,
+          "max": 0.844
+        },
+        "record_ns": {
+          "n": 90,
+          "median": 2.098,
+          "p95": 14.113,
+          "p99": 51.515,
+          "max": 51.515
+        },
+        "dirty_ns": {
+          "n": 90,
+          "median": 0.111,
+          "p95": 0.159,
+          "p99": 0.227,
+          "max": 0.227
+        },
+        "post_ns": {
+          "n": 90,
+          "median": 0.01,
+          "p95": 0.019,
+          "p99": 0.041,
+          "max": 0.041
+        },
+        "fps_limit_ns": {
+          "n": 90,
+          "median": 0.003,
+          "p95": 0.005,
+          "p99": 0.016,
+          "max": 0.016
+        },
+        "pacing_ns": {
+          "n": 90,
+          "median": 0.003,
+          "p95": 0.004,
+          "p99": 0.013,
+          "max": 0.013
+        },
+        "draw_max_ms": {
+          "n": 90,
+          "median": 73.173,
+          "p95": 129.935,
+          "p99": 179.056,
+          "max": 179.056
+        },
+        "copy_max_ms": {
+          "n": 90,
+          "median": 9.759,
+          "p95": 12.269,
+          "p99": 24.106,
+          "max": 24.106
+        },
+        "off_cpu_draw_max_ms": {
+          "n": 90,
+          "median": 2.304,
+          "p95": 41.74,
+          "p99": 64.527,
+          "max": 64.527
+        }
+      },
+      "rss_peak_mib": 157.898
+    },
+    {
+      "run": "final-animations-v1-2-candidate",
+      "implementation": "candidate",
+      "responded": 16,
+      "boot_id": "77b3a328-ba56-4551-81a1-99be43bf35cb",
+      "uptime_before_spawn_s": 772.0,
+      "initial_system_cursor": 4,
+      "verified_selection_changes": 16,
+      "visited_cursors": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "first_injection_ns": 786309222080,
+      "last_response_ns": 817728351992,
+      "sdl_first_redraw_ms": {
+        "n": 16,
+        "median": 110.853,
+        "p95": 162.062,
+        "p99": 162.062,
+        "max": 162.062
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 16,
+        "median": 95.853,
+        "p95": 148.062,
+        "p99": 148.062,
+        "max": 148.062
+      },
+      "full_renderer_ms": {
+        "n": 93,
+        "median": 80.507,
+        "p95": 148.683,
+        "p99": 171.141,
+        "max": 171.141
+      },
+      "drawn_frame_work_ms": {
+        "n": 310,
+        "median": 19.057,
+        "p95": 119.577,
+        "p99": 156.881,
+        "max": 176.87
+      },
+      "drawn_frames": 310,
+      "full_frames": 93,
+      "drawn_above_16_7_ms": 185,
+      "full_stages": {
+        "input_ns": {
+          "n": 93,
+          "median": 0.017,
+          "p95": 2.815,
+          "p99": 3.374,
+          "max": 3.374
+        },
+        "update_ns": {
+          "n": 93,
+          "median": 0.441,
+          "p95": 0.764,
+          "p99": 1.935,
+          "max": 1.935
+        },
+        "record_ns": {
+          "n": 93,
+          "median": 2.185,
+          "p95": 10.029,
+          "p99": 28.721,
+          "max": 28.721
+        },
+        "dirty_ns": {
+          "n": 93,
+          "median": 0.112,
+          "p95": 0.179,
+          "p99": 0.281,
+          "max": 0.281
+        },
+        "post_ns": {
+          "n": 93,
+          "median": 0.009,
+          "p95": 0.024,
+          "p99": 0.06,
+          "max": 0.06
+        },
+        "fps_limit_ns": {
+          "n": 93,
+          "median": 0.003,
+          "p95": 0.005,
+          "p99": 0.013,
+          "max": 0.013
+        },
+        "pacing_ns": {
+          "n": 93,
+          "median": 0.003,
+          "p95": 0.004,
+          "p99": 0.041,
+          "max": 0.041
+        },
+        "draw_max_ms": {
+          "n": 93,
+          "median": 73.608,
+          "p95": 141.832,
+          "p99": 163.853,
+          "max": 163.853
+        },
+        "copy_max_ms": {
+          "n": 93,
+          "median": 9.085,
+          "p95": 13.669,
+          "p99": 21.254,
+          "max": 21.254
+        },
+        "off_cpu_draw_max_ms": {
+          "n": 93,
+          "median": 2.72,
+          "p95": 55.549,
+          "p99": 71.205,
+          "max": 71.205
+        }
+      },
+      "rss_peak_mib": 157.816
+    },
+    {
+      "run": "final-animations-v1-3-candidate",
+      "implementation": "candidate",
+      "responded": 16,
+      "boot_id": "77b3a328-ba56-4551-81a1-99be43bf35cb",
+      "uptime_before_spawn_s": 837.8,
+      "initial_system_cursor": 4,
+      "verified_selection_changes": 16,
+      "visited_cursors": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "first_injection_ns": 852111871257,
+      "last_response_ns": 883494446477,
+      "sdl_first_redraw_ms": {
+        "n": 16,
+        "median": 107.706,
+        "p95": 162.036,
+        "p99": 162.036,
+        "max": 162.036
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 16,
+        "median": 92.706,
+        "p95": 148.036,
+        "p99": 148.036,
+        "max": 148.036
+      },
+      "full_renderer_ms": {
+        "n": 93,
+        "median": 79.896,
+        "p95": 133.415,
+        "p99": 175.885,
+        "max": 175.885
+      },
+      "drawn_frame_work_ms": {
+        "n": 308,
+        "median": 18.452,
+        "p95": 115.081,
+        "p99": 166.469,
+        "max": 183.39
+      },
+      "drawn_frames": 308,
+      "full_frames": 93,
+      "drawn_above_16_7_ms": 188,
+      "full_stages": {
+        "input_ns": {
+          "n": 93,
+          "median": 0.017,
+          "p95": 2.875,
+          "p99": 3.155,
+          "max": 3.155
+        },
+        "update_ns": {
+          "n": 93,
+          "median": 0.449,
+          "p95": 0.66,
+          "p99": 0.766,
+          "max": 0.766
+        },
+        "record_ns": {
+          "n": 93,
+          "median": 2.151,
+          "p95": 9.139,
+          "p99": 26.52,
+          "max": 26.52
+        },
+        "dirty_ns": {
+          "n": 93,
+          "median": 0.11,
+          "p95": 0.153,
+          "p99": 0.196,
+          "max": 0.196
+        },
+        "post_ns": {
+          "n": 93,
+          "median": 0.01,
+          "p95": 0.02,
+          "p99": 0.066,
+          "max": 0.066
+        },
+        "fps_limit_ns": {
+          "n": 93,
+          "median": 0.003,
+          "p95": 0.005,
+          "p99": 0.005,
+          "max": 0.005
+        },
+        "pacing_ns": {
+          "n": 93,
+          "median": 0.003,
+          "p95": 0.004,
+          "p99": 0.005,
+          "max": 0.005
+        },
+        "draw_max_ms": {
+          "n": 93,
+          "median": 73.175,
+          "p95": 125.812,
+          "p99": 169.957,
+          "max": 169.957
+        },
+        "copy_max_ms": {
+          "n": 93,
+          "median": 9.332,
+          "p95": 13.041,
+          "p99": 16.399,
+          "max": 16.399
+        },
+        "off_cpu_draw_max_ms": {
+          "n": 93,
+          "median": 2.846,
+          "p95": 43.841,
+          "p99": 63.031,
+          "max": 63.031
+        }
+      },
+      "rss_peak_mib": 157.863
+    },
+    {
+      "run": "final-animations-v1-4-reference",
+      "implementation": "reference",
+      "responded": 16,
+      "boot_id": "77b3a328-ba56-4551-81a1-99be43bf35cb",
+      "uptime_before_spawn_s": 903.22,
+      "initial_system_cursor": 4,
+      "verified_selection_changes": 16,
+      "visited_cursors": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "first_injection_ns": 917578429142,
+      "last_response_ns": 949133856207,
+      "sdl_first_redraw_ms": {
+        "n": 16,
+        "median": 115.756,
+        "p95": 162.716,
+        "p99": 162.716,
+        "max": 162.716
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 16,
+        "median": 101.256,
+        "p95": 148.716,
+        "p99": 148.716,
+        "max": 148.716
+      },
+      "full_renderer_ms": {
+        "n": 94,
+        "median": 82.169,
+        "p95": 143.212,
+        "p99": 177.349,
+        "max": 177.349
+      },
+      "drawn_frame_work_ms": {
+        "n": 308,
+        "median": 19.162,
+        "p95": 128.162,
+        "p99": 167.15,
+        "max": 189.411
+      },
+      "drawn_frames": 308,
+      "full_frames": 94,
+      "drawn_above_16_7_ms": 188,
+      "full_stages": {
+        "input_ns": {
+          "n": 94,
+          "median": 0.017,
+          "p95": 2.852,
+          "p99": 4.378,
+          "max": 4.378
+        },
+        "update_ns": {
+          "n": 94,
+          "median": 0.45,
+          "p95": 0.609,
+          "p99": 0.76,
+          "max": 0.76
+        },
+        "record_ns": {
+          "n": 94,
+          "median": 2.071,
+          "p95": 17.052,
+          "p99": 40.753,
+          "max": 40.753
+        },
+        "dirty_ns": {
+          "n": 94,
+          "median": 0.109,
+          "p95": 0.161,
+          "p99": 0.382,
+          "max": 0.382
+        },
+        "post_ns": {
+          "n": 94,
+          "median": 0.009,
+          "p95": 0.025,
+          "p99": 0.054,
+          "max": 0.054
+        },
+        "fps_limit_ns": {
+          "n": 94,
+          "median": 0.003,
+          "p95": 0.005,
+          "p99": 0.006,
+          "max": 0.006
+        },
+        "pacing_ns": {
+          "n": 94,
+          "median": 0.003,
+          "p95": 0.005,
+          "p99": 0.014,
+          "max": 0.014
+        },
+        "draw_max_ms": {
+          "n": 94,
+          "median": 74.116,
+          "p95": 136.666,
+          "p99": 167.389,
+          "max": 167.389
+        },
+        "copy_max_ms": {
+          "n": 94,
+          "median": 9.743,
+          "p95": 16.053,
+          "p99": 19.058,
+          "max": 19.058
+        },
+        "off_cpu_draw_max_ms": {
+          "n": 94,
+          "median": 2.531,
+          "p95": 61.374,
+          "p99": 63.872,
+          "max": 63.872
+        }
+      },
+      "rss_peak_mib": 157.926
+    }
+  ],
+  "run_medians": {
+    "reference": {
+      "sdl_first_redraw_ms": {
+        "n": 2,
+        "median": 121.914,
+        "p95": 128.072,
+        "p99": 128.072,
+        "max": 128.072
+      },
+      "full_renderer_ms": {
+        "n": 2,
+        "median": 81.943,
+        "p95": 82.169,
+        "p99": 82.169,
+        "max": 82.169
+      }
+    },
+    "candidate": {
+      "sdl_first_redraw_ms": {
+        "n": 2,
+        "median": 109.279,
+        "p95": 110.853,
+        "p99": 110.853,
+        "max": 110.853
+      },
+      "full_renderer_ms": {
+        "n": 2,
+        "median": 80.202,
+        "p95": 80.507,
+        "p99": 80.507,
+        "max": 80.507
+      }
+    }
+  },
+  "inter_run_gaps_s": [
+    34.447,
+    34.384,
+    34.084
+  ]
+}

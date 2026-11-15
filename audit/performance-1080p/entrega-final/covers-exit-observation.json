@@ -1,0 +1,34 @@
+[
+  {
+    "run": "covers-final-v2-1-t2",
+    "first_exit_ms": 1818.877,
+    "events_recorded_until_ns": 59961152291560,
+    "exit_start_ns": 60115432750730,
+    "events_overlap": [],
+    "event_buffer_censored": true
+  },
+  {
+    "run": "covers-final-v2-2-t1",
+    "first_exit_ms": 1433.579,
+    "events_recorded_until_ns": 60724960302770,
+    "exit_start_ns": 60867147146980,
+    "events_overlap": [],
+    "event_buffer_censored": true
+  },
+  {
+    "run": "covers-final-v2-3-t1",
+    "first_exit_ms": 1355.932,
+    "events_recorded_until_ns": 61438636735550,
+    "exit_start_ns": 61578713689560,
+    "events_overlap": [],
+    "event_buffer_censored": true
+  },
+  {
+    "run": "covers-final-v2-4-t2",
+    "first_exit_ms": 1701.042,
+    "events_recorded_until_ns": 62167868404300,
+    "exit_start_ns": 62336017279150,
+    "events_overlap": [],
+    "event_buffer_censored": true
+  }
+]

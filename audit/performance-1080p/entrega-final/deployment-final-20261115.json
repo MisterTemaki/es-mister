@@ -1,0 +1,31 @@
+{
+  "backup": "/media/fat/emulationstation/backups/codex-1080p-final-20261115-2556539896074",
+  "original_sha256": {
+    "LEIA-ME.txt": "aba3f84c1c916291750a97e893e80e90e581fb50362b22b304c40164750c72f2",
+    "emulationstation": "d53703bb6cd2dc16838d885645d797cac512a49c68d282962a03ae2bb94abb64",
+    "es-mister-helper": "c826dc9341aa47947e25230d8be51ca1b80882a4dc8e11296364d8bb785288b8",
+    "es-mister.ini": "cdaa7045899ab22229bd698796c9dc122b907b40d5fb11118baf77bd129ce627",
+    "es-mister.sh": "dbaecd4e2b5d9d357f89fe14672bbbb9f1eebcd55d4a57a1d930936a0bde4787",
+    "mister-launch.sh": "a1c94434196806b2c76ac297285ae044e7ea1cf9e7c98eb448f675d2f1a2bf25"
+  },
+  "installed_sha256": {
+    "emulationstation": "872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55",
+    "es-mister-helper": "c826dc9341aa47947e25230d8be51ca1b80882a4dc8e11296364d8bb785288b8",
+    "es-mister.sh": "73ee5b7ea6b26b18fddfaf64599cb09eabcda59cce5da0964e0dffa6d5d9da15",
+    "mister-launch.sh": "6202964a729bf5d3da8e8d02e7450fb5138254d1a1214533a73f61953b7fa5f4",
+    "LEIA-ME.txt": "aba3f84c1c916291750a97e893e80e90e581fb50362b22b304c40164750c72f2"
+  },
+  "settings": {
+    "SIZE": "1920x1080",
+    "FPS": 60,
+    "STRIP": 8,
+    "PLD": 256,
+    "BENCH": 0,
+    "PROFILE": 0,
+    "SLOW_DUMPS": 0
+  },
+  "launcher_pid": 8011,
+  "frontend_pid": 8420,
+  "api_ready": true,
+  "framebuffer": "1920,1080"
+}

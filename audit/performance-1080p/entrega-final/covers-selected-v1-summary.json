@@ -1,0 +1,442 @@
+{
+  "runs": [
+    {
+      "run": "covers-selected-v1-1-t2",
+      "binary_sha256": "0255c19e5a8bed8258ec26f03bfea490fdc83de7ac0b924c7359b55fcece0ead",
+      "texture_threads": "2",
+      "fixture_view": "detailed",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": true,
+      "sampled_duration_s": 51.14,
+      "rss_peak_mib": 111.996,
+      "hwm_peak_mib": 111.996,
+      "script_key_commands": 28,
+      "answered_inputs": 28,
+      "sdl_first_redraw_ms": {
+        "n": 28,
+        "median": 80.303,
+        "p95": 319.339,
+        "p99": 331.683,
+        "max": 331.683
+      },
+      "cpu_percent_one_core_units": 65.111,
+      "late_idle_cpu_percent_one_core_units": 18.104,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 96.062,
+        "p95": 96.062,
+        "p99": 96.062,
+        "max": 96.062
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 33,
+          "rss_mib": {
+            "n": 33,
+            "median": 96.062,
+            "p95": 99.012,
+            "p99": 105.406,
+            "max": 105.406
+          },
+          "cpu_percent_one_core_units": 72.959,
+          "committed_peak_mib": 28.832,
+          "loader_queue_peak": 14
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 203,
+        "median": 47.182,
+        "p95": 161.562,
+        "p99": 317.653,
+        "max": 963.774
+      },
+      "drawn_frames": 203,
+      "drawn_above_16_7_ms": 154,
+      "full_renderer_ms": {
+        "n": 20,
+        "median": 161.047,
+        "p95": 254.431,
+        "p99": 268.64,
+        "max": 268.64
+      },
+      "texture_samples": 167,
+      "texture_sample_limit_reached": false,
+      "texture_last": {
+        "at_ns": 63045661911230,
+        "allocated_bytes": 27031428,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 7790752,
+        "managed_entries": 28,
+        "queue_including_active": 0,
+        "resident_textures": 20,
+        "decoded_textures": 5,
+        "load_calls": 76,
+        "repeated_path_loads": 17,
+        "uploads": 46,
+        "evictions": 0,
+        "active_loads": 0,
+        "peak_active_loads": 3
+      },
+      "texture_peaks": {
+        "allocated_bytes": 30232884,
+        "vram_bytes": 20835076,
+        "decoded_ram_bytes": 14758048,
+        "managed_entries": 38,
+        "queue_including_active": 14,
+        "resident_textures": 28,
+        "decoded_textures": 12,
+        "peak_active_loads": 3
+      },
+      "texture_events": 498,
+      "texture_event_limit_reached": false,
+      "sampled_cover_load_wall_ms": {
+        "n": 24,
+        "median": 911.326,
+        "p95": 1927.726,
+        "p99": 1935.647,
+        "max": 1935.647
+      },
+      "sampled_request_to_upload_ms": {
+        "n": 3,
+        "median": 1267.171,
+        "p95": 5398.23,
+        "p99": 5398.23,
+        "max": 5398.23
+      },
+      "availability_limitations": "Observed request/upload pairs only; paths may have multiple sizes. Not a photon or proven selected-cover latency. Events may be censored. Repeated path loads are not automatically eviction reloads."
+    },
+    {
+      "run": "covers-selected-v1-2-t1",
+      "binary_sha256": "0255c19e5a8bed8258ec26f03bfea490fdc83de7ac0b924c7359b55fcece0ead",
+      "texture_threads": "1",
+      "fixture_view": "detailed",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": true,
+      "sampled_duration_s": 51.04,
+      "rss_peak_mib": 105.375,
+      "hwm_peak_mib": 106.852,
+      "script_key_commands": 28,
+      "answered_inputs": 28,
+      "sdl_first_redraw_ms": {
+        "n": 28,
+        "median": 82.805,
+        "p95": 359.167,
+        "p99": 359.361,
+        "max": 359.361
+      },
+      "cpu_percent_one_core_units": 66.109,
+      "late_idle_cpu_percent_one_core_units": 19.254,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 96.867,
+        "p95": 96.867,
+        "p99": 96.867,
+        "max": 96.867
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 32,
+          "rss_mib": {
+            "n": 32,
+            "median": 96.867,
+            "p95": 102.695,
+            "p99": 102.812,
+            "max": 102.812
+          },
+          "cpu_percent_one_core_units": 76.333,
+          "committed_peak_mib": 28.832,
+          "loader_queue_peak": 14
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 224,
+        "median": 37.581,
+        "p95": 180.981,
+        "p99": 345.333,
+        "max": 783.621
+      },
+      "drawn_frames": 224,
+      "drawn_above_16_7_ms": 178,
+      "full_renderer_ms": {
+        "n": 22,
+        "median": 159.396,
+        "p95": 310.503,
+        "p99": 314.537,
+        "max": 314.537
+      },
+      "texture_samples": 167,
+      "texture_sample_limit_reached": false,
+      "texture_last": {
+        "at_ns": 63117800506540,
+        "allocated_bytes": 27031428,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 7790752,
+        "managed_entries": 28,
+        "queue_including_active": 0,
+        "resident_textures": 20,
+        "decoded_textures": 5,
+        "load_calls": 74,
+        "repeated_path_loads": 15,
+        "uploads": 46,
+        "evictions": 0,
+        "active_loads": 0,
+        "peak_active_loads": 2
+      },
+      "texture_peaks": {
+        "allocated_bytes": 30232884,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 14758048,
+        "managed_entries": 38,
+        "queue_including_active": 14,
+        "resident_textures": 28,
+        "decoded_textures": 8,
+        "peak_active_loads": 2
+      },
+      "texture_events": 490,
+      "texture_event_limit_reached": false,
+      "sampled_cover_load_wall_ms": {
+        "n": 24,
+        "median": 486.43,
+        "p95": 729.629,
+        "p99": 954.185,
+        "max": 954.185
+      },
+      "sampled_request_to_upload_ms": {
+        "n": 3,
+        "median": 1095.632,
+        "p95": 5294.822,
+        "p99": 5294.822,
+        "max": 5294.822
+      },
+      "availability_limitations": "Observed request/upload pairs only; paths may have multiple sizes. Not a photon or proven selected-cover latency. Events may be censored. Repeated path loads are not automatically eviction reloads."
+    },
+    {
+      "run": "covers-selected-v1-3-t1",
+      "binary_sha256": "0255c19e5a8bed8258ec26f03bfea490fdc83de7ac0b924c7359b55fcece0ead",
+      "texture_threads": "1",
+      "fixture_view": "detailed",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": true,
+      "sampled_duration_s": 49.46,
+      "rss_peak_mib": 104.0,
+      "hwm_peak_mib": 106.707,
+      "script_key_commands": 28,
+      "answered_inputs": 28,
+      "sdl_first_redraw_ms": {
+        "n": 28,
+        "median": 80.773,
+        "p95": 275.797,
+        "p99": 376.441,
+        "max": 376.441
+      },
+      "cpu_percent_one_core_units": 67.36,
+      "late_idle_cpu_percent_one_core_units": 19.179,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 96.77,
+        "p95": 96.77,
+        "p99": 96.77,
+        "max": 96.77
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 30,
+          "rss_mib": {
+            "n": 30,
+            "median": 96.77,
+            "p95": 103.297,
+            "p99": 104.66,
+            "max": 104.66
+          },
+          "cpu_percent_one_core_units": 77.708,
+          "committed_peak_mib": 28.832,
+          "loader_queue_peak": 14
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 220,
+        "median": 39.308,
+        "p95": 163.145,
+        "p99": 322.722,
+        "max": 809.531
+      },
+      "drawn_frames": 220,
+      "drawn_above_16_7_ms": 172,
+      "full_renderer_ms": {
+        "n": 19,
+        "median": 157.632,
+        "p95": 279.717,
+        "p99": 279.717,
+        "max": 279.717
+      },
+      "texture_samples": 163,
+      "texture_sample_limit_reached": false,
+      "texture_last": {
+        "at_ns": 63183640066580,
+        "allocated_bytes": 27031428,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 7790752,
+        "managed_entries": 28,
+        "queue_including_active": 0,
+        "resident_textures": 20,
+        "decoded_textures": 5,
+        "load_calls": 74,
+        "repeated_path_loads": 15,
+        "uploads": 46,
+        "evictions": 0,
+        "active_loads": 0,
+        "peak_active_loads": 2
+      },
+      "texture_peaks": {
+        "allocated_bytes": 30232884,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 14865488,
+        "managed_entries": 38,
+        "queue_including_active": 14,
+        "resident_textures": 28,
+        "decoded_textures": 16,
+        "peak_active_loads": 2
+      },
+      "texture_events": 490,
+      "texture_event_limit_reached": false,
+      "sampled_cover_load_wall_ms": {
+        "n": 24,
+        "median": 473.067,
+        "p95": 717.548,
+        "p99": 754.567,
+        "max": 754.567
+      },
+      "sampled_request_to_upload_ms": {
+        "n": 3,
+        "median": 1082.253,
+        "p95": 5370.239,
+        "p99": 5370.239,
+        "max": 5370.239
+      },
+      "availability_limitations": "Observed request/upload pairs only; paths may have multiple sizes. Not a photon or proven selected-cover latency. Events may be censored. Repeated path loads are not automatically eviction reloads."
+    },
+    {
+      "run": "covers-selected-v1-4-t2",
+      "binary_sha256": "0255c19e5a8bed8258ec26f03bfea490fdc83de7ac0b924c7359b55fcece0ead",
+      "texture_threads": "2",
+      "fixture_view": "detailed",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": true,
+      "sampled_duration_s": 49.87,
+      "rss_peak_mib": 101.422,
+      "hwm_peak_mib": 104.223,
+      "script_key_commands": 28,
+      "answered_inputs": 28,
+      "sdl_first_redraw_ms": {
+        "n": 28,
+        "median": 93.582,
+        "p95": 241.731,
+        "p99": 305.019,
+        "max": 305.019
+      },
+      "cpu_percent_one_core_units": 64.97,
+      "late_idle_cpu_percent_one_core_units": 19.04,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 98.461,
+        "p95": 98.461,
+        "p99": 98.461,
+        "max": 98.461
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 31,
+          "rss_mib": {
+            "n": 31,
+            "median": 98.461,
+            "p95": 101.348,
+            "p99": 101.348,
+            "max": 101.348
+          },
+          "cpu_percent_one_core_units": 74.884,
+          "committed_peak_mib": 28.832,
+          "loader_queue_peak": 8
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 192,
+        "median": 55.074,
+        "p95": 173.492,
+        "p99": 340.103,
+        "max": 923.235
+      },
+      "drawn_frames": 192,
+      "drawn_above_16_7_ms": 144,
+      "full_renderer_ms": {
+        "n": 19,
+        "median": 145.793,
+        "p95": 275.063,
+        "p99": 275.063,
+        "max": 275.063
+      },
+      "texture_samples": 161,
+      "texture_sample_limit_reached": false,
+      "texture_last": {
+        "at_ns": 63254269071190,
+        "allocated_bytes": 27031428,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 7790752,
+        "managed_entries": 28,
+        "queue_including_active": 0,
+        "resident_textures": 20,
+        "decoded_textures": 5,
+        "load_calls": 76,
+        "repeated_path_loads": 17,
+        "uploads": 46,
+        "evictions": 0,
+        "active_loads": 0,
+        "peak_active_loads": 3
+      },
+      "texture_peaks": {
+        "allocated_bytes": 30232884,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 14758048,
+        "managed_entries": 38,
+        "queue_including_active": 8,
+        "resident_textures": 28,
+        "decoded_textures": 11,
+        "peak_active_loads": 3
+      },
+      "texture_events": 492,
+      "texture_event_limit_reached": false,
+      "sampled_cover_load_wall_ms": {
+        "n": 24,
+        "median": 646.357,
+        "p95": 1519.052,
+        "p99": 1757.409,
+        "max": 1757.409
+      },
+      "sampled_request_to_upload_ms": {
+        "n": 3,
+        "median": 1252.192,
+        "p95": 5223.443,
+        "p99": 5223.443,
+        "max": 5223.443
+      },
+      "availability_limitations": "Observed request/upload pairs only; paths may have multiple sizes. Not a photon or proven selected-cover latency. Events may be censored. Repeated path loads are not automatically eviction reloads."
+    }
+  ],
+  "notes": [
+    "CPU 100% means one core; device has two.",
+    "Memory counters describe committed texture buffers, not RSS/global process budget.",
+    "Idle window excludes final five seconds to avoid shutdown memory release.",
+    "Major faults can be file-backed faults without swap."
+  ]
+}

@@ -1,0 +1,126 @@
+[
+  {
+    "run": "covers-final-v2-1-t2",
+    "texture_threads": "2",
+    "phases": {
+      "rolagem-grid": {
+        "n": 960,
+        "median": 349.084,
+        "max": 691.127
+      },
+      "lista-carrossel": {
+        "n": 3,
+        "median": 1261.132,
+        "max": 1818.877
+      },
+      "abrir-menu": {
+        "n": 3,
+        "median": 212.649,
+        "max": 355.23
+      },
+      "fechar-menu": {
+        "n": 3,
+        "median": 107.031,
+        "max": 132.919
+      },
+      "carrossel-lista": {
+        "n": 3,
+        "median": 30.142,
+        "max": 32.1
+      }
+    }
+  },
+  {
+    "run": "covers-final-v2-2-t1",
+    "texture_threads": "1",
+    "phases": {
+      "rolagem-grid": {
+        "n": 960,
+        "median": 310.621,
+        "max": 617.599
+      },
+      "lista-carrossel": {
+        "n": 3,
+        "median": 1263.991,
+        "max": 1433.579
+      },
+      "abrir-menu": {
+        "n": 3,
+        "median": 221.007,
+        "max": 300.267
+      },
+      "fechar-menu": {
+        "n": 3,
+        "median": 124.235,
+        "max": 140.662
+      },
+      "carrossel-lista": {
+        "n": 3,
+        "median": 32.162,
+        "max": 32.721
+      }
+    }
+  },
+  {
+    "run": "covers-final-v2-3-t1",
+    "texture_threads": "1",
+    "phases": {
+      "rolagem-grid": {
+        "n": 960,
+        "median": 326.487,
+        "max": 700.581
+      },
+      "lista-carrossel": {
+        "n": 3,
+        "median": 1342.83,
+        "max": 1355.932
+      },
+      "abrir-menu": {
+        "n": 3,
+        "median": 208.335,
+        "max": 248.064
+      },
+      "fechar-menu": {
+        "n": 3,
+        "median": 108.292,
+        "max": 171.194
+      },
+      "carrossel-lista": {
+        "n": 3,
+        "median": 29.708,
+        "max": 31.744
+      }
+    }
+  },
+  {
+    "run": "covers-final-v2-4-t2",
+    "texture_threads": "2",
+    "phases": {
+      "rolagem-grid": {
+        "n": 960,
+        "median": 371.627,
+        "max": 754.518
+      },
+      "lista-carrossel": {
+        "n": 3,
+        "median": 1077.868,
+        "max": 1701.042
+      },
+      "abrir-menu": {
+        "n": 3,
+        "median": 226.495,
+        "max": 253.696
+      },
+      "fechar-menu": {
+        "n": 3,
+        "median": 104.336,
+        "max": 105.65
+      },
+      "carrossel-lista": {
+        "n": 3,
+        "median": 32.029,
+        "max": 33.433
+      }
+    }
+  }
+]

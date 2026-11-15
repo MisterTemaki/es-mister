@@ -1,0 +1,174 @@
+{
+  "0": {
+    "spawn_to_first_input_ms": {
+      "n": 6,
+      "median": 9672.491,
+      "p95": 9924.865,
+      "min": 9423.716,
+      "max": 9924.865
+    },
+    "helper_ms": {
+      "n": 6,
+      "median": 83.203,
+      "p95": 2580.267,
+      "min": 82.75,
+      "max": 2580.267
+    },
+    "sdl_input_ms": {
+      "n": 6,
+      "median": 210.739,
+      "p95": 424.18,
+      "min": 38.774,
+      "max": 424.18
+    },
+    "uinput_ms": {
+      "n": 6,
+      "median": 294.31,
+      "p95": 661.123,
+      "min": 159.02,
+      "max": 661.123
+    },
+    "first_splash_s": {
+      "n": 6,
+      "median": 1.689,
+      "p95": 1.765,
+      "min": 1.64,
+      "max": 1.765
+    },
+    "ready_s": {
+      "n": 6,
+      "median": 9.018,
+      "p95": 9.134,
+      "min": 9.0,
+      "max": 9.134
+    },
+    "first_interactive_s": {
+      "n": 6,
+      "median": 9.184,
+      "p95": 9.354,
+      "min": 9.14,
+      "max": 9.354
+    },
+    "load_systems_s": {
+      "n": 6,
+      "median": 6.348,
+      "p95": 6.481,
+      "min": 6.289,
+      "max": 6.481
+    },
+    "first_input_ui_ms": {
+      "n": 6,
+      "median": 120.818,
+      "p95": 383.828,
+      "min": 12.577,
+      "max": 383.828
+    },
+    "first_input_record_ms": {
+      "n": 6,
+      "median": 107.911,
+      "p95": 366.502,
+      "min": 2.69,
+      "max": 366.502
+    },
+    "first_input_update_ms": {
+      "n": 6,
+      "median": 0.988,
+      "p95": 29.068,
+      "min": 0.72,
+      "max": 29.068
+    },
+    "first_input_execute_ms": {
+      "n": 6,
+      "median": 35.58,
+      "p95": 243.755,
+      "min": 23.364,
+      "max": 243.755
+    }
+  },
+  "1": {
+    "spawn_to_first_input_ms": {
+      "n": 6,
+      "median": 9547.123,
+      "p95": 10434.128,
+      "min": 9241.472,
+      "max": 10434.128
+    },
+    "helper_ms": {
+      "n": 6,
+      "median": 83.532,
+      "p95": 94.091,
+      "min": 82.48,
+      "max": 94.091
+    },
+    "sdl_input_ms": {
+      "n": 6,
+      "median": 243.999,
+      "p95": 402.23,
+      "min": 209.211,
+      "max": 402.23
+    },
+    "uinput_ms": {
+      "n": 6,
+      "median": 471.519,
+      "p95": 718.718,
+      "min": 337.475,
+      "max": 718.718
+    },
+    "first_splash_s": {
+      "n": 6,
+      "median": 1.657,
+      "p95": 1.734,
+      "min": 1.39,
+      "max": 1.734
+    },
+    "ready_s": {
+      "n": 6,
+      "median": 8.803,
+      "p95": 9.158,
+      "min": 8.545,
+      "max": 9.158
+    },
+    "first_interactive_s": {
+      "n": 6,
+      "median": 9.037,
+      "p95": 9.824,
+      "min": 8.824,
+      "max": 9.824
+    },
+    "load_systems_s": {
+      "n": 6,
+      "median": 6.225,
+      "p95": 6.373,
+      "min": 6.154,
+      "max": 6.373
+    },
+    "first_input_ui_ms": {
+      "n": 6,
+      "median": 156.546,
+      "p95": 200.539,
+      "min": 14.023,
+      "max": 200.539
+    },
+    "first_input_record_ms": {
+      "n": 6,
+      "median": 108.376,
+      "p95": 171.602,
+      "min": 5.249,
+      "max": 171.602
+    },
+    "first_input_update_ms": {
+      "n": 6,
+      "median": 1.014,
+      "p95": 6.321,
+      "min": 0.664,
+      "max": 6.321
+    },
+    "first_input_execute_ms": {
+      "n": 6,
+      "median": 100.405,
+      "p95": 282.043,
+      "min": 36.878,
+      "max": 282.043
+    }
+  }
+}

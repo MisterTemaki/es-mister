@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-15",
+  "scope": "Publication checks on host; no additional MiSTer run",
+  "powershell_syntax_checked": 18,
+  "checks": {
+    "working_files_scanned": 1352,
+    "python_syntax_checked": 79,
+    "shell_syntax_checked": 14,
+    "accepted_cpp_headers_exact": 440,
+    "independent_reference_sources_exact": 9,
+    "archives": {
+      "es-mister-1080p-fontes-final-20261115.zip": {
+        "bytes": 36082446,
+        "sha256": "f3fa605e5ba7d72b571f437697a3252bff6378a46ae07e0bcb52b95f435e004e",
+        "members": 1293
+      },
+      "es-mister-1080p-atualizacao-final-20261115.zip": {
+        "bytes": 4890217,
+        "sha256": "1535595656b3444d579ed0a99365b82d839bb31fe81752d6809a997f61ba224b",
+        "members": 7
+      },
+      "es-mister-1080p-evidencias-final-20261115.zip": {
+        "bytes": 33023003,
+        "sha256": "b3325c355925ad9bea9fb9b7a47e3f4562c5c073398f0d1fec0e8c92daf33020",
+        "members": 1069
+      }
+    },
+    "history_blobs_scanned": 1225,
+    "secret_signature_findings": []
+  },
+  "host_tests": {
+    "check_target_payload.py": {
+      "returncode": 0,
+      "stdout": "payload compiled\npayload compiled\npayload compiled\npayload compiled\npayload compiled\npayload compiled\ninstalled verification payload compiled; NUL delimiters verified",
+      "stderr": ""
+    },
+    "check_lifecycle_payload.py": {
+      "returncode": 0,
+      "stdout": "Core return payload compiled; exact FIFO newline verified\nreboot payload compiled without SSH or mutations\ncore payload compiled without SSH or mutations",
+      "stderr": ""
+    },
+    "check_final_installer.py": {
+      "returncode": 0,
+      "stdout": "success real temporary files verified; no target connection\nreadiness-failure real temporary files verified; no target connection\nstop-failure real temporary files verified; no target connection",
+      "stderr": ""
+    }
+  }
+}

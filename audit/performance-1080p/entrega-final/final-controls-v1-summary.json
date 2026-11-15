@@ -1,0 +1,83 @@
+{
+  "runs": [
+    {
+      "run": "final-controls-v1-1-reference",
+      "binary": "1c29852e682db65a01590674986e00c937ee14a63dc44d053700ff4a325393a6",
+      "rss_peak_mib": 155.426,
+      "pending_event_records": 3,
+      "selection_probes": [
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "short_advance": 1,
+      "held_right_advance": 3,
+      "held_left_advance": 4,
+      "release_stable": true,
+      "note": "Six selection probes; F24 is unmapped and not required to redraw. This control check does not measure six useful visual-response latencies."
+    },
+    {
+      "run": "final-controls-v1-2-candidate",
+      "binary": "872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55",
+      "rss_peak_mib": 160.152,
+      "pending_event_records": 3,
+      "selection_probes": [
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "short_advance": 1,
+      "held_right_advance": 3,
+      "held_left_advance": 5,
+      "release_stable": true,
+      "note": "Six selection probes; F24 is unmapped and not required to redraw. This control check does not measure six useful visual-response latencies."
+    }
+  ],
+  "notes": [
+    "Small-sample p99 can equal the maximum; continuous 1000-command tests provide the sustained tail estimate.",
+    "uinput timestamps are software injection, not physical controller/TV photons.",
+    "Idle CPU is sampled [-12,-2] seconds before each injection, after the previous animation. CPU100% denotes one of two cores."
+  ]
+}

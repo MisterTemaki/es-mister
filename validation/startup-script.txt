@@ -1,0 +1,7 @@
+wait 9000
+log startup-action-probe
+key Right
+wait 2000
+shot first-action
+stats
+quit

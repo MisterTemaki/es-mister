@@ -56,3 +56,18 @@ CPackSourceConfig.cmake
 main_test
 build-mister/
 __pycache__/
+
+# Local reproduction output and dependencies
+.venv/
+/validation/native/
+/validation/regressions/
+/validation/tools/
+/validation/target-results/
+/validation/boot-events/
+/validation/tmp/
+/validation/cover-fixture/
+/validation/upload/
+/validation/clear/
+/validation/update-*/
+/validation/arm/*
+!/validation/arm/*.source.json

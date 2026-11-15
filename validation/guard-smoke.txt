@@ -1,0 +1,19 @@
+wait 15000
+key Down
+wait 250
+key Down
+wait 250
+key Down
+wait 250
+key Down
+wait 250
+key Up
+wait 250
+key Up
+wait 250
+key Up
+wait 250
+key Up
+wait 5000
+stats
+quit

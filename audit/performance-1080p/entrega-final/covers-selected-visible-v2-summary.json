@@ -1,0 +1,478 @@
+{
+  "runs": [
+    {
+      "run": "covers-selected-visible-v2-1-t2",
+      "binary_sha256": "0255c19e5a8bed8258ec26f03bfea490fdc83de7ac0b924c7359b55fcece0ead",
+      "texture_threads": "2",
+      "fixture_view": "detailed",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": true,
+      "sampled_duration_s": 66.28,
+      "rss_peak_mib": 98.605,
+      "hwm_peak_mib": 98.633,
+      "script_key_commands": 28,
+      "answered_inputs": 28,
+      "sdl_first_redraw_ms": {
+        "n": 28,
+        "median": 129.152,
+        "p95": 200.47,
+        "p99": 338.595,
+        "max": 338.595
+      },
+      "cpu_percent_one_core_units": 66.382,
+      "late_idle_cpu_percent_one_core_units": 18.043,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 98.508,
+        "p95": 98.633,
+        "p99": 98.633,
+        "max": 98.633
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 48,
+          "rss_mib": {
+            "n": 48,
+            "median": 86.027,
+            "p95": 98.633,
+            "p99": 98.633,
+            "max": 98.633
+          },
+          "cpu_percent_one_core_units": 73.126,
+          "committed_peak_mib": 25.866,
+          "loader_queue_peak": 1
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 331,
+        "median": 42.032,
+        "p95": 153.388,
+        "p99": 276.359,
+        "max": 949.099
+      },
+      "drawn_frames": 331,
+      "drawn_above_16_7_ms": 277,
+      "full_renderer_ms": {
+        "n": 20,
+        "median": 156.914,
+        "p95": 232.777,
+        "p99": 241.835,
+        "max": 241.835
+      },
+      "texture_samples": 226,
+      "texture_sample_limit_reached": false,
+      "texture_last": {
+        "at_ns": 63828299173320,
+        "allocated_bytes": 27031428,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 7790752,
+        "managed_entries": 28,
+        "queue_including_active": 0,
+        "resident_textures": 20,
+        "decoded_textures": 5,
+        "load_calls": 77,
+        "repeated_path_loads": 18,
+        "uploads": 68,
+        "evictions": 0,
+        "active_loads": 0,
+        "peak_active_loads": 3
+      },
+      "texture_peaks": {
+        "allocated_bytes": 27122484,
+        "vram_bytes": 21031348,
+        "decoded_ram_bytes": 11227760,
+        "managed_entries": 37,
+        "queue_including_active": 6,
+        "resident_textures": 29,
+        "decoded_textures": 11,
+        "peak_active_loads": 3
+      },
+      "texture_events": 581,
+      "texture_event_limit_reached": false,
+      "sampled_cover_load_wall_ms": {
+        "n": 25,
+        "median": 525.808,
+        "p95": 740.771,
+        "p99": 742.233,
+        "max": 742.233
+      },
+      "sampled_request_to_upload_ms": {
+        "n": 25,
+        "median": 563.163,
+        "p95": 763.951,
+        "p99": 1252.103,
+        "max": 1252.103
+      },
+      "visible_list_request_to_upload_ms": {
+        "n": 24,
+        "median": 557.931,
+        "p95": 747.479,
+        "p99": 763.951,
+        "max": 763.951
+      },
+      "visible_list_requests": 24,
+      "visible_list_window": "First key injection until the first Escape injection; excludes startup and later hidden-list intervals. Upload is still a software readiness proxy.",
+      "availability_limitations": "Observed request/upload pairs only; paths may have multiple sizes. Not a photon or proven selected-cover latency. Events may be censored. Repeated path loads are not automatically eviction reloads."
+    },
+    {
+      "run": "covers-selected-visible-v2-2-t1",
+      "binary_sha256": "0255c19e5a8bed8258ec26f03bfea490fdc83de7ac0b924c7359b55fcece0ead",
+      "texture_threads": "1",
+      "fixture_view": "detailed",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": true,
+      "sampled_duration_s": 66.84,
+      "rss_peak_mib": 99.152,
+      "hwm_peak_mib": 99.152,
+      "script_key_commands": 28,
+      "answered_inputs": 28,
+      "sdl_first_redraw_ms": {
+        "n": 28,
+        "median": 118.444,
+        "p95": 237.482,
+        "p99": 291.227,
+        "max": 291.227
+      },
+      "cpu_percent_one_core_units": 66.357,
+      "late_idle_cpu_percent_one_core_units": 17.903,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 99.059,
+        "p95": 99.059,
+        "p99": 99.059,
+        "max": 99.059
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 48,
+          "rss_mib": {
+            "n": 48,
+            "median": 86.594,
+            "p95": 99.059,
+            "p99": 99.059,
+            "max": 99.059
+          },
+          "cpu_percent_one_core_units": 73.879,
+          "committed_peak_mib": 25.866,
+          "loader_queue_peak": 2
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 329,
+        "median": 41.434,
+        "p95": 142.207,
+        "p99": 223.45,
+        "max": 849.098
+      },
+      "drawn_frames": 329,
+      "drawn_above_16_7_ms": 278,
+      "full_renderer_ms": {
+        "n": 20,
+        "median": 148.664,
+        "p95": 196.161,
+        "p99": 305.038,
+        "max": 305.038
+      },
+      "texture_samples": 225,
+      "texture_sample_limit_reached": false,
+      "texture_last": {
+        "at_ns": 63919192783940,
+        "allocated_bytes": 27031428,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 7790752,
+        "managed_entries": 28,
+        "queue_including_active": 0,
+        "resident_textures": 20,
+        "decoded_textures": 5,
+        "load_calls": 75,
+        "repeated_path_loads": 16,
+        "uploads": 68,
+        "evictions": 0,
+        "active_loads": 0,
+        "peak_active_loads": 2
+      },
+      "texture_peaks": {
+        "allocated_bytes": 27122484,
+        "vram_bytes": 20835076,
+        "decoded_ram_bytes": 12549972,
+        "managed_entries": 37,
+        "queue_including_active": 12,
+        "resident_textures": 29,
+        "decoded_textures": 11,
+        "peak_active_loads": 2
+      },
+      "texture_events": 579,
+      "texture_event_limit_reached": false,
+      "sampled_cover_load_wall_ms": {
+        "n": 25,
+        "median": 565.556,
+        "p95": 795.239,
+        "p99": 812.226,
+        "max": 812.226
+      },
+      "sampled_request_to_upload_ms": {
+        "n": 25,
+        "median": 596.517,
+        "p95": 846.1,
+        "p99": 1306.025,
+        "max": 1306.025
+      },
+      "visible_list_request_to_upload_ms": {
+        "n": 24,
+        "median": 594.119,
+        "p95": 830.096,
+        "p99": 846.1,
+        "max": 846.1
+      },
+      "visible_list_requests": 24,
+      "visible_list_window": "First key injection until the first Escape injection; excludes startup and later hidden-list intervals. Upload is still a software readiness proxy.",
+      "availability_limitations": "Observed request/upload pairs only; paths may have multiple sizes. Not a photon or proven selected-cover latency. Events may be censored. Repeated path loads are not automatically eviction reloads."
+    },
+    {
+      "run": "covers-selected-visible-v2-3-t1",
+      "binary_sha256": "0255c19e5a8bed8258ec26f03bfea490fdc83de7ac0b924c7359b55fcece0ead",
+      "texture_threads": "1",
+      "fixture_view": "detailed",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": true,
+      "sampled_duration_s": 65.45,
+      "rss_peak_mib": 89.93,
+      "hwm_peak_mib": 89.93,
+      "script_key_commands": 28,
+      "answered_inputs": 28,
+      "sdl_first_redraw_ms": {
+        "n": 28,
+        "median": 139.742,
+        "p95": 232.169,
+        "p99": 378.033,
+        "max": 378.033
+      },
+      "cpu_percent_one_core_units": 66.681,
+      "late_idle_cpu_percent_one_core_units": 19.179,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 89.816,
+        "p95": 89.816,
+        "p99": 89.816,
+        "max": 89.816
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 46,
+          "rss_mib": {
+            "n": 46,
+            "median": 76.229,
+            "p95": 89.816,
+            "p99": 89.816,
+            "max": 89.816
+          },
+          "cpu_percent_one_core_units": 74.03,
+          "committed_peak_mib": 25.866,
+          "loader_queue_peak": 2
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 313,
+        "median": 44.27,
+        "p95": 148.236,
+        "p99": 218.136,
+        "max": 574.035
+      },
+      "drawn_frames": 313,
+      "drawn_above_16_7_ms": 258,
+      "full_renderer_ms": {
+        "n": 21,
+        "median": 131.166,
+        "p95": 191.115,
+        "p99": 254.798,
+        "max": 254.798
+      },
+      "texture_samples": 220,
+      "texture_sample_limit_reached": false,
+      "texture_last": {
+        "at_ns": 64002035183020,
+        "allocated_bytes": 27031428,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 7790752,
+        "managed_entries": 28,
+        "queue_including_active": 0,
+        "resident_textures": 20,
+        "decoded_textures": 5,
+        "load_calls": 75,
+        "repeated_path_loads": 16,
+        "uploads": 68,
+        "evictions": 0,
+        "active_loads": 0,
+        "peak_active_loads": 2
+      },
+      "texture_peaks": {
+        "allocated_bytes": 27122484,
+        "vram_bytes": 19331732,
+        "decoded_ram_bytes": 13136048,
+        "managed_entries": 37,
+        "queue_including_active": 18,
+        "resident_textures": 29,
+        "decoded_textures": 8,
+        "peak_active_loads": 2
+      },
+      "texture_events": 579,
+      "texture_event_limit_reached": false,
+      "sampled_cover_load_wall_ms": {
+        "n": 25,
+        "median": 472.896,
+        "p95": 723.583,
+        "p99": 823.145,
+        "max": 823.145
+      },
+      "sampled_request_to_upload_ms": {
+        "n": 25,
+        "median": 521.599,
+        "p95": 802.13,
+        "p99": 854.04,
+        "max": 854.04
+      },
+      "visible_list_request_to_upload_ms": {
+        "n": 24,
+        "median": 514.798,
+        "p95": 748.568,
+        "p99": 854.04,
+        "max": 854.04
+      },
+      "visible_list_requests": 24,
+      "visible_list_window": "First key injection until the first Escape injection; excludes startup and later hidden-list intervals. Upload is still a software readiness proxy.",
+      "availability_limitations": "Observed request/upload pairs only; paths may have multiple sizes. Not a photon or proven selected-cover latency. Events may be censored. Repeated path loads are not automatically eviction reloads."
+    },
+    {
+      "run": "covers-selected-visible-v2-4-t2",
+      "binary_sha256": "0255c19e5a8bed8258ec26f03bfea490fdc83de7ac0b924c7359b55fcece0ead",
+      "texture_threads": "2",
+      "fixture_view": "detailed",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": true,
+      "sampled_duration_s": 64.82,
+      "rss_peak_mib": 89.988,
+      "hwm_peak_mib": 89.988,
+      "script_key_commands": 28,
+      "answered_inputs": 28,
+      "sdl_first_redraw_ms": {
+        "n": 28,
+        "median": 121.653,
+        "p95": 214.388,
+        "p99": 320.415,
+        "max": 320.415
+      },
+      "cpu_percent_one_core_units": 67.088,
+      "late_idle_cpu_percent_one_core_units": 19.819,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 89.793,
+        "p95": 89.793,
+        "p99": 89.793,
+        "max": 89.793
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 46,
+          "rss_mib": {
+            "n": 46,
+            "median": 76.338,
+            "p95": 89.793,
+            "p99": 89.793,
+            "max": 89.793
+          },
+          "cpu_percent_one_core_units": 74.65,
+          "committed_peak_mib": 25.866,
+          "loader_queue_peak": 3
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 322,
+        "median": 43.889,
+        "p95": 141.247,
+        "p99": 213.884,
+        "max": 849.726
+      },
+      "drawn_frames": 322,
+      "drawn_above_16_7_ms": 268,
+      "full_renderer_ms": {
+        "n": 20,
+        "median": 120.268,
+        "p95": 208.9,
+        "p99": 247.127,
+        "max": 247.127
+      },
+      "texture_samples": 221,
+      "texture_sample_limit_reached": false,
+      "texture_last": {
+        "at_ns": 64080618290580,
+        "allocated_bytes": 27031428,
+        "vram_bytes": 19240676,
+        "decoded_ram_bytes": 7790752,
+        "managed_entries": 28,
+        "queue_including_active": 0,
+        "resident_textures": 20,
+        "decoded_textures": 5,
+        "load_calls": 77,
+        "repeated_path_loads": 18,
+        "uploads": 68,
+        "evictions": 0,
+        "active_loads": 0,
+        "peak_active_loads": 3
+      },
+      "texture_peaks": {
+        "allocated_bytes": 27122484,
+        "vram_bytes": 20588692,
+        "decoded_ram_bytes": 9497264,
+        "managed_entries": 37,
+        "queue_including_active": 7,
+        "resident_textures": 29,
+        "decoded_textures": 11,
+        "peak_active_loads": 3
+      },
+      "texture_events": 581,
+      "texture_event_limit_reached": false,
+      "sampled_cover_load_wall_ms": {
+        "n": 25,
+        "median": 519.422,
+        "p95": 671.544,
+        "p99": 794.322,
+        "max": 794.322
+      },
+      "sampled_request_to_upload_ms": {
+        "n": 25,
+        "median": 548.317,
+        "p95": 822.364,
+        "p99": 1123.72,
+        "max": 1123.72
+      },
+      "visible_list_request_to_upload_ms": {
+        "n": 24,
+        "median": 545.679,
+        "p95": 713.716,
+        "p99": 822.364,
+        "max": 822.364
+      },
+      "visible_list_requests": 24,
+      "visible_list_window": "First key injection until the first Escape injection; excludes startup and later hidden-list intervals. Upload is still a software readiness proxy.",
+      "availability_limitations": "Observed request/upload pairs only; paths may have multiple sizes. Not a photon or proven selected-cover latency. Events may be censored. Repeated path loads are not automatically eviction reloads."
+    }
+  ],
+  "notes": [
+    "CPU 100% means one core; device has two.",
+    "Memory counters describe committed texture buffers, not RSS/global process budget.",
+    "Idle window excludes final five seconds to avoid shutdown memory release.",
+    "Major faults can be file-backed faults without swap."
+  ]
+}

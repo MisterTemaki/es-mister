@@ -1,0 +1,78 @@
+{
+  "pid": 8420,
+  "duration_s": 10.031,
+  "cpu_percent_one_core_units": 10.268,
+  "rss_min_mib": 182.008,
+  "rss_max_mib": 182.008,
+  "hwm_mib": 205.723,
+  "samples": [
+    {
+      "at_ns": 3378348133243,
+      "cpu_ticks": 23268,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3379351614110,
+      "cpu_ticks": 23278,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3380354651824,
+      "cpu_ticks": 23289,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3381357820034,
+      "cpu_ticks": 23298,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3382360663921,
+      "cpu_ticks": 23308,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3383363434391,
+      "cpu_ticks": 23320,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3384367072227,
+      "cpu_ticks": 23329,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3385370191249,
+      "cpu_ticks": 23338,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3386373288014,
+      "cpu_ticks": 23348,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3387376505813,
+      "cpu_ticks": 23358,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    },
+    {
+      "at_ns": 3388379226759,
+      "cpu_ticks": 23371,
+      "rss_kib": 186376,
+      "hwm_kib": 210660
+    }
+  ],
+  "note": "Normal installed mode without a benchmark input script; no programmed interaction. This is one short observation, not a before/after idle-CPU gain or a long-session leak test.",
+  "interaction_context": "The user tested the physical controller around this sample. This is not a controlled idle-CPU measurement."
+}

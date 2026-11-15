@@ -1,0 +1,93 @@
+{
+  "runs": [
+    {
+      "run": "startup-full-warm-v1-1-reference-1-t4",
+      "implementation": "reference",
+      "mode": "warm",
+      "conditions_verified": true,
+      "selection": [
+        "4",
+        "5"
+      ],
+      "wrapper_to_first_input_ms": 15529.89813
+    },
+    {
+      "run": "startup-full-warm-v1-2-candidate-1-t2",
+      "implementation": "candidate",
+      "mode": "warm",
+      "conditions_verified": true,
+      "selection": [
+        "4",
+        "5"
+      ],
+      "wrapper_to_first_input_ms": 14511.3762
+    },
+    {
+      "run": "startup-full-warm-v1-3-candidate-1-t2",
+      "implementation": "candidate",
+      "mode": "warm",
+      "conditions_verified": true,
+      "selection": [
+        "4",
+        "5"
+      ],
+      "wrapper_to_first_input_ms": 14053.33746
+    },
+    {
+      "run": "startup-full-warm-v1-4-reference-1-t4",
+      "implementation": "reference",
+      "mode": "warm",
+      "conditions_verified": true,
+      "selection": [
+        "4",
+        "5"
+      ],
+      "wrapper_to_first_input_ms": 15605.76529
+    },
+    {
+      "run": "startup-full-cold-v1-1-reference-1-t4",
+      "implementation": "reference",
+      "mode": "cold",
+      "conditions_verified": true,
+      "selection": [
+        "4",
+        "5"
+      ],
+      "wrapper_to_first_input_ms": 20320.50339
+    },
+    {
+      "run": "startup-full-cold-v1-2-candidate-1-t2",
+      "implementation": "candidate",
+      "mode": "cold",
+      "conditions_verified": true,
+      "selection": [
+        "4",
+        "5"
+      ],
+      "wrapper_to_first_input_ms": 20104.45335
+    },
+    {
+      "run": "startup-full-cold-v1-3-candidate-1-t2",
+      "implementation": "candidate",
+      "mode": "cold",
+      "conditions_verified": true,
+      "selection": [
+        "4",
+        "5"
+      ],
+      "wrapper_to_first_input_ms": 20318.04449
+    },
+    {
+      "run": "startup-full-cold-v1-4-reference-1-t4",
+      "implementation": "reference",
+      "mode": "cold",
+      "conditions_verified": true,
+      "selection": [
+        "4",
+        "5"
+      ],
+      "wrapper_to_first_input_ms": 20691.78904
+    }
+  ],
+  "ordered_catalog": "sega32x 37, arcade 3560, atari7800 60, gb 1627, gba 3054, intellivision 4, mastersystem 291, megadrive 1740, segacd 149, neogeo 153, neogeocd 100, n64 962, nes 2465, pcengine 438, pcenginecd 91, psx 578, saturn 184, snes 3791, all 19284, favorites 0"
+}

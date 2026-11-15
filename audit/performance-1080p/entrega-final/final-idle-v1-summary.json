@@ -1,0 +1,341 @@
+{
+  "runs": [
+    {
+      "run": "final-idle-v1-1-reference",
+      "binary": "1c29852e682db65a01590674986e00c937ee14a63dc44d053700ff4a325393a6",
+      "responses": 8,
+      "rss_peak_mib": 121.18,
+      "sdl_first_redraw_ms": {
+        "n": 8,
+        "median": 25.649,
+        "p95": 42.046,
+        "p99": 42.046,
+        "max": 42.046
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 8,
+        "median": 25.649,
+        "p95": 42.046,
+        "p99": 42.046,
+        "max": 42.046
+      },
+      "first_response_renderer_ms": {
+        "n": 8,
+        "median": 16.727,
+        "p95": 28.567,
+        "p99": 28.567,
+        "max": 28.567
+      },
+      "first_response_partial_frames": 8,
+      "uinput_first_redraw_ms": {
+        "n": 8,
+        "median": 26.647,
+        "p95": 44.304,
+        "p99": 44.304,
+        "max": 44.304
+      },
+      "static_idle_cpu_percent_one_core_units": {
+        "n": 8,
+        "median": 13.311,
+        "p95": 15.417,
+        "p99": 15.417,
+        "max": 15.417
+      },
+      "static_idle_rss_mib": {
+        "n": 80,
+        "median": 120.934,
+        "p95": 120.945,
+        "p99": 120.945,
+        "max": 120.945
+      },
+      "selection_changes": [
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ]
+      ]
+    },
+    {
+      "run": "final-idle-v1-2-candidate",
+      "binary": "872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55",
+      "responses": 8,
+      "rss_peak_mib": 120.996,
+      "sdl_first_redraw_ms": {
+        "n": 8,
+        "median": 25.881,
+        "p95": 51.88,
+        "p99": 51.88,
+        "max": 51.88
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 8,
+        "median": 25.881,
+        "p95": 51.88,
+        "p99": 51.88,
+        "max": 51.88
+      },
+      "first_response_renderer_ms": {
+        "n": 8,
+        "median": 16.273,
+        "p95": 30.785,
+        "p99": 30.785,
+        "max": 30.785
+      },
+      "first_response_partial_frames": 8,
+      "uinput_first_redraw_ms": {
+        "n": 8,
+        "median": 26.851,
+        "p95": 54.704,
+        "p99": 54.704,
+        "max": 54.704
+      },
+      "static_idle_cpu_percent_one_core_units": {
+        "n": 8,
+        "median": 13.254,
+        "p95": 15.2,
+        "p99": 15.2,
+        "max": 15.2
+      },
+      "static_idle_rss_mib": {
+        "n": 80,
+        "median": 120.723,
+        "p95": 120.91,
+        "p99": 120.91,
+        "max": 120.91
+      },
+      "selection_changes": [
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ]
+      ]
+    },
+    {
+      "run": "final-idle-v1-3-candidate",
+      "binary": "872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55",
+      "responses": 8,
+      "rss_peak_mib": 121.012,
+      "sdl_first_redraw_ms": {
+        "n": 8,
+        "median": 25.634,
+        "p95": 39.027,
+        "p99": 39.027,
+        "max": 39.027
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 8,
+        "median": 25.634,
+        "p95": 39.027,
+        "p99": 39.027,
+        "max": 39.027
+      },
+      "first_response_renderer_ms": {
+        "n": 8,
+        "median": 16.569,
+        "p95": 26.436,
+        "p99": 26.436,
+        "max": 26.436
+      },
+      "first_response_partial_frames": 8,
+      "uinput_first_redraw_ms": {
+        "n": 8,
+        "median": 26.595,
+        "p95": 41.058,
+        "p99": 41.058,
+        "max": 41.058
+      },
+      "static_idle_cpu_percent_one_core_units": {
+        "n": 8,
+        "median": 13.642,
+        "p95": 15.416,
+        "p99": 15.416,
+        "max": 15.416
+      },
+      "static_idle_rss_mib": {
+        "n": 80,
+        "median": 120.844,
+        "p95": 120.969,
+        "p99": 120.969,
+        "max": 120.969
+      },
+      "selection_changes": [
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ]
+      ]
+    },
+    {
+      "run": "final-idle-v1-4-reference",
+      "binary": "1c29852e682db65a01590674986e00c937ee14a63dc44d053700ff4a325393a6",
+      "responses": 8,
+      "rss_peak_mib": 121.051,
+      "sdl_first_redraw_ms": {
+        "n": 8,
+        "median": 28.053,
+        "p95": 44.682,
+        "p99": 44.682,
+        "max": 44.682
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 8,
+        "median": 28.053,
+        "p95": 44.682,
+        "p99": 44.682,
+        "max": 44.682
+      },
+      "first_response_renderer_ms": {
+        "n": 8,
+        "median": 17.62,
+        "p95": 33.13,
+        "p99": 33.13,
+        "max": 33.13
+      },
+      "first_response_partial_frames": 8,
+      "uinput_first_redraw_ms": {
+        "n": 8,
+        "median": 29.341,
+        "p95": 45.78,
+        "p99": 45.78,
+        "max": 45.78
+      },
+      "static_idle_cpu_percent_one_core_units": {
+        "n": 8,
+        "median": 13.307,
+        "p95": 15.857,
+        "p99": 15.857,
+        "max": 15.857
+      },
+      "static_idle_rss_mib": {
+        "n": 80,
+        "median": 120.961,
+        "p95": 121.086,
+        "p99": 121.086,
+        "max": 121.086
+      },
+      "selection_changes": [
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          4
+        ]
+      ]
+    }
+  ],
+  "notes": [
+    "Small-sample p99 can equal the maximum; continuous 1000-command tests provide the sustained tail estimate.",
+    "uinput timestamps are software injection, not physical controller/TV photons.",
+    "Idle CPU is sampled [-12,-2] seconds before each injection, after the previous animation. CPU100% denotes one of two cores."
+  ]
+}

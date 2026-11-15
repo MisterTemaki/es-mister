@@ -1,0 +1,39 @@
+wait 14000
+log navigation-start
+stats
+key Right
+wait 1800
+key Right
+wait 1800
+key Right
+wait 1800
+key Right
+wait 1800
+key Left
+wait 1800
+key Left
+wait 1800
+key Left
+wait 1800
+key Left
+wait 1800
+key Right
+wait 1800
+key Right
+wait 1800
+key Right
+wait 1800
+key Right
+wait 1800
+key Left
+wait 1800
+key Left
+wait 1800
+key Left
+wait 1800
+key Left
+wait 1800
+wait 1500
+log navigation-end
+stats
+quit

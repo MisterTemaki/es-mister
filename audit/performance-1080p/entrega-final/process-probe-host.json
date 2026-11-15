@@ -1,0 +1,42 @@
+{
+  "clock_ticks": 100,
+  "page_bytes": 4096,
+  "samples": [
+    {
+      "at_ns": 154998315214,
+      "user_ticks": 21,
+      "system_ticks": 0,
+      "minor_faults": 913,
+      "major_faults": 0,
+      "rss_pages": 2441,
+      "threads": 1
+    },
+    {
+      "at_ns": 155998643026,
+      "user_ticks": 121,
+      "system_ticks": 0,
+      "minor_faults": 913,
+      "major_faults": 0,
+      "rss_pages": 2441,
+      "threads": 1
+    },
+    {
+      "at_ns": 156999039900,
+      "user_ticks": 200,
+      "system_ticks": 0,
+      "minor_faults": 913,
+      "major_faults": 0,
+      "rss_pages": 2441,
+      "threads": 1
+    },
+    {
+      "at_ns": 157999666141,
+      "user_ticks": 200,
+      "system_ticks": 0,
+      "minor_faults": 913,
+      "major_faults": 0,
+      "rss_pages": 2441,
+      "threads": 1
+    }
+  ]
+}

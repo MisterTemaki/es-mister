@@ -1,0 +1,62 @@
+[
+  {
+    "run": "final-navigation-v1-4-reference",
+    "command": 2,
+    "key": "Right",
+    "system_cursor": 6,
+    "sdl_ms": 209.086,
+    "queue_ms": 16.0,
+    "ui_ms": 89.634,
+    "renderer_ms": 103.369,
+    "diagnostics_ms": 0.035,
+    "critical_worker": 1,
+    "critical_draw_wall_ms": 94.597,
+    "critical_draw_cpu_ms": 50.496,
+    "critical_draw_off_cpu_ms": 44.101
+  },
+  {
+    "run": "final-navigation-current-v1-2-candidate",
+    "command": 440,
+    "key": "Left",
+    "system_cursor": 4,
+    "sdl_ms": 230.19,
+    "queue_ms": 16.0,
+    "ui_ms": 6.627,
+    "renderer_ms": 207.325,
+    "diagnostics_ms": 7.479,
+    "critical_worker": 0,
+    "critical_draw_wall_ms": 184.757,
+    "critical_draw_cpu_ms": 62.492,
+    "critical_draw_off_cpu_ms": 122.266
+  },
+  {
+    "run": "final-navigation-current-v1-3-candidate",
+    "command": 389,
+    "key": "Left",
+    "system_cursor": 7,
+    "sdl_ms": 167.948,
+    "queue_ms": 16.0,
+    "ui_ms": 5.775,
+    "renderer_ms": 146.154,
+    "diagnostics_ms": 0.018,
+    "critical_worker": 0,
+    "critical_draw_wall_ms": 128.09,
+    "critical_draw_cpu_ms": 52.527,
+    "critical_draw_off_cpu_ms": 75.563
+  },
+  {
+    "run": "final-navigation-current-v1-4-reference",
+    "command": 942,
+    "key": "Left",
+    "system_cursor": 6,
+    "sdl_ms": 210.078,
+    "queue_ms": 15.0,
+    "ui_ms": 8.81,
+    "renderer_ms": 186.24,
+    "diagnostics_ms": 4.324,
+    "critical_worker": 0,
+    "critical_draw_wall_ms": 170.559,
+    "critical_draw_cpu_ms": 55.361,
+    "critical_draw_off_cpu_ms": 115.199
+  }
+]

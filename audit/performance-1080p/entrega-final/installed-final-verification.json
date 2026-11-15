@@ -1,0 +1,29 @@
+{
+  "binary": "872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55",
+  "pid": 8420,
+  "wrapper": 8011,
+  "framebuffer": "1920,1080",
+  "bits_per_pixel": 32,
+  "first_interactive_frame": true,
+  "diagnostic_modes_off": true,
+  "renderer_environment": {
+    "ES_SOFT_STATS_FILE": "/media/fat/emulationstation/logs/es-mister-stats.txt",
+    "ES_SOFT_FPS": "60",
+    "ES_SOFT_PLD": "256",
+    "ES_SOFT_STATS": "600",
+    "ES_SOFT_STRIP": "8"
+  },
+  "theme_settings": {
+    "ThemeSet": "es-theme-carbon"
+  },
+  "memory": {
+    "MemAvailable": "278580 kB",
+    "SwapTotal": "0 kB",
+    "SwapFree": "0 kB"
+  },
+  "boot_id": "77b3a328-ba56-4551-81a1-99be43bf35cb",
+  "cpufreq_policies": [],
+  "oom_kill": [
+    "oom_kill 0"
+  ]
+}

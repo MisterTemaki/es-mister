@@ -1,3 +1,76 @@
+# ES-MiSTer — Carbon em Full HD
+
+Frontend EmulationStation para MiSTer/DE10-Nano, com saída **1920×1080** e
+renderização por software. Esta versão preserva a aparência do Carbon,
+filtragem, transparências, camadas, duração das transições e controles.
+Mantém duas threads de desenho, faixas de 8 linhas e prefetch de 256 bytes.
+
+## Versão validada em 15/11/2026
+
+[Baixar a release com fontes, atualização e evidências](https://github.com/MisterTemaki/es-mister/releases/tag/mister-1080p-20261115).
+
+Medições no próprio MiSTer, alternando a referência já otimizada e a versão
+final, no mesmo catálogo/Carbon/1080p: **4.000 de 4.000 comandos respondidos**.
+Os valores abaixo são medianas de duas rodadas por versão.
+
+| Métrica | Referência | Versão final |
+|---|---:|---:|
+| Fila SDL → primeiro redesenho, mediana | 98,300 ms | 95,500 ms |
+| p95 por rodada | 139,105 ms | 130,149 ms |
+| p99 por rodada | 174,888 ms | 152,034 ms |
+| Execução do renderer, mediana | 81,697 ms | 78,059 ms |
+
+**16,7 ms não foi alcançado.** FPS=60 é o teto configurado. O pior comando
+observado passou de 210,078 para 230,190 ms; os relatórios também apresentam
+as trocas de desempenho com capas e as limitações das medições. Esses tempos
+terminam na escrita pelo software, sem medir controle físico, scanout ou TV.
+
+O binário ARM aceito tem SHA-256
+`872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55`.
+Os fontes C++ e headers publicados correspondem ao manifesto desse build.
+Os ZIPs da release preservam os artefatos originais da entrega; a árvore Git
+acrescenta esta documentação e os scripts de reprodução.
+
+- [Resultados finais e regressões](audit/performance-1080p/FECHAMENTO.md)
+- [Limites encontrados e por que ainda há latência](audit/performance-1080p/LIMITES.md)
+- [Compilação e reprodução completas](audit/performance-1080p/REPRODUZIR.md)
+- [Investigação do Linux](audit/performance-1080p/LINUX.md)
+- [Resumos e hashes da entrega](audit/performance-1080p/entrega-final/)
+- [Preparação dos scripts de validação](validation/README.md)
+
+## Compilar o binário ARM
+
+Em Linux com Git, CMake, Ninja, Python 3, autoconf, automake, libtool e gettext:
+
+```bash
+git clone --recurse-submodules https://github.com/MisterTemaki/es-mister.git
+cd es-mister
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install ziglang==0.15.2
+export MISTER_WORK=/caminho/para/cache-es-mister
+export JOBS=6
+bash mister/build.sh deps
+bash mister/build.sh es
+```
+
+O ELF fica em `$MISTER_WORK/out/emulationstation`. Veja o roteiro completo
+para dependências do host, comparação com a referência e instalação. A
+atualização da release utiliza o tema Carbon já instalado; não é uma imagem
+completa do cartão SD.
+
+## Instalar a atualização validada
+
+Extraia o ZIP de atualização da release e leia o `LEIA-ME.txt` incluído antes
+de executar `install-update.py`. O instalador verifica hashes, guarda backup
+e confere a prontidão; conserva configurações existentes. Nenhuma chave SSH,
+ROM comercial ou cache de compilação faz parte dos pacotes.
+
+O histórico anterior do repositório e os créditos/licenças foram preservados.
+A documentação original do EmulationStation segue abaixo.
+
+---
+
 EmulationStation
 ================
 
@@ -22,7 +95,7 @@ All of this can be easily installed with `dnf` (with rpmfusion activated) :
 ```bash
 sudo dnf install SDL2-devel freeimage-devel freetype-devel curl-devel \
   alsa-lib-devel mesa-libGL-devel cmake \
-  vlc-devel rapidjson-devel 
+  vlc-devel rapidjson-devel
 ```
 **On Arch/Manjaro:**
 All of this can be easily installed with `pacman`:
@@ -43,7 +116,7 @@ Note this Repository uses a git submodule - to checkout the source and all submo
 git clone --recursive https://github.com/batocera-linux/batocera-emulationstation.git
 ```
 
-or 
+or
 
 ```bash
 git clone https://github.com/batocera-linux/batocera-emulationstation.git
@@ -92,7 +165,7 @@ explicitly on a Pi 4 or later to get the faster path.
 
 [RapisJSON](https://github.com/tencent/rapidjson) (you'll need the `include/rapidsjon` added to the include path)
 
-[SDL Mixer](https://www.libsdl.org/projects/SDL_mixer/) 
+[SDL Mixer](https://www.libsdl.org/projects/SDL_mixer/)
 
 [LibVlc](http://download.videolan.org/pub/videolan/vlc/) (x86 sdk files are present in .7z files)
 

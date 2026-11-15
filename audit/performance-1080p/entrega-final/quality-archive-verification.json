@@ -1,0 +1,45 @@
+{
+  "png_sha256": {
+    "upload-logical-v2-1-u0": {
+      "carousel.png": "a701aad2571ca6c4f6ddf52bdbd08fb9fc3f0c316a02db9b35a6c620bf8459dc",
+      "games-phase-00.png": "768766e915ecb621e0f3fa9b7c0a25359a8232c3779df6d1e7e42abb28a5485d",
+      "games-phase-01.png": "3dbe765d2d5cb6e7cc3b23b91f37fd386f979253b7b33c5b374bea7a3246fff7",
+      "games-phase-02.png": "552167b22061495c2e1d602da56d74edf28c65779755ad96a6bce0d667eedf99",
+      "games-phase-03.png": "b4e856a03589cf9ba40e054aa518ff583479db8904a8401bce2e0822d6167ea8",
+      "games-phase-04.png": "56dd832aa00b87b25afbe1dd45b6ffa2709e765e9e7f1fd9051e997711c32cf2",
+      "games-phase-05.png": "42cb76808c3c10aa9a595680d846a138945a8d20287007e5caefa7861074ab2c",
+      "games-phase-06.png": "7aaa2b6e5d98e78eaf9014432216fa510fa6a93af00f8bad2fcd07e66496fe1a",
+      "games-phase-07.png": "44e4a0bd90c07a2ec74264341cc1db13d899f908e565225f9595e744da8e9009",
+      "menu.png": "d0d8dc529f35c1dd5daab58cec64f0faaf715ef8b1c30dd539e0e7ff81f13361",
+      "selection-phase-00.png": "1c4dc982e152a8f6dd2c5c5185be9974bde2a6f9415328f73f5b628fb770a922",
+      "selection-phase-01.png": "8fae7d59edcdcc6c2e864195db6114df3fbd63c0807f151bae3636007b68b335",
+      "selection-phase-02.png": "dad96b8a9a0746154f64f21a689a5dc531361b3608706853809e6c5713f5d1d9",
+      "selection-phase-03.png": "58705a60ee5c6d58f41fb036f31ada7c67a210826ca3608c8a98c0f73895a3dd",
+      "selection-phase-04.png": "3e8c64d83969ddccc69c40cf940eaa83028916069316307a6f3aa323c10031e1",
+      "selection-phase-05.png": "42e6cf17f4453fc8adbb5ddf5e1de688a6960af3755b809744e25afff61e4e2d",
+      "selection-phase-06.png": "cf18826afa89a16b9bc51aa53fca3485fc2b46601d5651957338c4e78d5761ed",
+      "selection-phase-07.png": "eaca5bab556e0c42162887659bc672ea1fdb1c9acc351ead58a3b6946eb8ca4e"
+    },
+    "upload-logical-v2-2-u1": {
+      "carousel.png": "a701aad2571ca6c4f6ddf52bdbd08fb9fc3f0c316a02db9b35a6c620bf8459dc",
+      "games-phase-00.png": "768766e915ecb621e0f3fa9b7c0a25359a8232c3779df6d1e7e42abb28a5485d",
+      "games-phase-01.png": "3dbe765d2d5cb6e7cc3b23b91f37fd386f979253b7b33c5b374bea7a3246fff7",
+      "games-phase-02.png": "552167b22061495c2e1d602da56d74edf28c65779755ad96a6bce0d667eedf99",
+      "games-phase-03.png": "b4e856a03589cf9ba40e054aa518ff583479db8904a8401bce2e0822d6167ea8",
+      "games-phase-04.png": "56dd832aa00b87b25afbe1dd45b6ffa2709e765e9e7f1fd9051e997711c32cf2",
+      "games-phase-05.png": "42cb76808c3c10aa9a595680d846a138945a8d20287007e5caefa7861074ab2c",
+      "games-phase-06.png": "7aaa2b6e5d98e78eaf9014432216fa510fa6a93af00f8bad2fcd07e66496fe1a",
+      "games-phase-07.png": "44e4a0bd90c07a2ec74264341cc1db13d899f908e565225f9595e744da8e9009",
+      "menu.png": "d0d8dc529f35c1dd5daab58cec64f0faaf715ef8b1c30dd539e0e7ff81f13361",
+      "selection-phase-00.png": "1c4dc982e152a8f6dd2c5c5185be9974bde2a6f9415328f73f5b628fb770a922",
+      "selection-phase-01.png": "8fae7d59edcdcc6c2e864195db6114df3fbd63c0807f151bae3636007b68b335",
+      "selection-phase-02.png": "dad96b8a9a0746154f64f21a689a5dc531361b3608706853809e6c5713f5d1d9",
+      "selection-phase-03.png": "58705a60ee5c6d58f41fb036f31ada7c67a210826ca3608c8a98c0f73895a3dd",
+      "selection-phase-04.png": "3e8c64d83969ddccc69c40cf940eaa83028916069316307a6f3aa323c10031e1",
+      "selection-phase-05.png": "42e6cf17f4453fc8adbb5ddf5e1de688a6960af3755b809744e25afff61e4e2d",
+      "selection-phase-06.png": "cf18826afa89a16b9bc51aa53fca3485fc2b46601d5651957338c4e78d5761ed",
+      "selection-phase-07.png": "eaca5bab556e0c42162887659bc672ea1fdb1c9acc351ead58a3b6946eb8ca4e"
+    }
+  },
+  "equal_states": 18
+}

@@ -1,0 +1,4 @@
+{
+  "original_mtime_ns": {},
+  "note": "ZIP clamps pre-1980 metadata to 1980. Original device timestamps are preserved here; measurement clocks inside logs remain unchanged."
+}

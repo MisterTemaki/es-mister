@@ -1,0 +1,117 @@
+{
+  "definition": "SDL queued event to first frame with SystemView animation slot 0 inactive after an active sample; same cursor; does not include info fade slot 2 or TV latency",
+  "runs": [
+    {
+      "run": "final-animations-v1-1-reference",
+      "commands": 16,
+      "completed": 16,
+      "active_without_end": 0,
+      "first_redraw_ms": {
+        "n": 16,
+        "median": 128.072,
+        "p95": 179.367,
+        "p99": 179.367,
+        "max": 179.367
+      },
+      "main_transition_end_ms": {
+        "n": 16,
+        "median": 701.904,
+        "p95": 801.834,
+        "p99": 801.834,
+        "max": 801.834
+      },
+      "redraw_intervals_in_transition_ms": {
+        "n": 74,
+        "median": 84.334,
+        "p95": 168.563,
+        "p99": 197.767,
+        "max": 197.767
+      },
+      "intervals_above_16_7_ms": 74
+    },
+    {
+      "run": "final-animations-v1-2-candidate",
+      "commands": 16,
+      "completed": 16,
+      "active_without_end": 0,
+      "first_redraw_ms": {
+        "n": 16,
+        "median": 110.853,
+        "p95": 162.062,
+        "p99": 162.062,
+        "max": 162.062
+      },
+      "main_transition_end_ms": {
+        "n": 16,
+        "median": 700.959,
+        "p95": 831.988,
+        "p99": 831.988,
+        "max": 831.988
+      },
+      "redraw_intervals_in_transition_ms": {
+        "n": 77,
+        "median": 83.229,
+        "p95": 157.025,
+        "p99": 177.724,
+        "max": 177.724
+      },
+      "intervals_above_16_7_ms": 77
+    },
+    {
+      "run": "final-animations-v1-3-candidate",
+      "commands": 16,
+      "completed": 16,
+      "active_without_end": 0,
+      "first_redraw_ms": {
+        "n": 16,
+        "median": 107.706,
+        "p95": 162.036,
+        "p99": 162.036,
+        "max": 162.036
+      },
+      "main_transition_end_ms": {
+        "n": 16,
+        "median": 686.631,
+        "p95": 797.632,
+        "p99": 797.632,
+        "max": 797.632
+      },
+      "redraw_intervals_in_transition_ms": {
+        "n": 77,
+        "median": 82.351,
+        "p95": 166.602,
+        "p99": 187.191,
+        "max": 187.191
+      },
+      "intervals_above_16_7_ms": 77
+    },
+    {
+      "run": "final-animations-v1-4-reference",
+      "commands": 16,
+      "completed": 16,
+      "active_without_end": 0,
+      "first_redraw_ms": {
+        "n": 16,
+        "median": 115.756,
+        "p95": 162.716,
+        "p99": 162.716,
+        "max": 162.716
+      },
+      "main_transition_end_ms": {
+        "n": 16,
+        "median": 703.916,
+        "p95": 781.287,
+        "p99": 781.287,
+        "max": 781.287
+      },
+      "redraw_intervals_in_transition_ms": {
+        "n": 78,
+        "median": 83.977,
+        "p95": 167.344,
+        "p99": 189.837,
+        "max": 189.837
+      },
+      "intervals_above_16_7_ms": 78
+    }
+  ]
+}

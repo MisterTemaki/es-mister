@@ -1,0 +1,8 @@
+wait 14000
+dump first-transition
+key Right
+wait 100
+dump second-transition
+wait 1500
+stats
+quit

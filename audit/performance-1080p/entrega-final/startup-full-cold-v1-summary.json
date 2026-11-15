@@ -1,0 +1,230 @@
+{
+  "4": {
+    "spawn_to_first_input_ms": {
+      "n": 2,
+      "median": 15451.943,
+      "p95": 15776.372,
+      "min": 15127.513,
+      "max": 15776.372
+    },
+    "helper_ms": {
+      "n": 2,
+      "median": 2260.0,
+      "p95": 2300.0,
+      "min": 2220.0,
+      "max": 2300.0
+    },
+    "sdl_input_ms": {
+      "n": 2,
+      "median": 269.01,
+      "p95": 312.051,
+      "min": 225.969,
+      "max": 312.051
+    },
+    "uinput_ms": {
+      "n": 2,
+      "median": 632.217,
+      "p95": 671.838,
+      "min": 592.597,
+      "max": 671.838
+    },
+    "first_splash_s": {
+      "n": 2,
+      "median": 2.128,
+      "p95": 2.19,
+      "min": 2.066,
+      "max": 2.19
+    },
+    "ready_s": {
+      "n": 2,
+      "median": 13.653,
+      "p95": 13.873,
+      "min": 13.433,
+      "max": 13.873
+    },
+    "first_interactive_s": {
+      "n": 2,
+      "median": 14.24,
+      "p95": 14.55,
+      "min": 13.93,
+      "max": 14.55
+    },
+    "load_systems_s": {
+      "n": 2,
+      "median": 10.346,
+      "p95": 10.422,
+      "min": 10.27,
+      "max": 10.422
+    },
+    "first_input_ui_ms": {
+      "n": 2,
+      "median": 80.364,
+      "p95": 84.121,
+      "min": 76.606,
+      "max": 84.121
+    },
+    "first_input_record_ms": {
+      "n": 2,
+      "median": 61.324,
+      "p95": 67.649,
+      "min": 55.0,
+      "max": 67.649
+    },
+    "first_input_update_ms": {
+      "n": 2,
+      "median": 0.867,
+      "p95": 0.933,
+      "min": 0.8,
+      "max": 0.933
+    },
+    "first_input_execute_ms": {
+      "n": 2,
+      "median": 188.494,
+      "p95": 227.863,
+      "min": 149.124,
+      "max": 227.863
+    },
+    "wrapper_to_first_input_ms": {
+      "n": 2,
+      "median": 20506.146,
+      "p95": 20691.789,
+      "min": 20320.503,
+      "max": 20691.789
+    },
+    "wrapper_fixed_wait_ms": {
+      "n": 2,
+      "median": 2080.0,
+      "p95": 2090.0,
+      "min": 2070.0,
+      "max": 2090.0
+    },
+    "wrapper_menu_wait_ms": {
+      "n": 2,
+      "median": 155.0,
+      "p95": 170.0,
+      "min": 140.0,
+      "max": 170.0
+    },
+    "wrapper_begin_to_process_ms": {
+      "n": 2,
+      "median": 4850.0,
+      "p95": 4920.0,
+      "min": 4780.0,
+      "max": 4920.0
+    }
+  },
+  "2": {
+    "spawn_to_first_input_ms": {
+      "n": 2,
+      "median": 15216.058,
+      "p95": 15306.867,
+      "min": 15125.249,
+      "max": 15306.867
+    },
+    "helper_ms": {
+      "n": 2,
+      "median": 2230.0,
+      "p95": 2260.0,
+      "min": 2200.0,
+      "max": 2260.0
+    },
+    "sdl_input_ms": {
+      "n": 2,
+      "median": 226.492,
+      "p95": 295.672,
+      "min": 157.312,
+      "max": 295.672
+    },
+    "uinput_ms": {
+      "n": 2,
+      "median": 342.598,
+      "p95": 379.065,
+      "min": 306.132,
+      "max": 379.065
+    },
+    "first_splash_s": {
+      "n": 2,
+      "median": 2.166,
+      "p95": 2.275,
+      "min": 2.057,
+      "max": 2.275
+    },
+    "ready_s": {
+      "n": 2,
+      "median": 13.992,
+      "p95": 14.123,
+      "min": 13.862,
+      "max": 14.123
+    },
+    "first_interactive_s": {
+      "n": 2,
+      "median": 14.178,
+      "p95": 14.299,
+      "min": 14.057,
+      "max": 14.299
+    },
+    "load_systems_s": {
+      "n": 2,
+      "median": 10.637,
+      "p95": 10.888,
+      "min": 10.387,
+      "max": 10.888
+    },
+    "first_input_ui_ms": {
+      "n": 2,
+      "median": 176.669,
+      "p95": 257.573,
+      "min": 95.765,
+      "max": 257.573
+    },
+    "first_input_record_ms": {
+      "n": 2,
+      "median": 128.373,
+      "p95": 216.443,
+      "min": 40.302,
+      "max": 216.443
+    },
+    "first_input_update_ms": {
+      "n": 2,
+      "median": 1.09,
+      "p95": 1.141,
+      "min": 1.038,
+      "max": 1.141
+    },
+    "first_input_execute_ms": {
+      "n": 2,
+      "median": 49.788,
+      "p95": 61.475,
+      "min": 38.1,
+      "max": 61.475
+    },
+    "wrapper_to_first_input_ms": {
+      "n": 2,
+      "median": 20211.249,
+      "p95": 20318.044,
+      "min": 20104.453,
+      "max": 20318.044
+    },
+    "wrapper_fixed_wait_ms": {
+      "n": 2,
+      "median": 2065.0,
+      "p95": 2070.0,
+      "min": 2060.0,
+      "max": 2070.0
+    },
+    "wrapper_menu_wait_ms": {
+      "n": 2,
+      "median": 140.0,
+      "p95": 150.0,
+      "min": 130.0,
+      "max": 150.0
+    },
+    "wrapper_begin_to_process_ms": {
+      "n": 2,
+      "median": 4845.0,
+      "p95": 4850.0,
+      "min": 4840.0,
+      "max": 4850.0
+    }
+  }
+}

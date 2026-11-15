@@ -1,0 +1,18 @@
+wait 14000
+log controls-short-right
+key Right
+wait 1200
+key F24
+wait 500
+log controls-held-right
+hold Right 1200
+wait 1200
+key F24
+wait 500
+log controls-held-left
+hold Left 1200
+wait 1200
+key F24
+wait 500
+stats
+quit

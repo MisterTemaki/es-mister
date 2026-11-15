@@ -1,0 +1,209 @@
+{
+  "conditions": {
+    "binary": "28911d5e51515e39da51e519b1b8c50015517a8a7d016994976f99cbfe251bca",
+    "config": {
+      "es_settings.cfg": "9a3b03c07332d6055cc11bd491d3b0545e41f0b4aa0157a5518ca8e8696c60e8",
+      "es_input.cfg": "2f675dd8fcc54de41323f4a1442748055b5d9e0c5fd733045512d943d8b7ddb0",
+      "es_systems.cfg": "e9c015755bd81a0733e92614e64e08122ca7133e84a1a4e95b859730f9ef97f2"
+    },
+    "size": "1920,1080",
+    "environment": {
+      "SDL_EVDEV_IGNORE": "MiSTer virtual input,Zaparoo",
+      "ES_SOFT_FPS": "60",
+      "ES_SOFT_STRIP": "8",
+      "ES_SOFT_PLD": "256",
+      "ES_SOFT_STATS": "600",
+      "ES_SOFT_TRACE_DETAIL": "0",
+      "ES_SOFT_OPTIMIZATIONS": "1",
+      "ES_SOFT_THREADS": "2",
+      "ES_SOFT_TILE_X": "0",
+      "ES_SOFT_COMPOSITE": "0",
+      "ES_SOFT_PACKED": "0",
+      "ES_SOFT_SAMPLE_NEON": "0",
+      "ES_SOFT_UPLOAD_NEON": "0",
+      "ES_SOFT_TRACE_REDRAWS_ONLY": "1"
+    }
+  },
+  "runs": [
+    {
+      "run": "opaque-screen-v1-1-o0",
+      "enabled": "0",
+      "responded": 64,
+      "sdl_first_redraw_ms": {
+        "n": 64,
+        "median": 104.249,
+        "p95": 167.275,
+        "p99": 189.379,
+        "max": 189.379
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 64,
+        "median": 92.037,
+        "p95": 152.275,
+        "p99": 180.379,
+        "max": 180.379
+      },
+      "full_renderer_ms": {
+        "n": 338,
+        "median": 90.043,
+        "p95": 134.585,
+        "p99": 198.885,
+        "max": 213.239
+      },
+      "full_ui_active_ms": {
+        "n": 338,
+        "median": 2.451,
+        "p95": 5.756,
+        "p99": 48.501,
+        "max": 49.691
+      },
+      "drawn_frame_work_ms": {
+        "n": 374,
+        "median": 91.582,
+        "p95": 138.929,
+        "p99": 209.793,
+        "max": 224.363
+      },
+      "drawn_above_16_7_ms": 339,
+      "drawn_frames": 374,
+      "full_frames": 338,
+      "rss_peak_mib": 155.875
+    },
+    {
+      "run": "opaque-screen-v1-2-o1",
+      "enabled": "1",
+      "responded": 64,
+      "sdl_first_redraw_ms": {
+        "n": 64,
+        "median": 103.999,
+        "p95": 157.385,
+        "p99": 209.899,
+        "max": 209.899
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 64,
+        "median": 90.834,
+        "p95": 142.385,
+        "p99": 193.899,
+        "max": 193.899
+      },
+      "full_renderer_ms": {
+        "n": 346,
+        "median": 87.747,
+        "p95": 134.629,
+        "p99": 178.412,
+        "max": 203.303
+      },
+      "full_ui_active_ms": {
+        "n": 346,
+        "median": 2.611,
+        "p95": 6.002,
+        "p99": 42.793,
+        "max": 49.866
+      },
+      "drawn_frame_work_ms": {
+        "n": 383,
+        "median": 89.277,
+        "p95": 139.978,
+        "p99": 192.232,
+        "max": 212.781
+      },
+      "drawn_above_16_7_ms": 347,
+      "drawn_frames": 383,
+      "full_frames": 346,
+      "rss_peak_mib": 155.871
+    },
+    {
+      "run": "opaque-screen-v1-3-o1",
+      "enabled": "1",
+      "responded": 64,
+      "sdl_first_redraw_ms": {
+        "n": 64,
+        "median": 103.695,
+        "p95": 172.126,
+        "p99": 196.057,
+        "max": 196.057
+      },
+      "dispatch_first_redraw_ms": {
+        "n": 64,
+        "median": 91.82,
+        "p95": 157.126,
+        "p99": 184.057,
+        "max": 184.057
+      },
+      "full_renderer_ms": {
+        "n": 356,
+        "median": 86.584,
+        "p95": 147.447,
+        "p99": 179.215,
+        "max": 196.099
+      },
+      "full_ui_active_ms": {
+        "n": 356,
+        "median": 2.567,
+        "p95": 5.974,
+        "p99": 40.501,
+        "max": 48.898
+      },
+      "drawn_frame_work_ms": {
+        "n": 389,
+        "median": 88.574,
+        "p95": 148.506,
+        "p99": 190.494,
+        "max": 203.408
+      },
+      "drawn_above_16_7_ms": 357,
+      "drawn_frames": 389,
+      "full_frames": 356,
+      "rss_peak_mib": 155.879
+    }
+  ],
+  "run_medians": {
+    "0": {
+      "sdl_first_redraw_ms": {
+        "n": 1,
+        "median": 104.249,
+        "p95": 104.249,
+        "p99": 104.249,
+        "max": 104.249
+      },
+      "full_renderer_ms": {
+        "n": 1,
+        "median": 90.043,
+        "p95": 90.043,
+        "p99": 90.043,
+        "max": 90.043
+      },
+      "drawn_frame_work_ms": {
+        "n": 1,
+        "median": 91.582,
+        "p95": 91.582,
+        "p99": 91.582,
+        "max": 91.582
+      }
+    },
+    "1": {
+      "sdl_first_redraw_ms": {
+        "n": 2,
+        "median": 103.847,
+        "p95": 103.999,
+        "p99": 103.999,
+        "max": 103.999
+      },
+      "full_renderer_ms": {
+        "n": 2,
+        "median": 87.166,
+        "p95": 87.747,
+        "p99": 87.747,
+        "max": 87.747
+      },
+      "drawn_frame_work_ms": {
+        "n": 2,
+        "median": 88.925,
+        "p95": 89.277,
+        "p99": 89.277,
+        "max": 89.277
+      }
+    }
+  }
+}

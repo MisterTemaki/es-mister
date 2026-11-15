@@ -1,0 +1,117 @@
+{
+  "definition": "SDL queued event to first frame with SystemView animation slot 0 inactive after an active sample; same cursor; does not include info fade slot 2 or TV latency",
+  "runs": [
+    {
+      "run": "strict-screen-v1-1-o0",
+      "commands": 64,
+      "completed": 54,
+      "active_without_end": 10,
+      "first_redraw_ms": {
+        "n": 64,
+        "median": 109.293,
+        "p95": 156.495,
+        "p99": 171.793,
+        "max": 171.793
+      },
+      "main_transition_end_ms": {
+        "n": 54,
+        "median": 664.392,
+        "p95": 792.899,
+        "p99": 817.734,
+        "max": 817.734
+      },
+      "redraw_intervals_in_transition_ms": {
+        "n": 268,
+        "median": 95.772,
+        "p95": 145.646,
+        "p99": 202.886,
+        "max": 207.544
+      },
+      "intervals_above_16_7_ms": 268
+    },
+    {
+      "run": "strict-screen-v1-2-o1",
+      "commands": 64,
+      "completed": 55,
+      "active_without_end": 9,
+      "first_redraw_ms": {
+        "n": 64,
+        "median": 102.867,
+        "p95": 140.26,
+        "p99": 180.167,
+        "max": 180.167
+      },
+      "main_transition_end_ms": {
+        "n": 55,
+        "median": 657.737,
+        "p95": 792.826,
+        "p99": 832.417,
+        "max": 832.417
+      },
+      "redraw_intervals_in_transition_ms": {
+        "n": 286,
+        "median": 91.073,
+        "p95": 148.039,
+        "p99": 201.803,
+        "max": 217.82
+      },
+      "intervals_above_16_7_ms": 286
+    },
+    {
+      "run": "strict-screen-v1-3-o1",
+      "commands": 64,
+      "completed": 56,
+      "active_without_end": 8,
+      "first_redraw_ms": {
+        "n": 64,
+        "median": 103.416,
+        "p95": 144.369,
+        "p99": 181.321,
+        "max": 181.321
+      },
+      "main_transition_end_ms": {
+        "n": 56,
+        "median": 661.592,
+        "p95": 800.202,
+        "p99": 802.941,
+        "max": 802.941
+      },
+      "redraw_intervals_in_transition_ms": {
+        "n": 291,
+        "median": 91.131,
+        "p95": 147.2,
+        "p99": 203.022,
+        "max": 204.149
+      },
+      "intervals_above_16_7_ms": 291
+    },
+    {
+      "run": "strict-screen-v1-4-o0",
+      "commands": 64,
+      "completed": 53,
+      "active_without_end": 11,
+      "first_redraw_ms": {
+        "n": 64,
+        "median": 107.361,
+        "p95": 176.75,
+        "p99": 186.227,
+        "max": 186.227
+      },
+      "main_transition_end_ms": {
+        "n": 53,
+        "median": 660.599,
+        "p95": 795.102,
+        "p99": 834.233,
+        "max": 834.233
+      },
+      "redraw_intervals_in_transition_ms": {
+        "n": 269,
+        "median": 93.647,
+        "p95": 155.784,
+        "p99": 203.136,
+        "max": 214.111
+      },
+      "intervals_above_16_7_ms": 269
+    }
+  ]
+}

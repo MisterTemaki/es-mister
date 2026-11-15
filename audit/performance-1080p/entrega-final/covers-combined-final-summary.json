@@ -1,0 +1,280 @@
+{
+  "runs": [
+    {
+      "run": "covers-minimal-final-v1-1-t1",
+      "binary_sha256": "872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55",
+      "texture_threads": "1",
+      "fixture_view": "copied production preference",
+      "frame_trace_enabled": false,
+      "texture_trace_enabled": false,
+      "sampled_duration_s": 245.81,
+      "rss_peak_mib": 192.184,
+      "hwm_peak_mib": 193.621,
+      "script_key_commands": 328,
+      "answered_inputs": 0,
+      "sdl_first_redraw_ms": {
+        "n": 0
+      },
+      "cpu_percent_one_core_units": 158.116,
+      "late_idle_cpu_percent_one_core_units": 146.966,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 82.668,
+        "p95": 94.82,
+        "p99": 94.82,
+        "max": 94.82
+      },
+      "major_faults": 42
+    },
+    {
+      "run": "covers-source-final-v1-1-reference",
+      "binary_sha256": "1c29852e682db65a01590674986e00c937ee14a63dc44d053700ff4a325393a6",
+      "texture_threads": "2",
+      "fixture_view": "copied production preference",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": false,
+      "sampled_duration_s": 82.43,
+      "rss_peak_mib": 142.785,
+      "hwm_peak_mib": 145.918,
+      "script_key_commands": 52,
+      "answered_inputs": 52,
+      "sdl_first_redraw_ms": {
+        "n": 52,
+        "median": 304.389,
+        "p95": 458.753,
+        "p99": 543.368,
+        "max": 543.368
+      },
+      "cpu_percent_one_core_units": 143.064,
+      "late_idle_cpu_percent_one_core_units": 146.518,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 85.613,
+        "p95": 85.988,
+        "p99": 85.988,
+        "max": 85.988
+      },
+      "major_faults": 1,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 64,
+          "rss_mib": {
+            "n": 64,
+            "median": 106.918,
+            "p95": 140.445,
+            "p99": 144.387,
+            "max": 144.387
+          },
+          "cpu_percent_one_core_units": 150.398
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 1701,
+        "median": 20.303,
+        "p95": 224.3,
+        "p99": 359.763,
+        "max": 764.611
+      },
+      "drawn_frames": 1701,
+      "drawn_above_16_7_ms": 1685,
+      "full_renderer_ms": {
+        "n": 114,
+        "median": 232.654,
+        "p95": 377.408,
+        "p99": 415.123,
+        "max": 473.472
+      }
+    },
+    {
+      "run": "covers-source-final-v1-2-candidate",
+      "binary_sha256": "872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55",
+      "texture_threads": "1",
+      "fixture_view": "copied production preference",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": false,
+      "sampled_duration_s": 78.87,
+      "rss_peak_mib": 112.184,
+      "hwm_peak_mib": 114.008,
+      "script_key_commands": 52,
+      "answered_inputs": 52,
+      "sdl_first_redraw_ms": {
+        "n": 52,
+        "median": 242.294,
+        "p95": 471.452,
+        "p99": 537.349,
+        "max": 537.349
+      },
+      "cpu_percent_one_core_units": 141.796,
+      "late_idle_cpu_percent_one_core_units": 147.082,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 85.715,
+        "p95": 86.215,
+        "p99": 86.215,
+        "max": 86.215
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 60,
+          "rss_mib": {
+            "n": 60,
+            "median": 98.658,
+            "p95": 107.586,
+            "p99": 112.105,
+            "max": 112.105
+          },
+          "cpu_percent_one_core_units": 148.581
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 1713,
+        "median": 20.407,
+        "p95": 187.692,
+        "p99": 315.147,
+        "max": 731.317
+      },
+      "drawn_frames": 1713,
+      "drawn_above_16_7_ms": 1691,
+      "full_renderer_ms": {
+        "n": 124,
+        "median": 179.839,
+        "p95": 350.592,
+        "p99": 426.774,
+        "max": 438.574
+      }
+    },
+    {
+      "run": "covers-source-final-v1-3-candidate",
+      "binary_sha256": "872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55",
+      "texture_threads": "1",
+      "fixture_view": "copied production preference",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": false,
+      "sampled_duration_s": 77.47,
+      "rss_peak_mib": 109.445,
+      "hwm_peak_mib": 111.328,
+      "script_key_commands": 52,
+      "answered_inputs": 52,
+      "sdl_first_redraw_ms": {
+        "n": 52,
+        "median": 246.396,
+        "p95": 416.103,
+        "p99": 485.053,
+        "max": 485.053
+      },
+      "cpu_percent_one_core_units": 143.769,
+      "late_idle_cpu_percent_one_core_units": 147.753,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 85.684,
+        "p95": 86.059,
+        "p99": 86.059,
+        "max": 86.059
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 58,
+          "rss_mib": {
+            "n": 58,
+            "median": 97.727,
+            "p95": 108.047,
+            "p99": 109.582,
+            "max": 109.582
+          },
+          "cpu_percent_one_core_units": 149.983
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 1726,
+        "median": 20.192,
+        "p95": 176.296,
+        "p99": 296.948,
+        "max": 678.519
+      },
+      "drawn_frames": 1726,
+      "drawn_above_16_7_ms": 1715,
+      "full_renderer_ms": {
+        "n": 119,
+        "median": 176.912,
+        "p95": 332.24,
+        "p99": 380.16,
+        "max": 418.187
+      }
+    },
+    {
+      "run": "covers-source-final-v1-4-reference",
+      "binary_sha256": "1c29852e682db65a01590674986e00c937ee14a63dc44d053700ff4a325393a6",
+      "texture_threads": "2",
+      "fixture_view": "copied production preference",
+      "frame_trace_enabled": true,
+      "texture_trace_enabled": false,
+      "sampled_duration_s": 79.88,
+      "rss_peak_mib": 138.227,
+      "hwm_peak_mib": 138.535,
+      "script_key_commands": 52,
+      "answered_inputs": 52,
+      "sdl_first_redraw_ms": {
+        "n": 52,
+        "median": 278.202,
+        "p95": 410.763,
+        "p99": 472.462,
+        "max": 472.462
+      },
+      "cpu_percent_one_core_units": 142.929,
+      "late_idle_cpu_percent_one_core_units": 147.352,
+      "late_idle_rss_mib": {
+        "n": 15,
+        "median": 85.82,
+        "p95": 86.195,
+        "p99": 86.195,
+        "max": 86.195
+      },
+      "major_faults": 0,
+      "cycle_windows": [
+        {
+          "cycle": 0,
+          "process_samples": 61,
+          "rss_mib": {
+            "n": 61,
+            "median": 105.023,
+            "p95": 133.121,
+            "p99": 135.703,
+            "max": 135.703
+          },
+          "cpu_percent_one_core_units": 149.76
+        }
+      ],
+      "cycle_window_definition": "First SDL injection in each scripted cycle to the next; final five seconds excluded. RSS sampled at 1 Hz; cycles include list/carousel/menu, not a single identical visual state.",
+      "drawn_frame_work_ms": {
+        "n": 1720,
+        "median": 20.138,
+        "p95": 200.61,
+        "p99": 360.087,
+        "max": 1018.563
+      },
+      "drawn_frames": 1720,
+      "drawn_above_16_7_ms": 1708,
+      "full_renderer_ms": {
+        "n": 112,
+        "median": 214.743,
+        "p95": 359.509,
+        "p99": 417.214,
+        "max": 436.452
+      }
+    }
+  ],
+  "notes": [
+    "CPU 100% means one core; device has two.",
+    "Memory counters describe committed texture buffers, not RSS/global process budget.",
+    "Idle window excludes final five seconds to avoid shutdown memory release.",
+    "Major faults can be file-backed faults without swap."
+  ]
+}
