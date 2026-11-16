@@ -140,32 +140,41 @@ namespace Renderer
 					if (tty == "none")
 						return false;
 					if (!tty.empty())
-						mFd = ::open(tty.c_str(), O_RDWR | O_CLOEXEC);
+					{
+						mPath = tty;
+						sscanf(tty.c_str(), "/dev/tty%d", &mVt);
+					}
 					else
 					{
 						// the console active now (ES's): by its number, so the switches are about it
-						int any = ::open("/dev/tty0", O_RDWR | O_CLOEXEC);
+						int any = ::open("/dev/tty0", O_RDWR | O_CLOEXEC | O_NOCTTY);
 						if (any < 0)
 							return false;
 						vt_stat state = {};
 						if (ioctl(any, VT_GETSTATE, &state) == 0 && state.v_active > 0)
-						{
 							mVt = state.v_active;
-							mFd = ::open(("/dev/tty" + std::to_string(mVt)).c_str(), O_RDWR | O_CLOEXEC);
-						}
-						if (mFd < 0)
-							mFd = any;
-						else
-							::close(any);
+						::close(any);
+						if (mVt <= 0)
+							return false;
+						mPath = "/dev/tty" + std::to_string(mVt);
 					}
-					if (mFd < 0)
+
+					// No descriptor of the console is kept: its getty (inittab's agetty on tty1) starting again
+					// hangs the console up, and a descriptor kept from before answered nothing after it (the
+					// switch asked for waited for ever). Each use opens it anew.
+					const int fd = openConsole();
+					if (fd < 0)
 						return false;
-					if (ioctl(mFd, KDSETMODE, KD_GRAPHICS) < 0)
+					if (ioctl(fd, KDSETMODE, KD_GRAPHICS) < 0)
 					{
-						::close(mFd);
-						mFd = -1;
+						::close(fd);
 						return false;
 					}
+					// The keys are ES's (it reads the input devices): none go to the console as well, where the
+					// getty took them for a login, ended, and started again (the hangup above)
+					mKeyboardMode = -1;
+					if (ioctl(fd, KDGKBMODE, &mKeyboardMode) == 0 && ioctl(fd, KDSKBMODE, K_OFF) != 0)
+						mKeyboardMode = -1;
 
 					// the switches asked of us, from the signals to the thread through a pipe
 					int fds[2];
@@ -179,25 +188,23 @@ namespace Renderer
 						sigemptyset(&action.sa_mask);
 						sigaction(releaseSignal(), &action, nullptr);
 						sigaction(acquireSignal(), &action, nullptr);
-						vt_mode mode = {};
-						mode.mode = VT_PROCESS;
-						mode.relsig = (short)releaseSignal();
-						mode.acqsig = (short)acquireSignal();
-						mProcess = ioctl(mFd, VT_SETMODE, &mode) == 0;
+						mProcess = hold(fd);
+						if (!mProcess)
+							fprintf(stderr, "SoftOutput: tty%d not held (VT_SETMODE: %s): a switch away from it waits for ES to end\n", mVt, strerror(errno));
 					}
+					::close(fd);
+					fprintf(stderr, "SoftOutput: tty%d in graphics mode%s%s\n", mVt, mProcess ? ", held (switches asked of ES)" : "",
+						mKeyboardMode >= 0 ? ", its keys off" : "");
 					mPresenting = true;
 					mStop = false;
-					if (mProcess || mMisterMode)
-					{
-						// the signals go to the thread below (it lets them through): not to this thread nor
-						// to those it makes from now on, whose waits they would cut short
-						sigset_t set;
-						sigemptyset(&set);
-						sigaddset(&set, releaseSignal());
-						sigaddset(&set, acquireSignal());
-						pthread_sigmask(SIG_BLOCK, &set, nullptr);
-						mThread = std::thread([this] { run(); });
-					}
+					// the signals go to the thread below (it lets them through): not to this thread nor to those
+					// it makes from now on, whose waits they would cut short
+					sigset_t set;
+					sigemptyset(&set);
+					sigaddset(&set, releaseSignal());
+					sigaddset(&set, acquireSignal());
+					pthread_sigmask(SIG_BLOCK, &set, nullptr);
+					mThread = std::thread([this] { run(); });
 					return true;
 				}
 
@@ -214,19 +221,22 @@ namespace Renderer
 						}
 						mThread.join();
 					}
-					if (mFd >= 0)
+					const int fd = openConsole();
+					if (fd >= 0)
 					{
 						if (mProcess)
 						{
 							vt_mode mode = {};
 							mode.mode = VT_AUTO;
-							ioctl(mFd, VT_SETMODE, &mode);
-							mProcess = false;
+							ioctl(fd, VT_SETMODE, &mode);
 						}
-						ioctl(mFd, KDSETMODE, KD_TEXT);
-						::close(mFd);
-						mFd = -1;
+						if (mKeyboardMode >= 0)
+							ioctl(fd, KDSKBMODE, mKeyboardMode);
+						ioctl(fd, KDSETMODE, KD_TEXT);
+						::close(fd);
 					}
+					mProcess = false;
+					mKeyboardMode = -1;
 					const int out = pipeOut().exchange(-1);
 					if (out >= 0)
 						::close(out);
@@ -265,6 +275,22 @@ namespace Renderer
 					errno = saved;
 				}
 
+				int openConsole() const
+				{
+					return mPath.empty() ? -1 : ::open(mPath.c_str(), O_RDWR | O_CLOEXEC | O_NOCTTY);
+				}
+
+				// The kernel asks us before switching away from the console (relsig) and says when it is
+				// back (acqsig)
+				bool hold(int fd)
+				{
+					vt_mode mode = {};
+					mode.mode = VT_PROCESS;
+					mode.relsig = (short)releaseSignal();
+					mode.acqsig = (short)acquireSignal();
+					return ioctl(fd, VT_SETMODE, &mode) == 0;
+				}
+
 				void run()
 				{
 					// the signals let through here (open blocked them for the others)
@@ -274,10 +300,10 @@ namespace Renderer
 					sigaddset(&set, acquireSignal());
 					pthread_sigmask(SIG_UNBLOCK, &set, nullptr);
 
-					while (!mStop.load())
+					for (int turn = 0; !mStop.load(); turn++)
 					{
 						pollfd p = { mPipeIn, POLLIN, 0 };
-						const int ready = poll(&p, 1, mMisterMode ? 250 : -1);
+						const int ready = mPipeIn >= 0 ? poll(&p, 1, 250) : (usleep(250000), 0);
 						char c = 0;
 						while (ready > 0 && read(mPipeIn, &c, 1) == 1)
 						{
@@ -288,6 +314,8 @@ namespace Renderer
 							else if (c == 'a')
 								acquire();
 						}
+						if (turn % 4 == 0)
+							keepHeld();
 						if (mMisterMode && mPresenting.load())
 							keepMisterMode();
 					}
@@ -298,19 +326,54 @@ namespace Renderer
 				void release()
 				{
 					mPresenting.store(false);
-					for (int wait = 0; wait < 200 && mCopying.load() > 0; wait++)
+					int wait = 0;
+					for (; wait < 200 && mCopying.load() > 0; wait++)
 						usleep(1000);
-					ioctl(mFd, VT_RELDISP, 1);
+					const int fd = openConsole();
+					const int rc = fd >= 0 ? ioctl(fd, VT_RELDISP, 1) : -1;
+					fprintf(stderr, "SoftOutput: tty%d asked to let go: %s (after %d ms)\n", mVt, rc == 0 ? "let go" : strerror(errno), wait);
+					if (fd >= 0)
+						::close(fd);
 				}
 
 				// Ours again: the next frame whole
 				void acquire()
 				{
-					ioctl(mFd, VT_RELDISP, VT_ACKACQ);
+					const int fd = openConsole();
+					const int rc = fd >= 0 ? ioctl(fd, VT_RELDISP, VT_ACKACQ) : -1;
+					fprintf(stderr, "SoftOutput: tty%d back%s\n", mVt, rc == 0 ? "" : (std::string(": ") + strerror(errno)).c_str());
+					if (fd >= 0)
+						::close(fd);
 					mRedraw.store(true);
 					mPresenting.store(true);
 					if (mMisterMode)
 						keepMisterMode();
+				}
+
+				// Every second: the console still in graphics mode, held, its keys off (whatever undid it: a
+				// getty starting again on it, another program), put back
+				void keepHeld()
+				{
+					const int fd = openConsole();
+					if (fd < 0)
+						return;
+					int kd = KD_GRAPHICS;
+					if (ioctl(fd, KDGETMODE, &kd) == 0 && kd != KD_GRAPHICS)
+					{
+						fprintf(stderr, "SoftOutput: tty%d was put in text mode: graphics again\n", mVt);
+						ioctl(fd, KDSETMODE, KD_GRAPHICS);
+					}
+					vt_mode mode = {};
+					if (mProcess && ioctl(fd, VT_GETMODE, &mode) == 0 &&
+						(mode.mode != VT_PROCESS || mode.relsig != (short)releaseSignal() || mode.acqsig != (short)acquireSignal()))
+					{
+						fprintf(stderr, "SoftOutput: tty%d was let go of by another: held again\n", mVt);
+						hold(fd);
+					}
+					int keyboard = K_OFF;
+					if (mKeyboardMode >= 0 && ioctl(fd, KDGKBMODE, &keyboard) == 0 && keyboard != K_OFF)
+						ioctl(fd, KDSKBMODE, K_OFF);
+					::close(fd);
 				}
 
 				// The MiSTer's framebuffer at ES's size while ES's console is the one shown (Main_MiSTer writes
@@ -323,10 +386,10 @@ namespace Renderer
 						FILE* f = fopen("/sys/devices/virtual/tty/tty0/active", "r");
 						if (f == nullptr)
 							return;
-						const bool read = fgets(active, sizeof(active), f) != nullptr;
+						const bool got = fgets(active, sizeof(active), f) != nullptr;
 						fclose(f);
 						int n = 0;
-						if (!read || sscanf(active, "tty%d", &n) != 1 || n != mVt)
+						if (!got || sscanf(active, "tty%d", &n) != 1 || n != mVt)
 							return;
 					}
 					FILE* f = fopen("/sys/module/MiSTer_fb/parameters/mode", "r");
@@ -345,7 +408,8 @@ namespace Renderer
 					mRedraw.store(true);
 				}
 
-				int mFd = -1, mVt = 0, mPipeIn = -1;
+				std::string mPath;
+				int mVt = 0, mPipeIn = -1, mKeyboardMode = -1;
 				int mWidth = 0, mHeight = 0;
 				bool mProcess = false, mMisterMode = false;
 				std::atomic<bool> mPresenting{ true }, mStop{ false }, mRedraw{ false };

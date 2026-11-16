@@ -165,8 +165,13 @@ fi
 # keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
 echo "starting ES at $DRAWN (SIZE=$SIZE, uptime $(uptime) s)"
+# a console switch ES does not let go of within a second (Main_MiSTer running a script after F12 waited
+# for it for ever, the menu frozen) is let go of by the guard (es-mister-helper guard)
+"$ES/es-mister-helper" guard $$ &
+GUARD=$!
 ./emulationstation
 echo "ES closed ($?)"
+kill $GUARD 2>/dev/null
 # ES ended by a signal (killall, a crash, out of memory: 128 + the signal above) leaves the console in
 # graphics mode, where the kernel ignores console switches: no F9, and no script shown from the MiSTer
 # menu, until a reboot. Text mode again, whatever the way ES ended (after a normal end, nothing changes).
