@@ -44,8 +44,8 @@ namespace Renderer
 			virtual int64_t presentRect(const uint32_t* pixels, int width, int height, int x0, int y0, int x1, int y1) = 0;
 			virtual void finishFrame(int64_t pixelsCopied) { mCopied = pixelsCopied; }
 			virtual std::string describe() const = 0;
-			// the screen was given back (a console switch back to ES's): what it shows is not the last frame,
-			// the next one goes to it whole. True once each time.
+			// what the screen shows is no longer the last frame (a console switch back to ES's, the framebuffer
+			// cleared by a mode set): the next one goes to it whole. True once each time.
 			virtual bool takeRedraw() { return false; }
 			// pixels copied by the last frame, for the statistics
 			int64_t lastPixelsCopied() const { return mCopied; }

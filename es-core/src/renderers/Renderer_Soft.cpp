@@ -1343,7 +1343,8 @@ namespace Renderer
 		SoftState& s = S();
 		StartupTrace::frameShown();
 
-		// the screen given back to ES (a console switch back to its): the next frame whole
+		// the screen no longer showing the last frame (a console switch back to ES's, the framebuffer cleared
+		// by a mode set): the next frame whole
 		if (s.output && s.output->takeRedraw())
 			s.forceRedraw = true;
 
