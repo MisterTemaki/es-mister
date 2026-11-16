@@ -3,6072 +3,6072 @@
     "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
     "bytes": 1988,
     "lines": 54,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
     "bytes": 1009,
     "lines": 18,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": ".gitignore",
     "bytes": 543,
     "lines": 57,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": ".gitmodules",
     "bytes": 98,
     "lines": 2,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindFreeImage.cmake",
     "bytes": 1848,
     "lines": 48,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindIntl.cmake",
     "bytes": 1987,
     "lines": 60,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindOpenGLES.cmake",
     "bytes": 2685,
     "lines": 101,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindOpenGLES2.cmake",
     "bytes": 1174,
     "lines": 45,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindOpenGLES3.cmake",
     "bytes": 1080,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindPackageHandleStandardArgs.cmake",
     "bytes": 15524,
     "lines": 401,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindPackageMessage.cmake",
     "bytes": 1711,
     "lines": 48,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindRapidJSON.cmake",
     "bytes": 1979,
     "lines": 71,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindSDL2.cmake",
     "bytes": 6140,
     "lines": 163,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindSDL2MIXER.cmake",
     "bytes": 1407,
     "lines": 49,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindVLC.cmake",
     "bytes": 1920,
     "lines": 63,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/FindlibCEC.cmake",
     "bytes": 1203,
     "lines": 38,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/Findudev.cmake",
     "bytes": 1734,
     "lines": 85,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Packages/MacroEnsureVersion.cmake",
     "bytes": 5085,
     "lines": 117,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMake/Utils/FindPkgMacros.cmake",
     "bytes": 6216,
     "lines": 163,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CMakeLists.txt",
     "bytes": 18621,
     "lines": 614,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "CREDITS.md",
     "bytes": 422,
     "lines": 33,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "DEVNOTES.md",
     "bytes": 1830,
     "lines": 45,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "GAMELISTS.md",
     "bytes": 5799,
     "lines": 89,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "LICENSE.md",
     "bytes": 1057,
     "lines": 19,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "README.md",
     "bytes": 14031,
     "lines": 244,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "SYSTEMS.md",
     "bytes": 6415,
     "lines": 229,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "THEMES.md",
     "bytes": 64352,
     "lines": 1493,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "THEMES_BINDINGS.md",
     "bytes": 12564,
     "lines": 303,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "emulationstation.sh",
     "bytes": 444,
     "lines": 21,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/CMakeLists.txt",
     "bytes": 15572,
     "lines": 315,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/EmulationStation.h.in",
     "bytes": 879,
     "lines": 26,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ApiSystem.cpp",
     "bytes": 93741,
     "lines": 3388,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ApiSystem.h",
     "bytes": 13693,
     "lines": 441,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/CollectionSystemManager.cpp",
     "bytes": 54153,
     "lines": 1631,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/CollectionSystemManager.h",
     "bytes": 4699,
     "lines": 149,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ContentInstaller.cpp",
     "bytes": 7485,
     "lines": 277,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ContentInstaller.h",
     "bytes": 1632,
     "lines": 65,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/CustomFeatures.cpp",
     "bytes": 18775,
     "lines": 565,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/CustomFeatures.h",
     "bytes": 3207,
     "lines": 163,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/EmulationStation.aps",
     "bytes": 356792,
     "lines": 77,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/EmulationStation.h",
     "bytes": 890,
     "lines": 29,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/EmulationStation.rc",
     "bytes": 1014,
     "lines": 39,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/FileData.cpp",
     "bytes": 58730,
     "lines": 2174,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/FileData.h",
     "bytes": 7970,
     "lines": 274,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/FileFilterIndex.cpp",
     "bytes": 38401,
     "lines": 1412,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/FileFilterIndex.h",
     "bytes": 6805,
     "lines": 197,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/FileSorts.cpp",
     "bytes": 10178,
     "lines": 226,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/FileSorts.h",
     "bytes": 2804,
     "lines": 87,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/FileTag.cpp",
     "bytes": 1169,
     "lines": 46,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/FileTag.h",
     "bytes": 348,
     "lines": 20,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/Gamelist.cpp",
     "bytes": 26290,
     "lines": 857,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/Gamelist.h",
     "bytes": 1009,
     "lines": 31,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/Genres.cpp",
     "bytes": 9824,
     "lines": 372,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/Genres.h",
     "bytes": 1391,
     "lines": 69,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/KeyboardMapping.cpp",
     "bytes": 16592,
     "lines": 816,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/KeyboardMapping.h",
     "bytes": 2096,
     "lines": 80,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/LangParser.cpp",
     "bytes": 6385,
     "lines": 241,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/LangParser.h",
     "bytes": 533,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/LibretroRatio.cpp",
     "bytes": 1829,
     "lines": 53,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/LibretroRatio.h",
     "bytes": 460,
     "lines": 22,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/MetaData.cpp",
     "bytes": 21857,
     "lines": 605,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/MetaData.h",
     "bytes": 4331,
     "lines": 201,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/NetworkThread.cpp",
     "bytes": 4643,
     "lines": 171,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/NetworkThread.h",
     "bytes": 1729,
     "lines": 80,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/PlatformId.cpp",
     "bytes": 9332,
     "lines": 299,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/PlatformId.h",
     "bytes": 3095,
     "lines": 196,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/RetroAchievements.cpp",
     "bytes": 21442,
     "lines": 696,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/RetroAchievements.h",
     "bytes": 4809,
     "lines": 227,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SaveState.cpp",
     "bytes": 7177,
     "lines": 252,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SaveState.h",
     "bytes": 1123,
     "lines": 60,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SaveStateConfigFile.cpp",
     "bytes": 10177,
     "lines": 336,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SaveStateConfigFile.h",
     "bytes": 1769,
     "lines": 85,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SaveStateRepository.cpp",
     "bytes": 7511,
     "lines": 313,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SaveStateRepository.h",
     "bytes": 1085,
     "lines": 47,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ScraperCmdLine.cpp",
     "bytes": 7640,
     "lines": 290,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ScraperCmdLine.h",
     "bytes": 146,
     "lines": 7,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SystemData.cpp",
     "bytes": 67438,
     "lines": 2391,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SystemData.h",
     "bytes": 8830,
     "lines": 285,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SystemRandomPlaylist.cpp",
     "bytes": 2414,
     "lines": 109,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SystemRandomPlaylist.h",
     "bytes": 685,
     "lines": 38,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SystemScreenSaver.cpp",
     "bytes": 31081,
     "lines": 1137,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/SystemScreenSaver.h",
     "bytes": 3143,
     "lines": 134,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ThreadedBluetooth.cpp",
     "bytes": 3024,
     "lines": 123,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ThreadedBluetooth.h",
     "bytes": 1072,
     "lines": 47,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ThreadedHasher.cpp",
     "bytes": 6085,
     "lines": 259,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ThreadedHasher.h",
     "bytes": 1343,
     "lines": 59,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/Win32ApiSystem.cpp",
     "bytes": 35612,
     "lines": 1269,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/Win32ApiSystem.h",
     "bytes": 2444,
     "lines": 70,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ZaparooSupport.cpp",
     "bytes": 1444,
     "lines": 64,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/ZaparooSupport.h",
     "bytes": 450,
     "lines": 21,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/animations/LaunchAnimation.h",
     "bytes": 2885,
     "lines": 72,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/animations/MoveCameraAnimation.h",
     "bytes": 689,
     "lines": 28,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/components/ScraperSearchComponent.cpp",
     "bytes": 21892,
     "lines": 760,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/components/ScraperSearchComponent.h",
     "bytes": 3632,
     "lines": 112,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/es_icon.ico",
     "bytes": 34494,
     "lines": 7,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiAutoScrape.cpp",
     "bytes": 2646,
     "lines": 113,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiAutoScrape.h",
     "bytes": 734,
     "lines": 36,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBackup.cpp",
     "bytes": 2421,
     "lines": 107,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBackup.h",
     "bytes": 775,
     "lines": 39,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBackupStart.cpp",
     "bytes": 2675,
     "lines": 90,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBackupStart.h",
     "bytes": 451,
     "lines": 22,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBatoceraStore.cpp",
     "bytes": 16316,
     "lines": 547,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBatoceraStore.h",
     "bytes": 2108,
     "lines": 81,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBezelInstaller.cpp",
     "bytes": 8467,
     "lines": 291,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBezelInstaller.h",
     "bytes": 1217,
     "lines": 53,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBios.cpp",
     "bytes": 6807,
     "lines": 240,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBios.h",
     "bytes": 922,
     "lines": 44,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBluetoothDeviceOptions.cpp",
     "bytes": 4044,
     "lines": 123,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBluetoothDeviceOptions.h",
     "bytes": 758,
     "lines": 28,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBluetoothDevices.cpp",
     "bytes": 4435,
     "lines": 160,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBluetoothDevices.h",
     "bytes": 661,
     "lines": 28,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBluetoothPair.cpp",
     "bytes": 3754,
     "lines": 142,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiBluetoothPair.h",
     "bytes": 774,
     "lines": 35,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiCollectionSystemsOptions.cpp",
     "bytes": 21262,
     "lines": 611,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiCollectionSystemsOptions.h",
     "bytes": 925,
     "lines": 33,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiControllersSettings.cpp",
     "bytes": 39240,
     "lines": 950,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiControllersSettings.h",
     "bytes": 1083,
     "lines": 44,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiFavoriteMusicSelector.cpp",
     "bytes": 3652,
     "lines": 91,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiFavoriteMusicSelector.h",
     "bytes": 638,
     "lines": 28,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiFileBrowser.cpp",
     "bytes": 6287,
     "lines": 230,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiFileBrowser.h",
     "bytes": 932,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGameAchievements.cpp",
     "bytes": 8751,
     "lines": 276,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGameAchievements.h",
     "bytes": 754,
     "lines": 31,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGameOptions.cpp",
     "bytes": 20563,
     "lines": 663,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGameOptions.h",
     "bytes": 1296,
     "lines": 52,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGameScraper.cpp",
     "bytes": 4006,
     "lines": 131,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGameScraper.h",
     "bytes": 991,
     "lines": 39,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGamelistFilter.cpp",
     "bytes": 8283,
     "lines": 270,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGamelistFilter.h",
     "bytes": 1233,
     "lines": 47,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGamelistOptions.cpp",
     "bytes": 21800,
     "lines": 693,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGamelistOptions.h",
     "bytes": 1788,
     "lines": 66,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGeneralScreensaverOptions.cpp",
     "bytes": 19039,
     "lines": 424,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiGeneralScreensaverOptions.h",
     "bytes": 676,
     "lines": 22,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiHashStart.cpp",
     "bytes": 3574,
     "lines": 117,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiHashStart.h",
     "bytes": 1091,
     "lines": 40,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiImageViewer.cpp",
     "bytes": 17349,
     "lines": 763,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiImageViewer.h",
     "bytes": 1405,
     "lines": 51,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiInstall.cpp",
     "bytes": 2513,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiInstall.h",
     "bytes": 839,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiInstallStart.cpp",
     "bytes": 3863,
     "lines": 115,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiInstallStart.h",
     "bytes": 605,
     "lines": 26,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiKeyMappingEditor.cpp",
     "bytes": 18287,
     "lines": 632,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiKeyMappingEditor.h",
     "bytes": 1891,
     "lines": 81,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiKeyboardLayout.cpp",
     "bytes": 9280,
     "lines": 296,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiKeyboardLayout.h",
     "bytes": 787,
     "lines": 33,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiKeyboardtopads.cpp",
     "bytes": 12119,
     "lines": 380,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiKeyboardtopads.h",
     "bytes": 1109,
     "lines": 34,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiLoading.h",
     "bytes": 2776,
     "lines": 143,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiMenu.cpp",
     "bytes": 241282,
     "lines": 5913,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiMenu.h",
     "bytes": 4980,
     "lines": 110,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiMetaDataEd.cpp",
     "bytes": 22124,
     "lines": 684,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiMetaDataEd.h",
     "bytes": 1673,
     "lines": 56,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiNetPlay.cpp",
     "bytes": 31144,
     "lines": 1109,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiNetPlay.h",
     "bytes": 3041,
     "lines": 121,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiNetPlaySettings.cpp",
     "bytes": 6981,
     "lines": 187,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiNetPlaySettings.h",
     "bytes": 262,
     "lines": 15,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiRetroAchievements.cpp",
     "bytes": 12321,
     "lines": 392,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiRetroAchievements.h",
     "bytes": 989,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiRetroAchievementsSettings.cpp",
     "bytes": 5155,
     "lines": 100,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiRetroAchievementsSettings.h",
     "bytes": 171,
     "lines": 11,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiSaveState.cpp",
     "bytes": 9903,
     "lines": 305,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiSaveState.h",
     "bytes": 1316,
     "lines": 52,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiScraperStart.cpp",
     "bytes": 16964,
     "lines": 476,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiScraperStart.h",
     "bytes": 1356,
     "lines": 48,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiSettings.cpp",
     "bytes": 14159,
     "lines": 458,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiSettings.h",
     "bytes": 5940,
     "lines": 146,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiSystemInformation.cpp",
     "bytes": 2185,
     "lines": 64,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiSystemInformation.h",
     "bytes": 155,
     "lines": 11,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiThemeInstaller.cpp",
     "bytes": 13454,
     "lines": 461,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiThemeInstaller.h",
     "bytes": 1950,
     "lines": 81,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiUpdate.cpp",
     "bytes": 5843,
     "lines": 248,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiUpdate.h",
     "bytes": 1314,
     "lines": 65,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiWifi.cpp",
     "bytes": 3799,
     "lines": 141,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/guis/GuiWifi.h",
     "bytes": 699,
     "lines": 31,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/main.cpp",
     "bytes": 30725,
     "lines": 1044,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/ArcadeDBJSONScraper.cpp",
     "bytes": 7521,
     "lines": 243,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/ArcadeDBJSONScraper.h",
     "bytes": 1339,
     "lines": 46,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/GamesDBJSONScraper.cpp",
     "bytes": 17064,
     "lines": 633,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/GamesDBJSONScraper.h",
     "bytes": 1460,
     "lines": 51,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/GamesDBJSONScraperResources.cpp",
     "bytes": 5753,
     "lines": 200,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/GamesDBJSONScraperResources.h",
     "bytes": 1313,
     "lines": 45,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/HfsDBScraper.cpp",
     "bytes": 17465,
     "lines": 633,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/HfsDBScraper.h",
     "bytes": 1801,
     "lines": 66,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/IGDBScraper.cpp",
     "bytes": 10630,
     "lines": 349,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/IGDBScraper.h",
     "bytes": 1757,
     "lines": 62,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/Scraper.cpp",
     "bytes": 26651,
     "lines": 884,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/Scraper.h",
     "bytes": 7103,
     "lines": 289,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/ScreenScraper.cpp",
     "bytes": 30932,
     "lines": 979,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/ScreenScraper.h",
     "bytes": 2775,
     "lines": 99,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/ThreadedScraper.cpp",
     "bytes": 7691,
     "lines": 305,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/scrapers/ThreadedScraper.h",
     "bytes": 2009,
     "lines": 93,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/services/HttpApi.cpp",
     "bytes": 8620,
     "lines": 344,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/services/HttpApi.h",
     "bytes": 1151,
     "lines": 35,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/services/HttpServerThread.cpp",
     "bytes": 21731,
     "lines": 855,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/services/HttpServerThread.h",
     "bytes": 390,
     "lines": 30,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/services/httplib.h",
     "bytes": 174945,
     "lines": 5713,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/SystemView.cpp",
     "bytes": 47240,
     "lines": 1661,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/SystemView.h",
     "bytes": 3860,
     "lines": 142,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/SystemViewControlWrapper.h",
     "bytes": 5027,
     "lines": 184,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/UIModeController.cpp",
     "bytes": 4835,
     "lines": 196,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/UIModeController.h",
     "bytes": 1628,
     "lines": 63,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/ViewController.cpp",
     "bytes": 42676,
     "lines": 1497,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/ViewController.h",
     "bytes": 4914,
     "lines": 142,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/BasicGameListView.cpp",
     "bytes": 5133,
     "lines": 226,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/BasicGameListView.h",
     "bytes": 1594,
     "lines": 49,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/CarouselGameListView.cpp",
     "bytes": 5071,
     "lines": 213,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/CarouselGameListView.h",
     "bytes": 1687,
     "lines": 53,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/DetailedContainer.cpp",
     "bytes": 45079,
     "lines": 1480,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/DetailedContainer.h",
     "bytes": 4657,
     "lines": 187,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/DetailedGameListView.cpp",
     "bytes": 2051,
     "lines": 72,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/DetailedGameListView.h",
     "bytes": 1009,
     "lines": 39,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/GameNameFormatter.cpp",
     "bytes": 9003,
     "lines": 269,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/GameNameFormatter.h",
     "bytes": 650,
     "lines": 36,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/GridGameListView.cpp",
     "bytes": 8958,
     "lines": 344,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/GridGameListView.h",
     "bytes": 2179,
     "lines": 66,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/IGameListView.cpp",
     "bytes": 1006,
     "lines": 48,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/IGameListView.h",
     "bytes": 2005,
     "lines": 58,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/ISimpleGameListView.cpp",
     "bytes": 22962,
     "lines": 910,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/ISimpleGameListView.h",
     "bytes": 3380,
     "lines": 104,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/VideoGameListView.cpp",
     "bytes": 1995,
     "lines": 67,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-app/src/views/gamelist/VideoGameListView.h",
     "bytes": 972,
     "lines": 40,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/CMakeLists.txt",
     "bytes": 15134,
     "lines": 320,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/AsyncHandle.h",
     "bytes": 1352,
     "lines": 57,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/AudioManager.cpp",
     "bytes": 18873,
     "lines": 763,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/AudioManager.h",
     "bytes": 2258,
     "lines": 86,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/BindingManager.cpp",
     "bytes": 14457,
     "lines": 522,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/BindingManager.h",
     "bytes": 3777,
     "lines": 118,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/CECInput.cpp",
     "bytes": 22490,
     "lines": 376,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/CECInput.h",
     "bytes": 733,
     "lines": 38,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/FavoriteMusicManager.cpp",
     "bytes": 3148,
     "lines": 127,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/FavoriteMusicManager.h",
     "bytes": 771,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/GuiComponent.cpp",
     "bytes": 36468,
     "lines": 1540,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/GuiComponent.h",
     "bytes": 9711,
     "lines": 298,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/GunManager.cpp",
     "bytes": 32883,
     "lines": 1140,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/GunManager.h",
     "bytes": 3277,
     "lines": 155,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/HelpPrompt.h",
     "bytes": 500,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/HelpStyle.cpp",
     "bytes": 2389,
     "lines": 87,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/HelpStyle.h",
     "bytes": 590,
     "lines": 31,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/HttpReq.cpp",
     "bytes": 15736,
     "lines": 626,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/HttpReq.h",
     "bytes": 3817,
     "lines": 161,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/ImageIO.cpp",
     "bytes": 15486,
     "lines": 551,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/ImageIO.h",
     "bytes": 2080,
     "lines": 54,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/InputConfig.cpp",
     "bytes": 11114,
     "lines": 439,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/InputConfig.h",
     "bytes": 4456,
     "lines": 176,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/InputManager.cpp",
     "bytes": 47357,
     "lines": 1561,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/InputManager.h",
     "bytes": 2771,
     "lines": 109,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/LocaleES.cpp",
     "bytes": 12749,
     "lines": 427,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/LocaleES.h",
     "bytes": 2202,
     "lines": 98,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Log.cpp",
     "bytes": 8371,
     "lines": 346,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Log.h",
     "bytes": 1204,
     "lines": 56,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/MameNames.cpp",
     "bytes": 11974,
     "lines": 461,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/MameNames.h",
     "bytes": 1733,
     "lines": 62,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/MultiStateInput.cpp",
     "bytes": 931,
     "lines": 52,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/MultiStateInput.h",
     "bytes": 311,
     "lines": 18,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Paths.cpp",
     "bytes": 10256,
     "lines": 342,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Paths.h",
     "bytes": 3777,
     "lines": 112,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/PowerSaver.cpp",
     "bytes": 2632,
     "lines": 122,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/PowerSaver.h",
     "bytes": 1771,
     "lines": 84,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Scripting.cpp",
     "bytes": 6942,
     "lines": 209,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Scripting.h",
     "bytes": 318,
     "lines": 13,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Settings.cpp",
     "bytes": 19625,
     "lines": 625,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Settings.h",
     "bytes": 5806,
     "lines": 159,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Sound.cpp",
     "bytes": 2196,
     "lines": 115,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Sound.h",
     "bytes": 723,
     "lines": 38,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Splash.cpp",
     "bytes": 9531,
     "lines": 337,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Splash.h",
     "bytes": 882,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/SystemConf.cpp",
     "bytes": 6201,
     "lines": 278,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/SystemConf.h",
     "bytes": 926,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/TextToSpeech.cpp",
     "bytes": 6342,
     "lines": 284,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/TextToSpeech.h",
     "bytes": 1077,
     "lines": 64,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/ThemeData.cpp",
     "bytes": 83237,
     "lines": 2900,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/ThemeData.h",
     "bytes": 16632,
     "lines": 599,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/ThemeVariables.cpp",
     "bytes": 974,
     "lines": 44,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/ThemeVariables.h",
     "bytes": 301,
     "lines": 15,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/VolumeControl.cpp",
     "bytes": 18223,
     "lines": 668,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/VolumeControl.h",
     "bytes": 1324,
     "lines": 61,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Window.cpp",
     "bytes": 45484,
     "lines": 1622,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/Window.h",
     "bytes": 5553,
     "lines": 195,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/anim/StoryboardAnimator.cpp",
     "bytes": 5230,
     "lines": 236,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/anim/StoryboardAnimator.h",
     "bytes": 3665,
     "lines": 192,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/anim/ThemeAnimation.h",
     "bytes": 2930,
     "lines": 145,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/anim/ThemeStoryboard.cpp",
     "bytes": 9350,
     "lines": 241,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/anim/ThemeStoryboard.h",
     "bytes": 578,
     "lines": 28,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/animations/Animation.h",
     "bytes": 268,
     "lines": 13,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/animations/AnimationController.cpp",
     "bytes": 766,
     "lines": 38,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/animations/AnimationController.h",
     "bytes": 1035,
     "lines": 35,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/animations/LambdaAnimation.h",
     "bytes": 702,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/AnimatedImageComponent.cpp",
     "bytes": 1933,
     "lines": 86,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/AnimatedImageComponent.h",
     "bytes": 916,
     "lines": 47,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/AsyncNotificationComponent.cpp",
     "bytes": 5275,
     "lines": 195,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/AsyncNotificationComponent.h",
     "bytes": 1248,
     "lines": 56,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/BatteryIconComponent.cpp",
     "bytes": 3481,
     "lines": 101,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/BatteryIconComponent.h",
     "bytes": 968,
     "lines": 38,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/BatteryIndicatorComponent.cpp",
     "bytes": 2058,
     "lines": 56,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/BatteryIndicatorComponent.h",
     "bytes": 457,
     "lines": 19,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/BatteryTextComponent.cpp",
     "bytes": 1472,
     "lines": 64,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/BatteryTextComponent.h",
     "bytes": 688,
     "lines": 30,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/BusyComponent.cpp",
     "bytes": 3533,
     "lines": 134,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/BusyComponent.h",
     "bytes": 965,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ButtonComponent.cpp",
     "bytes": 5406,
     "lines": 225,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ButtonComponent.h",
     "bytes": 2054,
     "lines": 73,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/CarouselComponent.cpp",
     "bytes": 31131,
     "lines": 1128,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/CarouselComponent.h",
     "bytes": 4788,
     "lines": 183,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ClockComponent.cpp",
     "bytes": 1243,
     "lines": 52,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ClockComponent.h",
     "bytes": 453,
     "lines": 24,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ComponentGrid.cpp",
     "bytes": 12762,
     "lines": 517,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ComponentGrid.h",
     "bytes": 4422,
     "lines": 147,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ComponentList.cpp",
     "bytes": 18303,
     "lines": 723,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ComponentList.h",
     "bytes": 4629,
     "lines": 155,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ComponentTab.cpp",
     "bytes": 10866,
     "lines": 435,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ComponentTab.h",
     "bytes": 2708,
     "lines": 82,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ControllerActivityComponent.cpp",
     "bytes": 17051,
     "lines": 603,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ControllerActivityComponent.h",
     "bytes": 3212,
     "lines": 135,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/DateTimeComponent.cpp",
     "bytes": 2972,
     "lines": 110,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/DateTimeComponent.h",
     "bytes": 1259,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/DateTimeEditComponent.cpp",
     "bytes": 7682,
     "lines": 363,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/DateTimeEditComponent.h",
     "bytes": 2213,
     "lines": 77,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/GridTileComponent.cpp",
     "bytes": 44279,
     "lines": 1630,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/GridTileComponent.h",
     "bytes": 7772,
     "lines": 319,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/HelpComponent.cpp",
     "bytes": 8657,
     "lines": 331,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/HelpComponent.h",
     "bytes": 1170,
     "lines": 44,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/IExternalActivity.cpp",
     "bytes": 90,
     "lines": 3,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/IExternalActivity.h",
     "bytes": 343,
     "lines": 14,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/IList.h",
     "bytes": 9752,
     "lines": 431,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ImageComponent.cpp",
     "bytes": 36590,
     "lines": 1345,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ImageComponent.h",
     "bytes": 6527,
     "lines": 204,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ImageGridComponent.h",
     "bytes": 79108,
     "lines": 2817,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/MenuComponent.cpp",
     "bytes": 15096,
     "lines": 541,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/MenuComponent.h",
     "bytes": 4951,
     "lines": 113,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/MultiLineMenuEntry.cpp",
     "bytes": 3049,
     "lines": 128,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/MultiLineMenuEntry.h",
     "bytes": 645,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/NetworkIconComponent.cpp",
     "bytes": 2346,
     "lines": 79,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/NetworkIconComponent.h",
     "bytes": 850,
     "lines": 34,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/NinePatchComponent.cpp",
     "bytes": 14633,
     "lines": 494,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/NinePatchComponent.h",
     "bytes": 2961,
     "lines": 88,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/OptionListComponent.h",
     "bytes": 18320,
     "lines": 760,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/PostProcessShaderComponent.cpp",
     "bytes": 3475,
     "lines": 105,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/PostProcessShaderComponent.h",
     "bytes": 869,
     "lines": 28,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/RatingComponent.cpp",
     "bytes": 8228,
     "lines": 294,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/RatingComponent.h",
     "bytes": 2054,
     "lines": 63,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/RectangleComponent.cpp",
     "bytes": 4874,
     "lines": 166,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/RectangleComponent.h",
     "bytes": 1067,
     "lines": 37,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ScrollableContainer.cpp",
     "bytes": 3214,
     "lines": 132,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ScrollableContainer.h",
     "bytes": 816,
     "lines": 32,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ScrollbarComponent.cpp",
     "bytes": 5400,
     "lines": 214,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/ScrollbarComponent.h",
     "bytes": 1392,
     "lines": 64,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/SliderComponent.cpp",
     "bytes": 8713,
     "lines": 408,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/SliderComponent.h",
     "bytes": 1993,
     "lines": 67,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/StackPanelComponent.cpp",
     "bytes": 5807,
     "lines": 225,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/StackPanelComponent.h",
     "bytes": 835,
     "lines": 37,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/SwitchComponent.cpp",
     "bytes": 3775,
     "lines": 174,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/SwitchComponent.h",
     "bytes": 1368,
     "lines": 53,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/TextComponent.cpp",
     "bytes": 24911,
     "lines": 863,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/TextComponent.h",
     "bytes": 3915,
     "lines": 139,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/TextEditComponent.cpp",
     "bytes": 9900,
     "lines": 400,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/TextEditComponent.h",
     "bytes": 1600,
     "lines": 72,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/TextListComponent.h",
     "bytes": 26817,
     "lines": 981,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/VideoComponent.cpp",
     "bytes": 15450,
     "lines": 657,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/VideoComponent.h",
     "bytes": 6568,
     "lines": 235,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/VideoPlayerComponent.cpp",
     "bytes": 7880,
     "lines": 274,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/VideoPlayerComponent.h",
     "bytes": 1330,
     "lines": 42,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/VideoVlcComponent.cpp",
     "bytes": 29068,
     "lines": 1110,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/VideoVlcComponent.h",
     "bytes": 4210,
     "lines": 170,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/VideoVlcStub.cpp",
     "bytes": 2469,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/VolumeInfoComponent.cpp",
     "bytes": 3455,
     "lines": 143,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/VolumeInfoComponent.h",
     "bytes": 533,
     "lines": 29,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/WebImageComponent.cpp",
     "bytes": 6186,
     "lines": 240,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/components/WebImageComponent.h",
     "bytes": 967,
     "lines": 39,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/gettext.h",
     "bytes": 10777,
     "lines": 300,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiDetectDevice.cpp",
     "bytes": 4904,
     "lines": 149,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiDetectDevice.h",
     "bytes": 923,
     "lines": 37,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiInfoPopup.cpp",
     "bytes": 3346,
     "lines": 115,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiInfoPopup.h",
     "bytes": 796,
     "lines": 37,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiInputConfig.cpp",
     "bytes": 15365,
     "lines": 433,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiInputConfig.h",
     "bytes": 2150,
     "lines": 72,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiMsgBox.cpp",
     "bytes": 7440,
     "lines": 225,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiMsgBox.h",
     "bytes": 1691,
     "lines": 61,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiTextEditPopup.cpp",
     "bytes": 3155,
     "lines": 86,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiTextEditPopup.h",
     "bytes": 898,
     "lines": 33,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiTextEditPopupKeyboard.cpp",
     "bytes": 18244,
     "lines": 533,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/guis/GuiTextEditPopupKeyboard.h",
     "bytes": 1900,
     "lines": 57,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Misc.cpp",
     "bytes": 3552,
     "lines": 159,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Misc.h",
     "bytes": 1501,
     "lines": 40,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Transform4x4f.cpp",
     "bytes": 11929,
     "lines": 329,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Transform4x4f.h",
     "bytes": 2115,
     "lines": 53,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Vector2f.cpp",
     "bytes": 929,
     "lines": 38,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Vector2f.h",
     "bytes": 3496,
     "lines": 73,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Vector2i.cpp",
     "bytes": 27,
     "lines": 1,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Vector2i.h",
     "bytes": 2924,
     "lines": 61,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Vector3f.cpp",
     "bytes": 456,
     "lines": 21,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Vector3f.h",
     "bytes": 4610,
     "lines": 104,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Vector4f.cpp",
     "bytes": 1935,
     "lines": 106,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/math/Vector4f.h",
     "bytes": 5482,
     "lines": 101,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/playlists/AnimatedGifPlaylist.cpp",
     "bytes": 620,
     "lines": 33,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/playlists/AnimatedGifPlaylist.h",
     "bytes": 365,
     "lines": 18,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/playlists/M3uPlaylist.cpp",
     "bytes": 1874,
     "lines": 87,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/playlists/M3uPlaylist.h",
     "bytes": 523,
     "lines": 26,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/GlExtensions.cpp",
     "bytes": 6750,
     "lines": 140,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/GlExtensions.h",
     "bytes": 2680,
     "lines": 88,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer.cpp",
     "bytes": 34968,
     "lines": 1267,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer.h",
     "bytes": 10788,
     "lines": 269,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_GL21.cpp",
     "bytes": 14097,
     "lines": 459,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_GL21.h",
     "bytes": 2490,
     "lines": 52,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_GLES10.cpp",
     "bytes": 13093,
     "lines": 422,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_GLES10.h",
     "bytes": 2487,
     "lines": 52,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_GLES20.cpp",
     "bytes": 42846,
     "lines": 1420,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_GLES20.h",
     "bytes": 2964,
     "lines": 66,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_GLES30.cpp",
     "bytes": 74856,
     "lines": 2434,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_GLES30.h",
     "bytes": 3315,
     "lines": 69,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_Soft.cpp",
     "bytes": 48731,
     "lines": 1460,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Renderer_Soft.h",
     "bytes": 3581,
     "lines": 68,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Shader.cpp",
     "bytes": 19056,
     "lines": 657,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/Shader.h",
     "bytes": 3516,
     "lines": 152,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/soft/SoftOutput.cpp",
     "bytes": 7694,
     "lines": 273,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/soft/SoftOutput.h",
     "bytes": 1917,
     "lines": 51,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/soft/SoftRaster.cpp",
     "bytes": 51591,
     "lines": 1461,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/soft/SoftRaster.h",
     "bytes": 5325,
     "lines": 138,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/soft/SoftScript.cpp",
     "bytes": 4241,
     "lines": 172,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/renderers/soft/SoftScript.h",
     "bytes": 2240,
     "lines": 59,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/Font.cpp",
     "bytes": 34336,
     "lines": 1271,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/Font.h",
     "bytes": 6998,
     "lines": 209,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/ResourceManager.cpp",
     "bytes": 6685,
     "lines": 258,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/ResourceManager.h",
     "bytes": 1432,
     "lines": 64,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/TextureData.cpp",
     "bytes": 20478,
     "lines": 731,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/TextureData.h",
     "bytes": 3368,
     "lines": 126,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/TextureDataManager.cpp",
     "bytes": 9523,
     "lines": 395,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/TextureDataManager.h",
     "bytes": 3432,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/TextureResource.cpp",
     "bytes": 9938,
     "lines": 347,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/resources/TextureResource.h",
     "bytes": 2729,
     "lines": 74,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/stb_impl.cpp",
     "bytes": 751,
     "lines": 23,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/ConcurrentVector.h",
     "bytes": 2111,
     "lines": 91,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/Delegate.h",
     "bytes": 377,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/FileSystemUtil.cpp",
     "bytes": 46058,
     "lines": 1810,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/FileSystemUtil.h",
     "bytes": 4080,
     "lines": 103,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/HtmlColor.cpp",
     "bytes": 6522,
     "lines": 247,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/HtmlColor.h",
     "bytes": 374,
     "lines": 18,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/MathExpr.cpp",
     "bytes": 31685,
     "lines": 1015,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/MathExpr.h",
     "bytes": 1902,
     "lines": 74,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/Platform.cpp",
     "bytes": 20386,
     "lines": 832,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/Platform.h",
     "bytes": 1256,
     "lines": 82,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/Randomizer.cpp",
     "bytes": 1060,
     "lines": 53,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/Randomizer.h",
     "bytes": 287,
     "lines": 19,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/SampleProfiler.cpp",
     "bytes": 4444,
     "lines": 158,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/SampleProfiler.h",
     "bytes": 655,
     "lines": 16,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/StartupTrace.cpp",
     "bytes": 8017,
     "lines": 314,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/StartupTrace.h",
     "bytes": 2190,
     "lines": 51,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/StringListLock.cpp",
     "bytes": 992,
     "lines": 60,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/StringListLock.h",
     "bytes": 552,
     "lines": 30,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/StringUtil.cpp",
     "bytes": 52559,
     "lines": 1327,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/StringUtil.h",
     "bytes": 5249,
     "lines": 94,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/ThreadPool.cpp",
     "bytes": 4393,
     "lines": 236,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/ThreadPool.h",
     "bytes": 1438,
     "lines": 77,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/TimeUtil.cpp",
     "bytes": 13539,
     "lines": 586,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/TimeUtil.h",
     "bytes": 2761,
     "lines": 89,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/Uri.h",
     "bytes": 3008,
     "lines": 144,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/VectorEx.h",
     "bytes": 5196,
     "lines": 169,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/ZipFile.cpp",
     "bytes": 9892,
     "lines": 369,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/ZipFile.h",
     "bytes": 1147,
     "lines": 51,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/han.h",
     "bytes": 356846,
     "lines": 20923,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/md5.cpp",
     "bytes": 10227,
     "lines": 368,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/md5.h",
     "bytes": 3082,
     "lines": 94,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/utils/zip_file.hpp",
     "bytes": 460892,
     "lines": 10011,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/watchers/BatteryLevelWatcher.cpp",
     "bytes": 344,
     "lines": 8,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/watchers/BatteryLevelWatcher.h",
     "bytes": 478,
     "lines": 21,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/watchers/NetworkStateWatcher.cpp",
     "bytes": 737,
     "lines": 21,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/watchers/NetworkStateWatcher.h",
     "bytes": 502,
     "lines": 25,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/watchers/WatchersManager.cpp",
     "bytes": 3936,
     "lines": 203,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "es-core/src/watchers/WatchersManager.h",
     "bytes": 1866,
     "lines": 93,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/CMakeLists.txt",
     "bytes": 312,
     "lines": 10,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/.clang-format",
     "bytes": 355,
     "lines": 12,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/.gitignore",
     "bytes": 150,
     "lines": 19,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/CMakeLists.txt",
     "bytes": 224,
     "lines": 9,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/LICENSE",
     "bytes": 1298,
     "lines": 22,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/README.md",
     "bytes": 8961,
     "lines": 289,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/id3v2lib.compat.h",
     "bytes": 3842,
     "lines": 129,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/id3v2lib.h",
     "bytes": 1141,
     "lines": 45,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/frame.h",
     "bytes": 560,
     "lines": 28,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/frame_header.h",
     "bytes": 605,
     "lines": 25,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/frame_ids.h",
     "bytes": 696,
     "lines": 25,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/frame_list.h",
     "bytes": 719,
     "lines": 33,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/frames/apic_frame.h",
     "bytes": 763,
     "lines": 36,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/frames/comment_frame.h",
     "bytes": 714,
     "lines": 32,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/frames/text_frame.h",
     "bytes": 558,
     "lines": 28,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/picture_types.h",
     "bytes": 1145,
     "lines": 35,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/tag.h",
     "bytes": 4635,
     "lines": 138,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/tag_header.h",
     "bytes": 875,
     "lines": 33,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/include/modules/utils.h",
     "bytes": 895,
     "lines": 35,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/logo.png",
     "bytes": 18562,
     "lines": 69,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/CMakeLists.txt",
     "bytes": 2793,
     "lines": 72,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/id3v2lib.c",
     "bytes": 4349,
     "lines": 165,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/id3v2lib.compat.c",
     "bytes": 12800,
     "lines": 453,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/char_stream.c",
     "bytes": 2093,
     "lines": 91,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/char_stream.private.h",
     "bytes": 889,
     "lines": 33,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frame.c",
     "bytes": 3488,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frame.private.h",
     "bytes": 478,
     "lines": 21,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frame_header.c",
     "bytes": 2528,
     "lines": 91,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frame_header.private.h",
     "bytes": 866,
     "lines": 30,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frame_list.c",
     "bytes": 3814,
     "lines": 175,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frame_list.private.h",
     "bytes": 881,
     "lines": 26,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frames/apic_frame.c",
     "bytes": 4738,
     "lines": 140,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frames/apic_frame.private.h",
     "bytes": 945,
     "lines": 38,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frames/comment_frame.c",
     "bytes": 4005,
     "lines": 127,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frames/comment_frame.private.h",
     "bytes": 856,
     "lines": 34,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frames/text_frame.c",
     "bytes": 2752,
     "lines": 91,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/frames/text_frame.private.h",
     "bytes": 711,
     "lines": 25,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/tag.c",
     "bytes": 14891,
     "lines": 563,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/tag.private.h",
     "bytes": 436,
     "lines": 20,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/tag_header.c",
     "bytes": 2529,
     "lines": 87,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/tag_header.private.h",
     "bytes": 634,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/utils.c",
     "bytes": 3177,
     "lines": 161,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/src/modules/utils.private.h",
     "bytes": 581,
     "lines": 24,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/CMakeLists.txt",
     "bytes": 1224,
     "lines": 41,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/assertion_utils.c",
     "bytes": 4344,
     "lines": 121,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/assertion_utils.h",
     "bytes": 782,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/compat_test.c",
     "bytes": 3295,
     "lines": 111,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/compat_test.h",
     "bytes": 305,
     "lines": 15,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/delete_test.c",
     "bytes": 2416,
     "lines": 78,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/delete_test.h",
     "bytes": 305,
     "lines": 15,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/extra/album_cover.png",
     "bytes": 2935656,
     "lines": 11067,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/extra/empty.mp3",
     "bytes": 0,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/extra/file.mp3",
     "bytes": 9538842,
     "lines": 42345,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/extra/no_tag.mp3",
     "bytes": 6600621,
     "lines": 31278,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/get_test.c",
     "bytes": 4729,
     "lines": 184,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/get_test.h",
     "bytes": 296,
     "lines": 15,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/main_test.c",
     "bytes": 429,
     "lines": 23,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/set_test.c",
     "bytes": 6723,
     "lines": 257,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/set_test.h",
     "bytes": 296,
     "lines": 15,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/test_utils.c",
     "bytes": 3634,
     "lines": 169,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/id3v2lib/test/test_utils.h",
     "bytes": 973,
     "lines": 35,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/CMakeLists.txt",
     "bytes": 13478,
     "lines": 228,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/cheevos.cpp",
     "bytes": 4988,
     "lines": 177,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/cheevos.h",
     "bytes": 133,
     "lines": 5,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/array/rbuf.h",
     "bytes": 4746,
     "lines": 120,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/array/rhmap.h",
     "bytes": 11164,
     "lines": 285,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/boolean.h",
     "bytes": 1723,
     "lines": 39,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/cdrom/cdrom.h",
     "bytes": 4661,
     "lines": 125,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/apple_compat.h",
     "bytes": 2474,
     "lines": 84,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/fnmatch.h",
     "bytes": 1561,
     "lines": 30,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/fopen_utf8.h",
     "bytes": 1781,
     "lines": 34,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/getopt.h",
     "bytes": 2703,
     "lines": 74,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/ifaddrs.h",
     "bytes": 1841,
     "lines": 53,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/intrinsics.h",
     "bytes": 2671,
     "lines": 99,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/msvc/stdint.h",
     "bytes": 7823,
     "lines": 255,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/msvc.h",
     "bytes": 4040,
     "lines": 126,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/posix_string.h",
     "bytes": 2154,
     "lines": 60,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/strcasestr.h",
     "bytes": 1916,
     "lines": 48,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/strl.h",
     "bytes": 2136,
     "lines": 59,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/zlib/zconf.h",
     "bytes": 14954,
     "lines": 483,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/compat/zlib/zlib.h",
     "bytes": 86052,
     "lines": 1761,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/dr_libs/dr_flac.h",
     "bytes": 514463,
     "lines": 12266,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/encodings/crc32.h",
     "bytes": 1635,
     "lines": 37,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/encodings/utf.h",
     "bytes": 3592,
     "lines": 137,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/file/file_path.h",
     "bytes": 19375,
     "lines": 679,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/formats/cdfs.h",
     "bytes": 4174,
     "lines": 113,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/formats/m3u_file.h",
     "bytes": 3876,
     "lines": 122,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/libchdr/bitstream.h",
     "bytes": 1408,
     "lines": 43,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/libchdr/cdrom.h",
     "bytes": 3276,
     "lines": 110,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/libchdr/chd.h",
     "bytes": 16012,
     "lines": 427,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/libchdr/chdconfig.h",
     "bytes": 228,
     "lines": 10,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/libchdr/coretypes.h",
     "bytes": 1408,
     "lines": 60,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/libchdr/flac.h",
     "bytes": 2177,
     "lines": 50,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/libchdr/huffman.h",
     "bytes": 3003,
     "lines": 90,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/libretro.h",
     "bytes": 210706,
     "lines": 3899,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/lists/dir_list.h",
     "bytes": 3993,
     "lines": 100,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/lists/string_list.h",
     "bytes": 6301,
     "lines": 205,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/lrc_hash.h",
     "bytes": 3294,
     "lines": 95,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/memalign.h",
     "bytes": 1661,
     "lines": 40,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/memmap.h",
     "bytes": 2166,
     "lines": 52,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_assert.h",
     "bytes": 1678,
     "lines": 35,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_common.h",
     "bytes": 1862,
     "lines": 36,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_common_api.h",
     "bytes": 4033,
     "lines": 119,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_dirent.h",
     "bytes": 2674,
     "lines": 77,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_endianness.h",
     "bytes": 14905,
     "lines": 579,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_environment.h",
     "bytes": 3894,
     "lines": 114,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_inline.h",
     "bytes": 1712,
     "lines": 39,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_math.h",
     "bytes": 5154,
     "lines": 190,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_miscellaneous.h",
     "bytes": 6286,
     "lines": 207,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/retro_timers.h",
     "bytes": 3635,
     "lines": 112,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/streams/chd_stream.h",
     "bytes": 2527,
     "lines": 68,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/streams/file_stream.h",
     "bytes": 4508,
     "lines": 142,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/streams/file_stream_transforms.h",
     "bytes": 2855,
     "lines": 101,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/streams/interface_stream.h",
     "bytes": 4096,
     "lines": 132,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/streams/memory_stream.h",
     "bytes": 2351,
     "lines": 63,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/streams/rzip_stream.h",
     "bytes": 7269,
     "lines": 188,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/streams/stdin_stream.h",
     "bytes": 1652,
     "lines": 39,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/streams/trans_stream.h",
     "bytes": 3926,
     "lines": 106,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/string/stdstring.h",
     "bytes": 12225,
     "lines": 387,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/time/rtime.h",
     "bytes": 1910,
     "lines": 48,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/vfs/vfs.h",
     "bytes": 3180,
     "lines": 111,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/vfs/vfs_implementation.h",
     "bytes": 3340,
     "lines": 82,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/vfs/vfs_implementation_cdrom.h",
     "bytes": 2322,
     "lines": 52,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/zconf.h",
     "bytes": 14954,
     "lines": 483,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/include/zlib.h",
     "bytes": 86052,
     "lines": 1761,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7z.h",
     "bytes": 5188,
     "lines": 202,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zArcIn.c",
     "bytes": 44012,
     "lines": 1771,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zBuf.c",
     "bytes": 530,
     "lines": 36,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zBuf.h",
     "bytes": 620,
     "lines": 35,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zCrc.c",
     "bytes": 3165,
     "lines": 128,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zCrc.h",
     "bytes": 620,
     "lines": 25,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zCrcOpt.c",
     "bytes": 3414,
     "lines": 115,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zDec.c",
     "bytes": 15314,
     "lines": 591,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zFile.c",
     "bytes": 6851,
     "lines": 285,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zFile.h",
     "bytes": 1505,
     "lines": 83,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zStream.c",
     "bytes": 4196,
     "lines": 176,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zTypes.h",
     "bytes": 8571,
     "lines": 361,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/7zVersion.h",
     "bytes": 758,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Bcj2.c",
     "bytes": 6149,
     "lines": 259,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Bcj2.h",
     "bytes": 3175,
     "lines": 146,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Bra.c",
     "bytes": 4148,
     "lines": 230,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Bra.h",
     "bytes": 1878,
     "lines": 64,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Bra86.c",
     "bytes": 1747,
     "lines": 82,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/BraIA64.c",
     "bytes": 1135,
     "lines": 53,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Compiler.h",
     "bytes": 1250,
     "lines": 33,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/CpuArch.c",
     "bytes": 4554,
     "lines": 218,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/CpuArch.h",
     "bytes": 7864,
     "lines": 336,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Delta.c",
     "bytes": 1273,
     "lines": 64,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Delta.h",
     "bytes": 376,
     "lines": 19,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/LzFind.c",
     "bytes": 26434,
     "lines": 1127,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/LzFind.h",
     "bytes": 3537,
     "lines": 121,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/LzHash.h",
     "bytes": 1793,
     "lines": 57,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Lzma2Dec.c",
     "bytes": 12886,
     "lines": 488,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Lzma2Dec.h",
     "bytes": 3721,
     "lines": 120,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/LzmaDec.c",
     "bytes": 32029,
     "lines": 1185,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/LzmaDec.h",
     "bytes": 6926,
     "lines": 234,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/LzmaEnc.c",
     "bytes": 76849,
     "lines": 2979,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/LzmaEnc.h",
     "bytes": 3008,
     "lines": 76,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/7zip/Precomp.h",
     "bytes": 172,
     "lines": 10,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/cdrom/cdrom.c",
     "bytes": 46411,
     "lines": 1745,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/compat/compat_fnmatch.c",
     "bytes": 4097,
     "lines": 122,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/compat/compat_getopt.c",
     "bytes": 5801,
     "lines": 230,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/compat/compat_ifaddrs.c",
     "bytes": 18352,
     "lines": 654,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/compat/compat_posix_string.c",
     "bytes": 2701,
     "lines": 104,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/compat/compat_snprintf.c",
     "bytes": 2624,
     "lines": 83,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/compat/compat_strcasestr.c",
     "bytes": 2145,
     "lines": 58,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/compat/compat_strl.c",
     "bytes": 2046,
     "lines": 62,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/compat/compat_vscprintf.c",
     "bytes": 1847,
     "lines": 44,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/compat/fopen_utf8.c",
     "bytes": 2300,
     "lines": 64,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/encodings/encoding_crc32.c",
     "bytes": 5163,
     "lines": 91,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/encodings/encoding_utf.c",
     "bytes": 12337,
     "lines": 532,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/file/file_path.c",
     "bytes": 37682,
     "lines": 1426,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/file/file_path_io.c",
     "bytes": 4123,
     "lines": 149,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/file/retro_dirent.c",
     "bytes": 4377,
     "lines": 122,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/formats/cdfs/cdfs.c",
     "bytes": 18768,
     "lines": 651,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/formats/libchdr/libchdr_bitstream.c",
     "bytes": 3209,
     "lines": 125,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/formats/libchdr/libchdr_cdrom.c",
     "bytes": 36708,
     "lines": 415,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/formats/libchdr/libchdr_chd.c",
     "bytes": 84361,
     "lines": 2744,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/formats/libchdr/libchdr_flac.c",
     "bytes": 10961,
     "lines": 302,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/formats/libchdr/libchdr_huffman.c",
     "bytes": 16989,
     "lines": 545,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/formats/m3u/m3u_file.c",
     "bytes": 16293,
     "lines": 633,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/bitmath.c",
     "bytes": 2361,
     "lines": 73,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/bitreader.c",
     "bytes": 33561,
     "lines": 1089,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/cpu.c",
     "bytes": 10679,
     "lines": 292,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/crc.c",
     "bytes": 6394,
     "lines": 143,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/fixed.c",
     "bytes": 15143,
     "lines": 397,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/float.c",
     "bytes": 9192,
     "lines": 302,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/format.c",
     "bytes": 21527,
     "lines": 602,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/FLAC/assert.h",
     "bytes": 2000,
     "lines": 46,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/FLAC/callback.h",
     "bytes": 7233,
     "lines": 185,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/FLAC/export.h",
     "bytes": 3204,
     "lines": 97,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/FLAC/format.h",
     "bytes": 40462,
     "lines": 1025,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/FLAC/metadata.h",
     "bytes": 99363,
     "lines": 2182,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/FLAC/ordinals.h",
     "bytes": 2666,
     "lines": 86,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/FLAC/stream_decoder.h",
     "bytes": 70482,
     "lines": 1560,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/bitmath.h",
     "bytes": 6571,
     "lines": 212,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/bitreader.h",
     "bytes": 4566,
     "lines": 91,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/cpu.h",
     "bytes": 5448,
     "lines": 186,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/crc.h",
     "bytes": 2662,
     "lines": 62,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/fixed.h",
     "bytes": 5333,
     "lines": 107,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/float.h",
     "bytes": 3635,
     "lines": 95,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/format.h",
     "bytes": 2528,
     "lines": 45,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/lpc.h",
     "bytes": 14252,
     "lines": 250,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/macros.h",
     "bytes": 2618,
     "lines": 72,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/md5.h",
     "bytes": 1645,
     "lines": 50,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/private/memory.h",
     "bytes": 2818,
     "lines": 58,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/protected/stream_decoder.h",
     "bytes": 2532,
     "lines": 60,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/share/alloc.h",
     "bytes": 6245,
     "lines": 221,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/share/compat.h",
     "bytes": 6195,
     "lines": 209,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/share/endswap.h",
     "bytes": 2937,
     "lines": 84,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/share/win_utf8_io.h",
     "bytes": 2099,
     "lines": 58,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/include/share/windows_unicode_filenames.h",
     "bytes": 2853,
     "lines": 67,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/lpc.c",
     "bytes": 46842,
     "lines": 1357,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/lpc_intrin_avx2.c",
     "bytes": 65611,
     "lines": 1122,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/lpc_intrin_sse.c",
     "bytes": 12553,
     "lines": 454,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/lpc_intrin_sse2.c",
     "bytes": 50742,
     "lines": 1090,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/lpc_intrin_sse41.c",
     "bytes": 63041,
     "lines": 1314,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/md5.c",
     "bytes": 17267,
     "lines": 519,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/memory.c",
     "bytes": 6660,
     "lines": 218,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/stream_decoder.c",
     "bytes": 134863,
     "lines": 3403,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libFLAC/windows_unicode_filenames.c",
     "bytes": 5194,
     "lines": 201,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/adler32.c",
     "bytes": 2171,
     "lines": 74,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/compress.c",
     "bytes": 2325,
     "lines": 70,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/deflate.c",
     "bytes": 67051,
     "lines": 1877,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/deflate.h",
     "bytes": 12778,
     "lines": 346,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/gzclose.c",
     "bytes": 724,
     "lines": 27,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/gzfile.h",
     "bytes": 127,
     "lines": 12,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/gzguts.h",
     "bytes": 6666,
     "lines": 224,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/gzlib.c",
     "bytes": 15326,
     "lines": 589,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/gzread.c",
     "bytes": 17656,
     "lines": 569,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/gzwrite.c",
     "bytes": 15752,
     "lines": 549,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/inffast.c",
     "bytes": 12275,
     "lines": 338,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/inffast.h",
     "bytes": 473,
     "lines": 15,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/inffixed.h",
     "bytes": 6377,
     "lines": 99,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/inflate.c",
     "bytes": 55045,
     "lines": 1489,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/inflate.h",
     "bytes": 6446,
     "lines": 127,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/inftrees.c",
     "bytes": 12657,
     "lines": 300,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/inftrees.h",
     "bytes": 2973,
     "lines": 67,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/libz-crc32.c",
     "bytes": 4514,
     "lines": 95,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/trees.c",
     "bytes": 42126,
     "lines": 1170,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/trees.h",
     "bytes": 8514,
     "lines": 132,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/uncompr.c",
     "bytes": 1925,
     "lines": 56,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/zutil.c",
     "bytes": 3561,
     "lines": 155,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/libz/zutil.h",
     "bytes": 6356,
     "lines": 247,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/lists/dir_list.c",
     "bytes": 9188,
     "lines": 280,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/lists/string_list.c",
     "bytes": 13333,
     "lines": 539,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/memmap/memalign.c",
     "bytes": 2339,
     "lines": 63,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/memmap/memmap.c",
     "bytes": 4662,
     "lines": 163,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/chd_stream.c",
     "bytes": 12027,
     "lines": 470,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/file_stream.c",
     "bytes": 16753,
     "lines": 660,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/file_stream_transforms.c",
     "bytes": 4871,
     "lines": 195,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/interface_stream.c",
     "bytes": 17249,
     "lines": 806,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/memory_stream.c",
     "bytes": 4622,
     "lines": 191,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/rzip_stream.c",
     "bytes": 31667,
     "lines": 1069,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/stdin_stream.c",
     "bytes": 4254,
     "lines": 151,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/trans_stream.c",
     "bytes": 3047,
     "lines": 92,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/trans_stream_pipe.c",
     "bytes": 3293,
     "lines": 111,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/streams/trans_stream_zlib.c",
     "bytes": 7937,
     "lines": 330,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/string/stdstring.c",
     "bytes": 21094,
     "lines": 728,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/time/rtime.c",
     "bytes": 2446,
     "lines": 78,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/utils/md5.c",
     "bytes": 9482,
     "lines": 295,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/vfs/vfs_implementation.c",
     "bytes": 30542,
     "lines": 1195,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/vfs/vfs_implementation_cdrom.c",
     "bytes": 14938,
     "lines": 495,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/libretro-common/src/vfs/vfs_implementation_uwp.cpp",
     "bytes": 25329,
     "lines": 808,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/CHANGELOG.md",
     "bytes": 23466,
     "lines": 487,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/LICENSE",
     "bytes": 1078,
     "lines": 21,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/README.md",
     "bytes": 4429,
     "lines": 67,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/_config.yml",
     "bytes": 28,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_api_info.h",
     "bytes": 10813,
     "lines": 280,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_api_request.h",
     "bytes": 2133,
     "lines": 77,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_api_runtime.h",
     "bytes": 16243,
     "lines": 417,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_api_user.h",
     "bytes": 10161,
     "lines": 262,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_client.h",
     "bytes": 33830,
     "lines": 872,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_client_raintegration.h",
     "bytes": 4250,
     "lines": 101,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_consoles.h",
     "bytes": 4484,
     "lines": 138,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_error.h",
     "bytes": 1584,
     "lines": 59,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_export.h",
     "bytes": 3081,
     "lines": 100,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_hash.h",
     "bytes": 8794,
     "lines": 200,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_runtime.h",
     "bytes": 6003,
     "lines": 148,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_runtime_types.h",
     "bytes": 15390,
     "lines": 452,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_url.h",
     "bytes": 1857,
     "lines": 36,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rc_util.h",
     "bytes": 1445,
     "lines": 51,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/include/rcheevos.h",
     "bytes": 143,
     "lines": 8,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rapi/rc_api_common.c",
     "bytes": 39592,
     "lines": 1379,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rapi/rc_api_common.h",
     "bytes": 4969,
     "lines": 88,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rapi/rc_api_info.c",
     "bytes": 22757,
     "lines": 587,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rapi/rc_api_runtime.c",
     "bytes": 37704,
     "lines": 901,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rapi/rc_api_user.c",
     "bytes": 18972,
     "lines": 483,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_client.c",
     "bytes": 251620,
     "lines": 6851,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_client_external.c",
     "bytes": 11641,
     "lines": 277,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_client_external.h",
     "bytes": 10257,
     "lines": 173,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_client_external_versions.h",
     "bytes": 4136,
     "lines": 171,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_client_internal.h",
     "bytes": 14671,
     "lines": 409,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_client_raintegration.c",
     "bytes": 21824,
     "lines": 566,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_client_raintegration_internal.h",
     "bytes": 2932,
     "lines": 61,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_compat.c",
     "bytes": 5309,
     "lines": 251,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_compat.h",
     "bytes": 2714,
     "lines": 121,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_libretro.c",
     "bytes": 30676,
     "lines": 915,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_libretro.h",
     "bytes": 4395,
     "lines": 98,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_util.c",
     "bytes": 6392,
     "lines": 199,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_version.c",
     "bytes": 157,
     "lines": 11,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rc_version.h",
     "bytes": 1148,
     "lines": 32,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/alloc.c",
     "bytes": 10516,
     "lines": 312,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/compat.c",
     "bytes": 1399,
     "lines": 85,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/condition.c",
     "bytes": 26998,
     "lines": 754,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/condset.c",
     "bytes": 27031,
     "lines": 770,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/consoleinfo.c",
     "bytes": 59580,
     "lines": 1215,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/format.c",
     "bytes": 9552,
     "lines": 330,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/lboard.c",
     "bytes": 8659,
     "lines": 287,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/memref.c",
     "bytes": 26820,
     "lines": 805,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/operand.c",
     "bytes": 16407,
     "lines": 607,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/rc_compat.h",
     "bytes": 1489,
     "lines": 72,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/rc_internal.h",
     "bytes": 17988,
     "lines": 390,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/rc_libretro.c",
     "bytes": 26303,
     "lines": 791,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/rc_libretro.h",
     "bytes": 3787,
     "lines": 91,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/rc_version.h",
     "bytes": 1053,
     "lines": 29,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/richpresence.c",
     "bytes": 28449,
     "lines": 922,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/runtime.c",
     "bytes": 27452,
     "lines": 852,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/runtime_progress.c",
     "bytes": 34928,
     "lines": 1073,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/trigger.c",
     "bytes": 10075,
     "lines": 344,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rcheevos/value.c",
     "bytes": 26913,
     "lines": 935,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/aes.c",
     "bytes": 16910,
     "lines": 480,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/aes.h",
     "bytes": 1695,
     "lines": 49,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/cdreader.c",
     "bytes": 24512,
     "lines": 838,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/hash.c",
     "bytes": 47033,
     "lines": 1402,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/hash_disc.c",
     "bytes": 49154,
     "lines": 1340,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/hash_encrypted.c",
     "bytes": 23631,
     "lines": 566,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/hash_rom.c",
     "bytes": 14748,
     "lines": 426,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/hash_zip.c",
     "bytes": 18565,
     "lines": 460,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/md5.h",
     "bytes": 687,
     "lines": 18,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rhash/rc_hash_internal.h",
     "bytes": 5281,
     "lines": 116,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/libcheevos/rcheevos/src/rurl/url.c",
     "bytes": 11317,
     "lines": 402,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/nanosvg/CMakeLists.txt",
     "bytes": 304,
     "lines": 13,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/nanosvg/nanosvg.h",
     "bytes": 79278,
     "lines": 2991,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/nanosvg/nanosvg_license.txt",
     "bytes": 862,
     "lines": 18,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/nanosvg/nanosvgrast.h",
     "bytes": 38212,
     "lines": 1452,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/nanosvg/src/nanosvg_impl.cpp",
     "bytes": 132,
     "lines": 6,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/stb/LICENSE",
     "bytes": 2588,
     "lines": 38,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/stb/VERSION",
     "bytes": 85,
     "lines": 1,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/stb/stb_image.h",
     "bytes": 277883,
     "lines": 7798,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/stb/stb_image_resize2.h",
     "bytes": 458099,
     "lines": 10786,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "external/stb/stb_image_write.h",
     "bytes": 80759,
     "lines": 1924,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "getPoFromWebsite.sh",
     "bytes": 650,
     "lines": 30,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/CMakeLists.txt",
     "bytes": 1583,
     "lines": 24,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/checkLocale.sh",
     "bytes": 202,
     "lines": 10,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/emulationstation2.pot",
     "bytes": 52131,
     "lines": 3995,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/ar/LC_MESSAGES/emulationstation2.po",
     "bytes": 100126,
     "lines": 4147,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/ca/LC_MESSAGES/emulationstation2.po",
     "bytes": 84857,
     "lines": 4131,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/cs_CZ/LC_MESSAGES/emulationstation2.po",
     "bytes": 91683,
     "lines": 4523,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/cy_GB/LC_MESSAGES/emulationstation2.po",
     "bytes": 77781,
     "lines": 4583,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/de/LC_MESSAGES/emulationstation2.po",
     "bytes": 82319,
     "lines": 4091,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/el/LC_MESSAGES/emulationstation2.po",
     "bytes": 108107,
     "lines": 4537,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/en_GB/LC_MESSAGES/emulationstation2.po",
     "bytes": 73928,
     "lines": 4096,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/es/LC_MESSAGES/emulationstation2.po",
     "bytes": 86076,
     "lines": 4181,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/es_MX/LC_MESSAGES/emulationstation2.po",
     "bytes": 88148,
     "lines": 4139,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/eu_ES/LC_MESSAGES/emulationstation2.po",
     "bytes": 92600,
     "lines": 4498,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/fi_FI/LC_MESSAGES/emulationstation2.po",
     "bytes": 70012,
     "lines": 4069,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/fr/LC_MESSAGES/emulationstation2.po",
     "bytes": 84257,
     "lines": 4095,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/gl_ES/LC_MESSAGES/emulationstation2.po",
     "bytes": 83834,
     "lines": 4142,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/he/LC_MESSAGES/emulationstation2.po",
     "bytes": 82168,
     "lines": 4542,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/hu/LC_MESSAGES/emulationstation2.po",
     "bytes": 85797,
     "lines": 4174,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/id_ID/LC_MESSAGES/emulationstation2.po",
     "bytes": 79501,
     "lines": 4119,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/it/LC_MESSAGES/emulationstation2.po",
     "bytes": 112231,
     "lines": 5325,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/ja_JP/LC_MESSAGES/emulationstation2.po",
     "bytes": 91403,
     "lines": 4082,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/ko/LC_MESSAGES/emulationstation2.po",
     "bytes": 84209,
     "lines": 4082,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/nb_NO/LC_MESSAGES/emulationstation2.po",
     "bytes": 76207,
     "lines": 4111,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/nl/LC_MESSAGES/emulationstation2.po",
     "bytes": 80576,
     "lines": 4088,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/nn_NO/LC_MESSAGES/emulationstation2.po",
     "bytes": 60447,
     "lines": 4285,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/oc_FR/LC_MESSAGES/emulationstation2.po",
     "bytes": 64508,
     "lines": 4239,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/pl/LC_MESSAGES/emulationstation2.po",
     "bytes": 92332,
     "lines": 4484,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/pt_BR/LC_MESSAGES/emulationstation2.po",
     "bytes": 85557,
     "lines": 4125,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/pt_PT/LC_MESSAGES/emulationstation2.po",
     "bytes": 84091,
     "lines": 4089,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/ro_RO/LC_MESSAGES/emulationstation2.po",
     "bytes": 84836,
     "lines": 4159,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/ru_RU/LC_MESSAGES/emulationstation2.po",
     "bytes": 139294,
     "lines": 5204,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/sk_SK/LC_MESSAGES/emulationstation2.po",
     "bytes": 84173,
     "lines": 4186,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/sv_SE/LC_MESSAGES/emulationstation2.po",
     "bytes": 81348,
     "lines": 4125,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/tr/LC_MESSAGES/emulationstation2.po",
     "bytes": 85492,
     "lines": 4123,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/uk_UA/LC_MESSAGES/emulationstation2.po",
     "bytes": 94641,
     "lines": 4629,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/vi_VN/LC_MESSAGES/emulationstation2.po",
     "bytes": 84070,
     "lines": 4106,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/zh_CN/LC_MESSAGES/emulationstation2.po",
     "bytes": 160296,
     "lines": 7399,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "locale/lang/zh_TW/LC_MESSAGES/emulationstation2.po",
     "bytes": 75193,
     "lines": 4057,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/LEIA-ME.txt",
     "bytes": 3395,
     "lines": 70,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/build.sh",
     "bytes": 8514,
     "lines": 201,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/es-mister-helper.c",
     "bytes": 7877,
     "lines": 280,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/package.sh",
     "bytes": 6027,
     "lines": 131,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/patches/sdl2/0001-evdev-find-devices-without-udev.patch",
     "bytes": 2356,
     "lines": 72,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/patches/sdl2/0002-alsa-snd_pcm_info_free-returns-nothing.patch",
     "bytes": 762,
     "lines": 13,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/patches/sdl2/0003-evdev-leave-out-devices-named-in-SDL_EVDEV_IGNORE.patch",
     "bytes": 1525,
     "lines": 48,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/scripts/emulationstation.sh",
     "bytes": 599,
     "lines": 19,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/scripts/es-mister.sh",
     "bytes": 5081,
     "lines": 135,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/scripts/mister-launch.sh",
     "bytes": 2218,
     "lines": 75,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/systems.tsv",
     "bytes": 2545,
     "lines": 39,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "mister/tools/trim-theme.py",
     "bytes": 4551,
     "lines": 100,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "opensans_license.txt",
     "bytes": 633,
     "lines": 14,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/DroidSansFallbackFull.ttf",
     "bytes": 4033420,
     "lines": 53645,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/PyeojinGothic-Medium.ttf",
     "bytes": 3867772,
     "lines": 9631,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/Rubik-Regular.ttf",
     "bytes": 133376,
     "lines": 3656,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/Vazirmatn-Regular.ttf",
     "bytes": 122752,
     "lines": 717,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/alert.svg",
     "bytes": 602,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/arcaderoms.xml",
     "bytes": 3565631,
     "lines": 52970,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/arrow.svg",
     "bytes": 252,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/auto.svg",
     "bytes": 1388,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/battery/25.svg",
     "bytes": 691,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/battery/50.svg",
     "bytes": 691,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/battery/75.svg",
     "bytes": 691,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/battery/empty.svg",
     "bytes": 680,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/battery/full.svg",
     "bytes": 692,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/battery/incharge.svg",
     "bytes": 713,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/blank.png",
     "bytes": 131,
     "lines": 2,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/busy_0.svg",
     "bytes": 392,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/busy_1.svg",
     "bytes": 392,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/busy_2.svg",
     "bytes": 392,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/busy_3.svg",
     "bytes": 392,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/button.png",
     "bytes": 356,
     "lines": 4,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/button_filled.png",
     "bytes": 275,
     "lines": 3,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/cartridge.svg",
     "bytes": 534,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/checkWheelGunGamesResources.py",
     "bytes": 1474,
     "lines": 43,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/checkbox_checked.svg",
     "bytes": 1273,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/checkbox_unchecked.svg",
     "bytes": 965,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/checksound.ogg",
     "bytes": 98474,
     "lines": 378,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/community_relay_servers.xml",
     "bytes": 343,
     "lines": 6,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/cursor.png",
     "bytes": 1762,
     "lines": 8,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/fav_add.svg",
     "bytes": 148,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/fav_remove.svg",
     "bytes": 140,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/au.png",
     "bytes": 3039,
     "lines": 20,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/br.png",
     "bytes": 4578,
     "lines": 18,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/ca.png",
     "bytes": 1717,
     "lines": 6,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/cn.png",
     "bytes": 1501,
     "lines": 6,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/de.png",
     "bytes": 318,
     "lines": 2,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/es.png",
     "bytes": 3301,
     "lines": 18,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/eu.png",
     "bytes": 3523,
     "lines": 20,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/fr.png",
     "bytes": 227,
     "lines": 2,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/gr.png",
     "bytes": 645,
     "lines": 7,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/in.png",
     "bytes": 898,
     "lines": 3,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/it.png",
     "bytes": 227,
     "lines": 2,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/jp.png",
     "bytes": 1333,
     "lines": 14,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/kr.png",
     "bytes": 3644,
     "lines": 13,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/nl.png",
     "bytes": 254,
     "lines": 4,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/no.png",
     "bytes": 262,
     "lines": 4,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/pl.png",
     "bytes": 790,
     "lines": 9,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/pt.png",
     "bytes": 2625,
     "lines": 16,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/ru.png",
     "bytes": 165,
     "lines": 2,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/sw.png",
     "bytes": 464,
     "lines": 2,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/uk.png",
     "bytes": 3644,
     "lines": 16,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/us.png",
     "bytes": 3061,
     "lines": 19,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/flags/wr.png",
     "bytes": 7031,
     "lines": 20,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/folder.svg",
     "bytes": 430,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/fontawesome-webfont.ttf",
     "bytes": 122092,
     "lines": 1112,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/frame.png",
     "bytes": 1729,
     "lines": 8,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/freeslot.svg",
     "bytes": 246,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/gamesdb.xml",
     "bytes": 211583,
     "lines": 8949,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/gamesdb.xsd",
     "bytes": 3497,
     "lines": 90,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/genres.xml",
     "bytes": 38237,
     "lines": 1459,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/gun.png",
     "bytes": 4648,
     "lines": 29,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/F1.svg",
     "bytes": 534,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/analog_down.svg",
     "bytes": 566,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/analog_left.svg",
     "bytes": 487,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/analog_right.svg",
     "bytes": 566,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/analog_stick.svg",
     "bytes": 408,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/analog_thumb.svg",
     "bytes": 408,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/analog_up.svg",
     "bytes": 487,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_1.svg",
     "bytes": 353,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_2.svg",
     "bytes": 650,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_3.svg",
     "bytes": 836,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_4.svg",
     "bytes": 375,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_a.svg",
     "bytes": 380,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_b.svg",
     "bytes": 616,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_circle.svg",
     "bytes": 405,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_cross.svg",
     "bytes": 501,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_hotkey.svg",
     "bytes": 1216,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_l.svg",
     "bytes": 406,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_lr.svg",
     "bytes": 883,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_lt.svg",
     "bytes": 446,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_r.svg",
     "bytes": 578,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_rt.svg",
     "bytes": 621,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_select.svg",
     "bytes": 1436,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_square.svg",
     "bytes": 351,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_start.svg",
     "bytes": 1240,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_triangle.svg",
     "bytes": 422,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_x.svg",
     "bytes": 388,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/button_y.svg",
     "bytes": 360,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/buttons_east.svg",
     "bytes": 494,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/buttons_north.svg",
     "bytes": 492,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/buttons_south.svg",
     "bytes": 494,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/buttons_west.svg",
     "bytes": 493,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/dpad_all.svg",
     "bytes": 843,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/dpad_down.svg",
     "bytes": 1001,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/dpad_left.svg",
     "bytes": 922,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/dpad_leftright.svg",
     "bytes": 1080,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/dpad_right.svg",
     "bytes": 1001,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/dpad_up.svg",
     "bytes": 922,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/help/dpad_updown.svg",
     "bytes": 1080,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/info.svg",
     "bytes": 743,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/kblayout.svg",
     "bytes": 213364,
     "lines": 2677,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/logo.png",
     "bytes": 283835,
     "lines": 1026,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/mp3.jpg",
     "bytes": 11668,
     "lines": 44,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/network.svg",
     "bytes": 1875,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/off.svg",
     "bytes": 753,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/on.svg",
     "bytes": 375,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/opensans_hebrew_condensed_light.ttf",
     "bytes": 32868,
     "lines": 134,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/opensans_hebrew_condensed_regular.ttf",
     "bytes": 32364,
     "lines": 158,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/option_arrow.svg",
     "bytes": 259,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/pdf.jpg",
     "bytes": 17363,
     "lines": 121,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/question.svg",
     "bytes": 1049,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/scroll_gradient.png",
     "bytes": 83384,
     "lines": 332,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/search.svg",
     "bytes": 563,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/services/index.html",
     "bytes": 4540,
     "lines": 173,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/services/main.css",
     "bytes": 1060,
     "lines": 79,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/blur.glsl",
     "bytes": 2339,
     "lines": 99,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/border.glsl",
     "bytes": 5335,
     "lines": 196,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/crt.glsl",
     "bytes": 4788,
     "lines": 182,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/grayscale.glsl",
     "bytes": 1744,
     "lines": 77,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase/kawase0.glsl",
     "bytes": 2713,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase/kawase1.glsl",
     "bytes": 2711,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase/kawase2.glsl",
     "bytes": 2711,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase/kawase3.glsl",
     "bytes": 2711,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase/kawase4.glsl",
     "bytes": 2711,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase/kawase5.glsl",
     "bytes": 2710,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase/kawase6.glsl",
     "bytes": 2711,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase/kawase7.glsl",
     "bytes": 2711,
     "lines": 108,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase_blur_5pass.glslp",
     "bytes": 162,
     "lines": 6,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/kawase_blur_9pass.glslp",
     "bytes": 282,
     "lines": 10,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/negative.glsl",
     "bytes": 1796,
     "lines": 78,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/pixelate.glsl",
     "bytes": 2125,
     "lines": 90,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/scanlines.glsl",
     "bytes": 1818,
     "lines": 80,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/shadow.glsl",
     "bytes": 3365,
     "lines": 139,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/shaders/vscrolleffect.glsl",
     "bytes": 2146,
     "lines": 92,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/slider_knob.svg",
     "bytes": 127,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/splash.svg",
     "bytes": 2116,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/splash_batocera.svg",
     "bytes": 15453,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/star_filled.svg",
     "bytes": 606,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/star_unfilled.svg",
     "bytes": 1161,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/textinput_ninepatch.png",
     "bytes": 1275,
     "lines": 6,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/textinput_ninepatch_active.png",
     "bytes": 3084,
     "lines": 14,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/ubuntu_condensed.ttf",
     "bytes": 259904,
     "lines": 1980,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/vid.jpg",
     "bytes": 19871,
     "lines": 84,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/warning.svg",
     "bytes": 929,
     "lines": 0,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/white.png",
     "bytes": 71,
     "lines": 2,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "resources/window_icon_256.png",
     "bytes": 4870,
     "lines": 12,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "tests/audit/CMakeLists.txt",
     "bytes": 1122,
     "lines": 20,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "tests/audit/regressions.cpp",
     "bytes": 3594,
     "lines": 97,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "tests/audit/run.py",
     "bytes": 4613,
     "lines": 101,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "tests/audit/support.cpp",
     "bytes": 559,
     "lines": 13,
-    "status": "Não analisado"
+    "status": "Not analysed"
   },
   {
     "path": "ubuntu_licence.txt",
     "bytes": 4673,
     "lines": 96,
-    "status": "Não analisado"
+    "status": "Not analysed"
   }
 ]

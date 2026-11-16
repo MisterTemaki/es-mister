@@ -25,10 +25,10 @@ with tempfile.TemporaryDirectory(prefix='es-perf-reference-') as folder:
     subprocess.run(['git','apply',str(output/'patch-29.patch')],cwd=stage,check=True)
     diffs=[]
     for name in paths:
-        dest=output/'referencia-instalada'/name
+        dest=output/'installed-reference'/name
         dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(stage/name,dest)
-        diffs.extend(difflib.unified_diff(archived[name].decode().splitlines(True),(stage/name).read_text().splitlines(True),fromfile='ZIP/'+name,tofile='instalada-reconstituida/'+name))
-    (output/'comparacao-zip-instalada.diff').write_text(''.join(diffs))
+        diffs.extend(difflib.unified_diff(archived[name].decode().splitlines(True),(stage/name).read_text().splitlines(True),fromfile='ZIP/'+name,tofile='installed-rebuilt/'+name))
+    (output/'zip-vs-installed.diff').write_text(''.join(diffs))
 for name in ('es-mister-stats.txt','es-startup.log','es-startup.prev.log','es-mister-bench.txt','es-mister.log',*[f'es-slow-frame-{i}.txt' for i in range(1,5)]):
     dest=output/'logs'/name;dest.parent.mkdir(exist_ok=True);shutil.copy2(original/'logs'/name,dest)
 installed=(original/'es-mister-7ad64ca-18/emulationstation/emulationstation').read_bytes()
@@ -37,7 +37,7 @@ version={'local_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=s
          'package18_binary_sha256':digest(installed),'patch29_sha256':digest(patch),
          'zip_vs_local_differences':comparison,'reconstructed_paths':paths}
 assert version['device_binary_sha256_observed']==version['package18_binary_sha256']
-(output/'comparacao.json').write_text(json.dumps(version,indent=2,ensure_ascii=False))
+(output/'comparison.json').write_text(json.dumps(version,indent=2,ensure_ascii=False))
 
 results={}
 slow=[]
@@ -71,7 +71,7 @@ for i in range(1,5):
     dump_summary.append({'dump':i,'header':text.splitlines()[0],'serial_sum_ms':sum(c['serial_ms'] for c in commands),
                          'commands':commands,'top3_serial_ms':sum(c['serial_ms'] for c in top[:3])})
 results['dumps']=dump_summary
-(output/'analise-dos-logs.json').write_text(json.dumps(results,indent=2,ensure_ascii=False))
+(output/'log-analysis.json').write_text(json.dumps(results,indent=2,ensure_ascii=False))
 print('ZIP vs local:',comparison)
 print('Installed matches package 18:',version['package18_binary_sha256'])
 print('Patch 29 applied to temporary reference only:',paths)

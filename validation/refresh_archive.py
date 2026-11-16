@@ -4,9 +4,9 @@ workspace=base.parent
 root=workspace/'es-mister'
 archive=workspace/'es-mister-5b5c7bc-auditoria-etapa1.zip'
 temporary=workspace/'es-mister-5b5c7bc-auditoria-etapa1.refresh.zip'
-updates=['audit/RELATORIO.md','audit/evidencias/regressions-final.log']
-shutil.copy2(base/'regressions-final.log',root/'audit/evidencias/regressions-final.log')
-assert '17/17 cases passed' in (root/'audit/evidencias/regressions-final.log').read_text()
+updates=['audit/REPORT.md','audit/evidence/regressions-final.log']
+shutil.copy2(base/'regressions-final.log',root/'audit/evidence/regressions-final.log')
+assert '17/17 cases passed' in (root/'audit/evidence/regressions-final.log').read_text()
 with zipfile.ZipFile(archive) as source,zipfile.ZipFile(temporary,'w',zipfile.ZIP_DEFLATED) as output:
     for info in source.infolist():
         relative=info.filename.removeprefix('es-mister/')

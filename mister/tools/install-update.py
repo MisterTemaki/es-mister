@@ -72,7 +72,7 @@ def main():
     args=parser.parse_args()
     package=pathlib.Path(__file__).resolve().parent
     manifest=json.loads((package/'manifest.json').read_text())
-    expected={'emulationstation','es-mister-helper','es-mister.sh','mister-launch.sh','LEIA-ME.txt'}
+    expected={'emulationstation','es-mister-helper','es-mister.sh','mister-launch.sh','README.txt'}
     assert set(manifest)==expected,'Unexpected payload files'
     for name,sha in manifest.items():
         assert digest(package/'payload'/name)==sha,'Payload hash mismatch: '+name

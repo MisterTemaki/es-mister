@@ -4,39 +4,39 @@ out=v.parent/'es-mister/audit/performance-1080p'
 data={n:json.loads((v/'target-results'/n/'summary.json').read_text()) for n in ('sustained-control','sustained-fast')}
 a,b=data.values()
 table='''<!-- MEASUREMENTS BEGIN -->
-## Comparação sustentada
+## Sustained comparison
 
-| Medida (ms) | Controle | Otimizada | Redução |
+| Measure (ms) | Control | Optimised | Reduction |
 |---|---:|---:|---:|
 '''
-for key,stat,label in [('input_sdl_event_ms','median','Fila SDL → redesenho, mediana'),('input_sdl_event_ms','p95_sample','Fila SDL → redesenho, p95'),('input_sdl_event_ms','p99','Fila SDL → redesenho, p99'),('input_sdl_event_ms','max','Fila SDL → redesenho, máximo observado'),('input_dispatch_ms','median','Despacho → redesenho, mediana'),('input_dispatch_ms','p99','Despacho → redesenho, p99')]:
+for key,stat,label in [('input_sdl_event_ms','median','SDL queue → redraw, median'),('input_sdl_event_ms','p95_sample','SDL queue → redraw, p95'),('input_sdl_event_ms','p99','SDL queue → redraw, p99'),('input_sdl_event_ms','max','SDL queue → redraw, maximum observed'),('input_dispatch_ms','median','Dispatch → redraw, median'),('input_dispatch_ms','p99','Dispatch → redraw, p99')]:
     x,y=a[key][stat],b[key][stat]
     table+=f'| {label} | {x:.3f} | {y:.3f} | {(1-y/x)*100:.1f}% |\n'
-table+='\nCada versão respondeu exatamente 1.000 comandos. O controle durou '
-table+=f"{a['memory']['duration_seconds']:.1f} s e a otimizada {b['memory']['duration_seconds']:.1f} s, incluindo inicialização e encerramento. "
-table+='A duração total também inclui esperas artificiais do script; não é uma medida de throughput.\n\n'
-table+='| Etapa do redesenho completo, mediana (ms) | Controle | Otimizada |\n|---|---:|---:|\n'
-for key,label in [('ui_ms','Preparação da UI'),('dirty_ms','Regiões sujas'),('execute_ms','Execução incluindo cópia'),('draw_max_ms','Desenho do worker mais lento'),('copy_max_ms','Cópia do worker mais lento'),('pacing_ms','Espera do limitador')]:
+table+='\nEach version answered exactly 1,000 commands. The control lasted '
+table+=f"{a['memory']['duration_seconds']:.1f} s and the optimised one {b['memory']['duration_seconds']:.1f} s, including start-up and shutdown. "
+table+='The total duration also includes the script\'s artificial waits; it is not a throughput measure.\n\n'
+table+='| Stage of the full redraw, median (ms) | Control | Optimised |\n|---|---:|---:|\n'
+for key,label in [('ui_ms','UI preparation'),('dirty_ms','Dirty regions'),('execute_ms','Execution including copy'),('draw_max_ms','Slowest worker\'s drawing'),('copy_max_ms','Slowest worker\'s copy'),('pacing_ms','Limiter wait')]:
     table+=f"| {label} | {a['full_navigation'][key]['median']:.3f} | {b['full_navigation'][key]['median']:.3f} |\n"
-table+='\nAs distribuições de quadros diferem porque o limitador corrigido permite mais passos de animação '
-table+='e o culling permite atualizações parciais. A comparação principal é a resposta aos mesmos inputs. '
-table+='**Não se atingiu 60 FPS nos redesenhos completos do Carbon em 1080p.**\n\n'
-table+='Memória residente máxima durante o teste instrumentado: '
-table+=f"{a['memory']['peak_rss_kib']/1024:.2f} MiB no controle e {b['memory']['peak_rss_kib']/1024:.2f} MiB na otimizada. "
-table+='Depois de preencher o buffer de tracing e antes do encerramento, as medianas de janelas de 100 s foram '
-table+=f"{b['memory']['steady_early_rss_mib']['median']:.3f} e {b['memory']['steady_late_rss_mib']['median']:.3f} MiB na otimizada. "
-table+='Não houve crescimento relevante nessa janela; isso não prova ausência de vazamentos em todas as telas. '
-table+='O tracing reserva e ocupa memória progressivamente; os números não são o consumo mínimo da execução normal.\n\n'
+table+='\nThe frame distributions differ because the corrected limiter allows more animation steps '
+table+='and culling allows partial updates. The main comparison is the response to the same inputs. '
+table+='**60 FPS was not reached in Carbon\'s full redraws at 1080p.**\n\n'
+table+='Maximum resident memory during the instrumented test: '
+table+=f"{a['memory']['peak_rss_kib']/1024:.2f} MiB for the control and {b['memory']['peak_rss_kib']/1024:.2f} MiB for the optimised one. "
+table+='After the tracing buffer filled and before shutdown, the medians of 100 s windows were '
+table+=f"{b['memory']['steady_early_rss_mib']['median']:.3f} and {b['memory']['steady_late_rss_mib']['median']:.3f} MiB for the optimised one. "
+table+='There was no relevant growth in that window; this does not prove there are no leaks on every screen. '
+table+='Tracing reserves and occupies memory progressively; the numbers are not the minimum usage of a normal run.\n\n'
 quality=v/'target-results/quality-final/stats.txt'
 if quality.exists():
-    table+='Na validação separada de qualidade, **0 de 91 quadros verificados divergiram** entre renderização parcial e referência completa. '
-    table+='Carrossel, lista NES, mudança de seleção e menu foram capturados em 1920×1080 e inspecionados visualmente. '
-    table+='Esse modo redesenha a referência e salva PNGs; seus tempos não são usados como benchmark.\n\n'
+    table+='In the separate quality validation, **0 of 91 frames checked diverged** between partial rendering and the full reference. '
+    table+='Carousel, NES list, selection change and menu were captured at 1920×1080 and inspected visually. '
+    table+='That mode redraws the reference and saves PNGs; its times are not used as a benchmark.\n\n'
 one=v/'target-results/threads-one/summary.json'
 if one.exists():
     c=json.loads(one.read_text())
-    table+=f"Uma thread teve mediana interna de {c['input_dispatch_ms']['median']:.3f} ms em 24 comandos, contra {b['input_dispatch_ms']['median']:.3f} ms com duas threads no teste longo. "
-    table+='As amostras têm tamanhos diferentes, mas não apareceu razão para trocar o padrão de duas threads.\n\n'
+    table+=f"One thread had an internal median of {c['input_dispatch_ms']['median']:.3f} ms over 24 commands, against {b['input_dispatch_ms']['median']:.3f} ms with two threads in the long test. "
+    table+='The samples have different sizes, but no reason appeared to change the two-thread default.\n\n'
 startup=[]
 for label in ('startup-control-final','startup-fast-final'):
     p=v/'target-results'/label/'startup.log'
@@ -46,18 +46,18 @@ for label in ('startup-control-final','startup-fast-final'):
     action=re.findall(r'^\s*([\d.]+) \[\d+\] first press answered:',text,re.M)
     if ready and action:startup.append((label,float(ready[-1]),float(action[-1])))
 if startup:
-    table+='Inicialização de processo novo com cache do sistema já aquecido, uma execução de cada:\n\n'
-    table+='| Versão | Marca ready (s) | Primeiro comando respondido (s) |\n|---|---:|---:|\n'
+    table+='Start-up of a new process with the system cache already warm, one run of each:\n\n'
+    table+='| Version | Ready mark (s) | First command answered (s) |\n|---|---:|---:|\n'
     for label,ready,action in startup: table+=f'| {label} | {ready:.3f} | {action:.3f} |\n'
-    table+='\nO script aguarda 9 s antes da tecla; o primeiro comando confirma funcionamento nesse instante e '
-    table+='é um limite superior, não uma busca do primeiro milissegundo interativo. Os valores excluem a espera '
-    table+='inicial do wrapper. Não houve reboot/limpeza global de cache para medir cold boot e não se conclui '
-    table+='ganho estatístico de startup com uma amostra.\n\n'
+    table+='\nThe script waits 9 s before the key; the first command confirms it works at that moment and '
+    table+='is an upper bound, not a search for the first interactive millisecond. The values exclude the wrapper\'s '
+    table+='initial wait. There was no reboot/global cache clearing to measure a cold boot, and no statistical '
+    table+='start-up gain is concluded from one sample.\n\n'
 table+='<!-- MEASUREMENTS END -->'
-path=out/'RESULTADOS.md';text=path.read_text()
+path=out/'RESULTS.md';text=path.read_text()
 text=text.replace('<!-- MEASUREMENTS -->',table) if '<!-- MEASUREMENTS -->' in text else re.sub(r'<!-- MEASUREMENTS BEGIN -->.*?<!-- MEASUREMENTS END -->',lambda _:table,text,flags=re.S)
 path.write_text(text)
-e=out/'evidencias-etapa2';e.mkdir(exist_ok=True)
+e=out/'evidence-stage2';e.mkdir(exist_ok=True)
 for name in ('stage2-checks.log','regressions-stage2.log','settings-stage2.log','renderer-stage2.log','http-server-stage2.log','thread-pool-stage2.log','copy-file-stage2.log','similarity-stage2.log','theme-stage2.log','helper-target-validation.log','raster-final-native.log','raster-target-results.log','finish-target-checks.log','finish-target-checks-retry.log','cross-build-performance.log','deployment.log','deployment-verification.json'):
     if (v/name).exists():shutil.copy2(v/name,e/name)
 for name in ('installed-control','profile','transparent','transparent-off','alpha','sustained-control','sustained-fast','quality-final','threads-one','startup-control-final','startup-fast-final'):

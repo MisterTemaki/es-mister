@@ -30,13 +30,13 @@ for name in runs:
     for p in sorted(run.iterdir()):
         if p.is_file():
             files['validation/target-results/' + name + '/' + p.name] = p.read_bytes()
-files['LEIA-ME.txt'] = '''Investigação de latência Linux no MiSTer, 14/11/2026.
-Abra es-mister/audit/performance-1080p/LINUX.md para método, resultados, limites e comandos.
-Conteúdo: utilitários Python, roteiros da bancada e evidências brutas.
-Binário medido: versão instalada d53703bb6cd2dc16838d885645d797cac512a49c68d282962a03ae2bb94abb64.
-Resolução 1920x1080, Carbon, 2 threads, STRIP=8, PLD=256, FPS=60.
-Nenhum ajuste de kernel foi aplicado. CPUFreq não expõe políticas neste boot.
-Use rótulos novos para repetir uma execução sem sobrescrever os resultados anteriores.
+files['README.txt'] = '''Linux latency investigation on the MiSTer, 14/11/2026.
+Open es-mister/audit/performance-1080p/LINUX.md for the method, results, limits and commands.
+Contents: Python utilities, the bench's scripts and raw evidence.
+Binary measured: installed version d53703bb6cd2dc16838d885645d797cac512a49c68d282962a03ae2bb94abb64.
+Resolution 1920x1080, Carbon, 2 threads, STRIP=8, PLD=256, FPS=60.
+No kernel tuning was applied. CPUFreq exposes no policies in this boot.
+Use new labels to repeat a run without overwriting the previous results.
 '''.encode('utf-8')
 manifest = dict(date='2026-11-14',
                 repository_commit_with_kernel_tools=subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip(),
@@ -47,7 +47,7 @@ manifest = dict(date='2026-11-14',
 files['manifest.json'] = json.dumps(manifest, indent=2, ensure_ascii=False).encode('utf-8')
 files['SHA256SUMS'] = ''.join(hashlib.sha256(data).hexdigest() + '  ' + name + '\n'
                                for name, data in sorted(files.items())).encode('utf-8')
-out = root / 'es-mister-linux-latencia-20261114.zip'
+out = root / 'es-mister-linux-latency-20261114.zip'
 with zipfile.ZipFile(out, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
     for name, data in sorted(files.items()):
         info = zipfile.ZipInfo(name, (2026, 11, 14, 12, 0, 0))

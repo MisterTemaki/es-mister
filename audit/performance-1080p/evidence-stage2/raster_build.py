@@ -4,7 +4,7 @@ work=pathlib.Path(__file__).resolve().parent
 root=work.parent/'es-mister'
 ref=work/'raster-reference';ref.mkdir(exist_ok=True)
 if not (ref/'SoftRaster.cpp').exists():
-    shutil.copy2(root/'audit/performance-1080p/referencia-instalada/es-core/src/renderers/soft/SoftRaster.cpp',ref)
+    shutil.copy2(root/'audit/performance-1080p/installed-reference/es-core/src/renderers/soft/SoftRaster.cpp',ref)
     data=subprocess.check_output(['git','show','e469321:es-core/src/renderers/soft/SoftRaster.h'],cwd=root)
     (ref/'SoftRaster.h').write_bytes(data)
 out=work/'raster';out.mkdir(exist_ok=True)

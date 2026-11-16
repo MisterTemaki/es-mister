@@ -31,32 +31,32 @@ with zipfile.ZipFile(archive) as original:
         after=path.read_bytes()
         text=path.suffix.lower() in text_ext or path.name in ('CMakeLists.txt','.gitmodules','.gitignore')
         excluded=name.startswith(('external/','resources/','locale/lang/')) or name in ('es-app/src/services/httplib.h','es-core/src/utils/zip_file.hpp','es-core/src/utils/han.h')
-        status='Não analisado'
-        depth='Pendente de revisão manual.'
+        status='Not analysed'
+        depth='Manual review pending.'
         if excluded:
-            depth='Excluído da revisão manual desta etapa: terceiro, recurso ou catálogo; interfaces e riscos descritos no relatório.'
+            depth="Excluded from this stage's manual review: third-party code, resource or catalogue; interfaces and risks described in the report."
         if name.startswith('mister/') or name in detailed:
-            status='Analisado'
-            depth='Revisão manual do arquivo; testes locais nas interfaces corrigidas; hardware não validado.'
+            status='Analysed'
+            depth='Manual review of the file; local tests on the fixed interfaces; hardware not validated.'
         elif name in partial:
-            status='Parcialmente analisado'
-            depth='Revisão manual dos fluxos ou interfaces descritos no relatório; restante pendente.'
+            status='Partially analysed'
+            depth='Manual review of the flows or interfaces described in the report; the rest pending.'
         elif name.startswith(('es-app/src/','es-core/src/')) and path.suffix in ('.cpp','.c'):
-            status='Parcialmente analisado'
-            depth='Triagem estática Cppcheck; não equivale a revisão manual nem cobre todas as variantes.'
-        rows.append(dict(arquivo=name,subsistema=name.split('/')[0],bytes_original=len(before),
-                         linhas_original=before.count(b'\n') if text else '',
-                         status=status,profundidade=depth,excluido_etapa=excluded,
-                         alterado=before!=after,sha256_original=hashlib.sha256(before).hexdigest(),
-                         sha256_atual=hashlib.sha256(after).hexdigest()))
-rows.sort(key=lambda row:row['arquivo'])
-with (output/'cobertura.csv').open('w',newline='',encoding='utf-8-sig') as file:
+            status='Partially analysed'
+            depth='Cppcheck static triage; not equivalent to a manual review and does not cover every variant.'
+        rows.append(dict(file=name,subsystem=name.split('/')[0],original_bytes=len(before),
+                         original_lines=before.count(b'\n') if text else '',
+                         status=status,depth=depth,excluded_from_stage=excluded,
+                         changed=before!=after,original_sha256=hashlib.sha256(before).hexdigest(),
+                         current_sha256=hashlib.sha256(after).hexdigest()))
+rows.sort(key=lambda row:row['file'])
+with (output/'coverage.csv').open('w',newline='',encoding='utf-8-sig') as file:
     writer=csv.DictWriter(file,fieldnames=rows[0].keys()); writer.writeheader(); writer.writerows(rows)
-(output/'cobertura.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf8')
-summary=dict(arquivos_originais=len(rows),bytes_originais=sum(r['bytes_original'] for r in rows),
+(output/'coverage.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf8')
+summary=dict(original_files=len(rows),original_bytes=sum(r['original_bytes'] for r in rows),
              status=dict(collections.Counter(r['status'] for r in rows)),
-             fontes_principais=sum(isinstance(r['linhas_original'],int) and r['arquivo'].startswith(('es-app/src/','es-core/src/')) for r in rows),
-             linhas_fontes_principais=sum(r['linhas_original'] for r in rows if isinstance(r['linhas_original'],int) and r['arquivo'].startswith(('es-app/src/','es-core/src/'))),
-             sha256_zip=hashlib.sha256(archive.read_bytes()).hexdigest())
-(output/'inventario-resumo.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding='utf8')
+             main_sources=sum(isinstance(r['original_lines'],int) and r['file'].startswith(('es-app/src/','es-core/src/')) for r in rows),
+             main_source_lines=sum(r['original_lines'] for r in rows if isinstance(r['original_lines'],int) and r['file'].startswith(('es-app/src/','es-core/src/'))),
+             zip_sha256=hashlib.sha256(archive.read_bytes()).hexdigest())
+(output/'inventory-summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding='utf8')
 print(json.dumps(summary,ensure_ascii=False,indent=2))

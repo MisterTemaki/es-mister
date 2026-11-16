@@ -5,7 +5,7 @@
       {
         "input_number": 43,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 543.368,
         "queue_ms": 0.0,
         "ui_ms": 69.484,
@@ -15,7 +15,7 @@
       {
         "input_number": 37,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 466.227,
         "queue_ms": 1.0,
         "ui_ms": 55.428,
@@ -25,7 +25,7 @@
       {
         "input_number": 49,
         "key": "Escape",
-        "phase": "lista→carrossel",
+        "phase": "list→carousel",
         "sdl_ms": 458.753,
         "queue_ms": 1.0,
         "ui_ms": 279.189,
@@ -35,7 +35,7 @@
       {
         "input_number": 36,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 439.894,
         "queue_ms": 0.0,
         "ui_ms": 52.017,
@@ -45,7 +45,7 @@
       {
         "input_number": 34,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 419.938,
         "queue_ms": 0.0,
         "ui_ms": 40.991,
@@ -60,7 +60,7 @@
       {
         "input_number": 49,
         "key": "Escape",
-        "phase": "lista→carrossel",
+        "phase": "list→carousel",
         "sdl_ms": 537.349,
         "queue_ms": 0.0,
         "ui_ms": 294.998,
@@ -70,7 +70,7 @@
       {
         "input_number": 43,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 513.631,
         "queue_ms": 0.0,
         "ui_ms": 71.738,
@@ -80,7 +80,7 @@
       {
         "input_number": 42,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 471.452,
         "queue_ms": 0.0,
         "ui_ms": 88.025,
@@ -90,7 +90,7 @@
       {
         "input_number": 3,
         "key": "Down",
-        "phase": "grid com capas: descida",
+        "phase": "grid with covers: down",
         "sdl_ms": 391.261,
         "queue_ms": 0.0,
         "ui_ms": 75.509,
@@ -100,7 +100,7 @@
       {
         "input_number": 21,
         "key": "Down",
-        "phase": "grid com capas: descida",
+        "phase": "grid with covers: down",
         "sdl_ms": 390.514,
         "queue_ms": 1.0,
         "ui_ms": 90.809,
@@ -115,7 +115,7 @@
       {
         "input_number": 49,
         "key": "Escape",
-        "phase": "lista→carrossel",
+        "phase": "list→carousel",
         "sdl_ms": 485.053,
         "queue_ms": 0.0,
         "ui_ms": 308.006,
@@ -125,7 +125,7 @@
       {
         "input_number": 43,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 435.53,
         "queue_ms": 1.0,
         "ui_ms": 65.935,
@@ -135,7 +135,7 @@
       {
         "input_number": 4,
         "key": "Down",
-        "phase": "grid com capas: descida",
+        "phase": "grid with covers: down",
         "sdl_ms": 416.103,
         "queue_ms": 0.0,
         "ui_ms": 83.178,
@@ -145,7 +145,7 @@
       {
         "input_number": 44,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 408.743,
         "queue_ms": 0.0,
         "ui_ms": 28.194,
@@ -155,7 +155,7 @@
       {
         "input_number": 22,
         "key": "Down",
-        "phase": "grid com capas: descida",
+        "phase": "grid with covers: down",
         "sdl_ms": 353.979,
         "queue_ms": 1.0,
         "ui_ms": 98.167,
@@ -170,7 +170,7 @@
       {
         "input_number": 45,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 472.462,
         "queue_ms": 0.0,
         "ui_ms": 35.612,
@@ -180,7 +180,7 @@
       {
         "input_number": 49,
         "key": "Escape",
-        "phase": "lista→carrossel",
+        "phase": "list→carousel",
         "sdl_ms": 430.216,
         "queue_ms": 0.0,
         "ui_ms": 191.969,
@@ -190,7 +190,7 @@
       {
         "input_number": 20,
         "key": "Down",
-        "phase": "grid com capas: descida",
+        "phase": "grid with covers: down",
         "sdl_ms": 410.763,
         "queue_ms": 1.0,
         "ui_ms": 137.672,
@@ -200,7 +200,7 @@
       {
         "input_number": 27,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 409.473,
         "queue_ms": 1.0,
         "ui_ms": 56.319,
@@ -210,7 +210,7 @@
       {
         "input_number": 36,
         "key": "Up",
-        "phase": "grid com capas: volta",
+        "phase": "grid with covers: back",
         "sdl_ms": 400.615,
         "queue_ms": 1.0,
         "ui_ms": 74.076,

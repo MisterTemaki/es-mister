@@ -7,7 +7,7 @@ items = []
 for path in files:
     rel = path.relative_to(root).as_posix()
     data = path.read_bytes()
-    items.append(dict(path=rel, bytes=len(data), lines=data.count(b'\n'), status='Não analisado'))
+    items.append(dict(path=rel, bytes=len(data), lines=data.count(b'\n'), status='Not analysed'))
 (base / 'inventory.json').write_text(json.dumps(items, indent=2, ensure_ascii=False), encoding='utf8')
 print('Inventory:', len(items), 'files;', sum(i['lines'] for i in items), 'lines', flush=True)
 commands = [

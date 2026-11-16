@@ -115,7 +115,7 @@ cp "$SRC/batocera.linux/package/batocera/emulationstation/batocera-emulationstat
 echo "== theme"
 python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv" 1920x1080
 
-cp "$ROOT/mister/LEIA-ME.txt" "$ES/"
+cp "$ROOT/mister/README.txt" "$ES/"
 cp "$ROOT/LICENSE.md" "$ES/LICENSE-EmulationStation.md"
 
 # every script with Unix line ends

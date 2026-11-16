@@ -9,17 +9,17 @@
     "accepted_cpp_headers_exact": 440,
     "independent_reference_sources_exact": 9,
     "archives": {
-      "es-mister-1080p-fontes-final-20261115.zip": {
+      "es-mister-1080p-sources-final-20261115.zip": {
         "bytes": 36082446,
         "sha256": "f3fa605e5ba7d72b571f437697a3252bff6378a46ae07e0bcb52b95f435e004e",
         "members": 1293
       },
-      "es-mister-1080p-atualizacao-final-20261115.zip": {
+      "es-mister-1080p-update-final-20261115.zip": {
         "bytes": 4890217,
         "sha256": "1535595656b3444d579ed0a99365b82d839bb31fe81752d6809a997f61ba224b",
         "members": 7
       },
-      "es-mister-1080p-evidencias-final-20261115.zip": {
+      "es-mister-1080p-evidence-final-20261115.zip": {
         "bytes": 33023003,
         "sha256": "b3325c355925ad9bea9fb9b7a47e3f4562c5c073398f0d1fec0e8c92daf33020",
         "members": 1069

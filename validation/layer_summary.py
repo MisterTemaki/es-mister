@@ -6,10 +6,10 @@ groups=collections.defaultdict(list)
 for raw in csv.DictReader(p.open()):
     r={k:int(v) for k,v in raw.items()}
     w,h,alpha,vertices=(r[k] for k in ('tex_w','tex_h','first_alpha','vertices'))
-    if vertices>4:label='atlas/texto ou geometria com mais de quatro vertices'
-    elif w*h>=1280*720:label='imagem grande, primeiro alfa '+('parcial' if 0<alpha<255 else str(alpha))
-    elif not w or not h:label='retangulo sem textura, primeiro alfa '+('parcial' if 0<alpha<255 else str(alpha))
-    else:label='imagem menor, primeiro alfa '+('parcial' if 0<alpha<255 else str(alpha))
+    if vertices>4:label='atlas/text or geometry with more than four vertices'
+    elif w*h>=1280*720:label='large picture, first alpha '+('partial' if 0<alpha<255 else str(alpha))
+    elif not w or not h:label='untextured rectangle, first alpha '+('partial' if 0<alpha<255 else str(alpha))
+    else:label='smaller picture, first alpha '+('partial' if 0<alpha<255 else str(alpha))
     groups[label].append(r)
 total=sum(r['ns'] for values in groups.values() for r in values)
 report=[]

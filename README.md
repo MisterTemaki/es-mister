@@ -1,46 +1,66 @@
-# ES-MiSTer — Carbon em Full HD
+# ES-MiSTer — Batocera's EmulationStation on the MiSTer FPGA
 
-Frontend EmulationStation para MiSTer/DE10-Nano, com saída **1920×1080** e
-renderização por software. Esta versão preserva a aparência do Carbon,
-filtragem, transparências, camadas, duração das transições e controles.
-Mantém duas threads de desenho, faixas de 8 linhas e prefetch de 256 bytes.
+EmulationStation frontend for the MiSTer/DE10-Nano, drawn in software (the
+MiSTer has no GPU) on the Linux framebuffer, with Batocera's Carbon theme.
+Two versions are published:
 
-## Versão validada em 15/11/2026
+- **ES-MiSTer 720p** (release `es-mister-720p-20261116`): draws at 1280×720,
+  with the newer renderer optimisations, the Libretro-thumbnails cover scraper
+  and the fixes for the MiSTer menu's console switches. Its sources are the
+  [`audit-2026-11-16`](https://github.com/MisterTemaki/es-mister/tree/audit-2026-11-16) branch.
+- **ES-MiSTer 1080p** (release `mister-1080p-20261115`, this branch): the
+  1920×1080 version validated below.
 
-[Baixar a release com fontes, atualização e evidências](https://github.com/MisterTemaki/es-mister/releases/tag/mister-1080p-20261115).
+## ES-MiSTer 720p
 
-Medições no próprio MiSTer, alternando a referência já otimizada e a versão
-final, no mesmo catálogo/Carbon/1080p: **4.000 de 4.000 comandos respondidos**.
-Os valores abaixo são medianas de duas rodadas por versão.
+[Download the ES-MiSTer 720p release](https://github.com/MisterTemaki/es-mister/releases/tag/es-mister-720p-20261116).
+Extract the ZIP at the root of the SD card and run Scripts > es-mister-720p from
+the MiSTer menu. It installs to `/media/fat/es-mister-720p` and does not touch
+other installations. The notes in the ZIP (`README.txt`) cover using it, the
+covers, the settings and what to do if something goes wrong.
 
-| Métrica | Referência | Versão final |
+## ES-MiSTer 1080p — Carbon in Full HD
+
+**1920×1080** output and software rendering. This version keeps Carbon's
+appearance, filtering, transparencies, layers, transition durations and controls.
+It keeps two drawing threads, bands of 8 rows and a 256-byte prefetch.
+
+### Version validated on 15/11/2026
+
+[Download the release with sources, update and evidence](https://github.com/MisterTemaki/es-mister/releases/tag/mister-1080p-20261115).
+
+Measurements on the MiSTer itself, alternating the already optimised reference and the final
+version, on the same catalogue/Carbon/1080p: **4,000 of 4,000 commands answered**.
+The values below are medians of two rounds per version.
+
+| Metric | Reference | Final version |
 |---|---:|---:|
-| Fila SDL → primeiro redesenho, mediana | 98,300 ms | 95,500 ms |
-| p95 por rodada | 139,105 ms | 130,149 ms |
-| p99 por rodada | 174,888 ms | 152,034 ms |
-| Execução do renderer, mediana | 81,697 ms | 78,059 ms |
+| SDL queue → first redraw, median | 98.300 ms | 95.500 ms |
+| p95 per round | 139.105 ms | 130.149 ms |
+| p99 per round | 174.888 ms | 152.034 ms |
+| Renderer execution, median | 81.697 ms | 78.059 ms |
 
-**16,7 ms não foi alcançado.** FPS=60 é o teto configurado. O pior comando
-observado passou de 210,078 para 230,190 ms; os relatórios também apresentam
-as trocas de desempenho com capas e as limitações das medições. Esses tempos
-terminam na escrita pelo software, sem medir controle físico, scanout ou TV.
+**16.7 ms was not reached.** FPS=60 is the configured ceiling. The worst command
+observed went from 210.078 to 230.190 ms; the reports also show
+the performance trade-offs with covers and the limits of the measurements. These times
+end at the software's write, without measuring the physical controller, scanout or TV.
 
-O binário ARM aceito tem SHA-256
+The accepted ARM binary has SHA-256
 `872dd340826f39da1bb14371681bb0decc4f4d3c640ae93e646ef46337465b55`.
-Os fontes C++ e headers publicados correspondem ao manifesto desse build.
-Os ZIPs da release preservam os artefatos originais da entrega; a árvore Git
-acrescenta esta documentação e os scripts de reprodução.
+The C++ sources and headers published match that build's manifest.
+The release's ZIPs keep the delivery's original artefacts; the Git tree
+adds this documentation and the reproduction scripts.
 
-- [Resultados finais e regressões](audit/performance-1080p/FECHAMENTO.md)
-- [Limites encontrados e por que ainda há latência](audit/performance-1080p/LIMITES.md)
-- [Compilação e reprodução completas](audit/performance-1080p/REPRODUZIR.md)
-- [Investigação do Linux](audit/performance-1080p/LINUX.md)
-- [Resumos e hashes da entrega](audit/performance-1080p/entrega-final/)
-- [Preparação dos scripts de validação](validation/README.md)
+- [Final results and regressions](audit/performance-1080p/CLOSING.md)
+- [Limits found and why there is still latency](audit/performance-1080p/LIMITS.md)
+- [Complete build and reproduction](audit/performance-1080p/REPRODUCE.md)
+- [Linux investigation](audit/performance-1080p/LINUX.md)
+- [The delivery's summaries and hashes](audit/performance-1080p/final-delivery/)
+- [Preparing the validation scripts](validation/README.md)
 
-## Compilar o binário ARM
+### Building the ARM binary
 
-Em Linux com Git, CMake, Ninja, Python 3, autoconf, automake, libtool e gettext:
+On Linux with Git, CMake, Ninja, Python 3, autoconf, automake, libtool and gettext:
 
 ```bash
 git clone --recurse-submodules https://github.com/MisterTemaki/es-mister.git
@@ -48,26 +68,27 @@ cd es-mister
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install ziglang==0.15.2
-export MISTER_WORK=/caminho/para/cache-es-mister
+export MISTER_WORK=/path/to/es-mister-cache
 export JOBS=6
 bash mister/build.sh deps
 bash mister/build.sh es
 ```
 
-O ELF fica em `$MISTER_WORK/out/emulationstation`. Veja o roteiro completo
-para dependências do host, comparação com a referência e instalação. A
-atualização da release utiliza o tema Carbon já instalado; não é uma imagem
-completa do cartão SD.
+The ELF ends up in `$MISTER_WORK/out/emulationstation`. See the complete guide
+for host dependencies, comparison with the reference and installation. The
+release's update uses the Carbon theme already installed; it is not a full
+image of the SD card.
 
-## Instalar a atualização validada
+### Installing the validated update
 
-Extraia o ZIP de atualização da release e leia o `LEIA-ME.txt` incluído antes
-de executar `install-update.py`. O instalador verifica hashes, guarda backup
-e confere a prontidão; conserva configurações existentes. Nenhuma chave SSH,
-ROM comercial ou cache de compilação faz parte dos pacotes.
+Extract the release's update ZIP and read the included `LEIA-ME.txt` (the
+notes, written in Portuguese at the time; [`mister/README.txt`](mister/README.txt)
+is the English version) before running `install-update.py`. The installer checks
+hashes, keeps a backup and checks readiness; it keeps existing settings. No SSH key,
+commercial ROM or build cache is part of the packages.
 
-O histórico anterior do repositório e os créditos/licenças foram preservados.
-A documentação original do EmulationStation segue abaixo.
+The repository's earlier history and the credits/licences were preserved.
+EmulationStation's original documentation follows.
 
 ---
 

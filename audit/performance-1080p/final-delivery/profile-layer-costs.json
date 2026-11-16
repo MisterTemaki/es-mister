@@ -2,7 +2,7 @@
   "source": "target-results/stage3-base-profile/trace.csv.commands.csv",
   "groups": [
     {
-      "label": "imagem grande, primeiro alfa parcial",
+      "label": "large picture, first alpha partial",
       "command_worker_samples": 48,
       "band_visits": 3260,
       "sum_worker_wall_ms": 797.338,
@@ -10,7 +10,7 @@
       "median_group_per_sampled_frame_worker_ms": 33.069
     },
     {
-      "label": "imagem grande, primeiro alfa 255",
+      "label": "large picture, first alpha 255",
       "command_worker_samples": 54,
       "band_visits": 3546,
       "sum_worker_wall_ms": 541.978,
@@ -18,7 +18,7 @@
       "median_group_per_sampled_frame_worker_ms": 9.874
     },
     {
-      "label": "imagem menor, primeiro alfa parcial",
+      "label": "smaller picture, first alpha partial",
       "command_worker_samples": 250,
       "band_visits": 1806,
       "sum_worker_wall_ms": 444.771,
@@ -26,7 +26,7 @@
       "median_group_per_sampled_frame_worker_ms": 10.423
     },
     {
-      "label": "atlas/texto ou geometria com mais de quatro vertices",
+      "label": "atlas/text or geometry with more than four vertices",
       "command_worker_samples": 173,
       "band_visits": 1540,
       "sum_worker_wall_ms": 268.027,
@@ -34,7 +34,7 @@
       "median_group_per_sampled_frame_worker_ms": 2.861
     },
     {
-      "label": "retangulo sem textura, primeiro alfa parcial",
+      "label": "untextured rectangle, first alpha partial",
       "command_worker_samples": 38,
       "band_visits": 627,
       "sum_worker_wall_ms": 81.437,
@@ -42,7 +42,7 @@
       "median_group_per_sampled_frame_worker_ms": 2.271
     },
     {
-      "label": "imagem menor, primeiro alfa 255",
+      "label": "smaller picture, first alpha 255",
       "command_worker_samples": 147,
       "band_visits": 761,
       "sum_worker_wall_ms": 53.027,
@@ -50,7 +50,7 @@
       "median_group_per_sampled_frame_worker_ms": 1.017
     },
     {
-      "label": "retangulo sem textura, primeiro alfa 255",
+      "label": "untextured rectangle, first alpha 255",
       "command_worker_samples": 6,
       "band_visits": 288,
       "sum_worker_wall_ms": 12.578,

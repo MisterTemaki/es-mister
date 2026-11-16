@@ -15,7 +15,7 @@ int main()
     const std::string path = Paths::getUserEmulationStationPath() + "/es_settings.cfg";
     auto settings = Settings::getInstance();
     settings->setBool("UseFileCache", false);
-    settings->setString("AuditSetting", u8"ação & <jogo>");
+    settings->setString("AuditSetting", u8"café & <game>");
     // Block the final destination with a directory. No event may announce a successful save.
     std::filesystem::create_directory(path);
     require(!settings->saveFile(), "failed save reported success");

@@ -9,7 +9,7 @@ def remote(code):
     print(p.stdout,flush=True)
     if p.returncode:raise SystemExit(p.returncode)
     return p.stdout
-archive=v.parent/'es-mister-1080p-atualizacao-20261113.zip'
+archive=v.parent/'es-mister-1080p-update-20261113.zip'
 win=subprocess.check_output(['wslpath','-w',str(archive)],text=True).strip()
 subprocess.run([scp,'-i',key,'-o','BatchMode=yes',win,host+':'+root+'/update-1080p.zip'],check=True)
 sha=hashlib.sha256(archive.read_bytes()).hexdigest()

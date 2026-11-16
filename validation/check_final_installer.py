@@ -3,7 +3,7 @@ import contextlib,hashlib,importlib.util,io,json,pathlib,tempfile,unittest.mock
 V=pathlib.Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('installer',V.parent/'es-mister/mister/tools/install-update.py')
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
-expected={'emulationstation','es-mister-helper','es-mister.sh','mister-launch.sh','LEIA-ME.txt'}
+expected={'emulationstation','es-mister-helper','es-mister.sh','mister-launch.sh','README.txt'}
 def fixture(root):
     app=root/'app';package=root/'package';(package/'payload').mkdir(parents=True);app.mkdir()
     before={name:('original '+name+'\n').encode() for name in expected}

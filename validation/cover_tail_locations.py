@@ -11,7 +11,7 @@ for d in sorted((V/'target-results').glob('covers-source-final-v1-*')):
     slow=[]
     for index in sorted(range(len(inputs)),key=lambda i:-inputs[i]['event_ns'])[:5]:
         r=inputs[index];response=max((f for f in frames if f['at_ns']<=r['at_ns']),key=lambda f:f['at_ns'])
-        phase='grid com capas: '+('descida' if keys[index]=='Down' else 'volta') if index<48 else ['lista→carrossel','abrir menu','fechar menu','carrossel→lista'][index-48]
+        phase='grid with covers: '+('down' if keys[index]=='Down' else 'back') if index<48 else ['list→carousel','open menu','close menu','carousel→list'][index-48]
         slow.append(dict(input_number=index+1,key=keys[index],phase=phase,sdl_ms=round(r['event_ns']/1e6,3),
             queue_ms=round((r['event_ns']-r['dispatch_ns'])/1e6,3),ui_ms=round(response['ui_ns']/1e6,3),renderer_ms=round(response['execute_ns']/1e6,3),partial=bool(response['partial'])))
     reports.append(dict(run=d.name,slowest_five=slow))

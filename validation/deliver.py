@@ -2,7 +2,7 @@ import pathlib, subprocess, zipfile, hashlib, shutil, json, tempfile, collection
 base=pathlib.Path(__file__).resolve().parent
 workspace=base.parent
 root=workspace/'es-mister'
-evidence=root/'audit/evidencias'
+evidence=root/'audit/evidence'
 evidence.mkdir(parents=True,exist_ok=True)
 
 # Keep the smoke runner portable in the delivered source tree.
@@ -41,7 +41,7 @@ for path in sorted(root.rglob('*.sh')):
 for path in root.rglob('*.py'):
     if '.git' in path.parts: continue
     compile(path.read_bytes(),str(path),'exec')
-(evidence/'sintaxe.json').write_text(json.dumps(checks,indent=2))
+(evidence/'syntax.json').write_text(json.dumps(checks,indent=2))
 
 binary=base/'native/emulationstation'
 environment={
@@ -57,7 +57,7 @@ environment={
     'flags':['MISTER=ON','CEC=OFF','USE_SYSTEM_PUGIXML=ON','CMAKE_BUILD_TYPE=Debug','CMAKE_POLICY_VERSION_MINIMUM=3.5'],
     'hardware_tested':False,
 }
-(evidence/'ambiente.json').write_text(json.dumps(environment,ensure_ascii=False,indent=2))
+(evidence/'environment.json').write_text(json.dumps(environment,ensure_ascii=False,indent=2))
 (evidence/'ldd.txt').write_text(subprocess.check_output(['ldd',str(binary)],text=True))
 
 subprocess.run(['git','diff','--check'],cwd=root,check=True)
@@ -73,7 +73,7 @@ with tempfile.TemporaryDirectory(prefix='es-patch-check-') as temp:
     if check.returncode: raise RuntimeError(check.stderr)
 
 changed=subprocess.check_output(['git','diff','--name-only','--','.',':(exclude)audit'],cwd=root,text=True)
-(root/'audit/arquivos-alterados.txt').write_text(changed)
+(root/'audit/changed-files.txt').write_text(changed)
 archive=workspace/'es-mister-5b5c7bc-auditoria-etapa1.zip'
 with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as output:
     for path in sorted(root.rglob('*')):

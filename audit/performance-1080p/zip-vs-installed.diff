@@ -1,5 +1,5 @@
 --- ZIP/es-core/src/renderers/Renderer_Soft.cpp
-+++ instalada-reconstituida/es-core/src/renderers/Renderer_Soft.cpp
++++ installed-rebuilt/es-core/src/renderers/Renderer_Soft.cpp
 @@ -169,7 +169,7 @@
  			// frame drawn, and the parts of it where this frame's draws are not the last one's are drawn again
  			bool dirty = true;
@@ -35,7 +35,7 @@
  		const char* stats = getenv("ES_SOFT_STATS");
  		if (stats != nullptr)
 --- ZIP/es-core/src/renderers/soft/SoftOutput.cpp
-+++ instalada-reconstituida/es-core/src/renderers/soft/SoftOutput.cpp
++++ installed-rebuilt/es-core/src/renderers/soft/SoftOutput.cpp
 @@ -32,13 +32,23 @@
  				return value != nullptr ? value : fallback;
  			}
@@ -62,7 +62,7 @@
  					const uint32x4_t c = vld1q_u32((const uint32_t*)(from + i + 32)), d = vld1q_u32((const uint32_t*)(from + i + 48));
  					vst1q_u32((uint32_t*)(to + i), a);
 --- ZIP/es-core/src/renderers/soft/SoftRaster.cpp
-+++ instalada-reconstituida/es-core/src/renderers/soft/SoftRaster.cpp
++++ installed-rebuilt/es-core/src/renderers/soft/SoftRaster.cpp
 @@ -30,6 +30,48 @@
  			enum BlendMode { BLEND_NORMAL = 0, BLEND_ADD = 1, BLEND_GENERIC = 2 };
  
@@ -158,7 +158,7 @@
  					}
  					if (mod == MOD_VARY)
 --- ZIP/mister/LEIA-ME.txt
-+++ instalada-reconstituida/mister/LEIA-ME.txt
++++ installed-rebuilt/mister/LEIA-ME.txt
 @@ -38,11 +38,23 @@
  Ajustes
  -------
@@ -186,7 +186,7 @@
  O que mandar de volta depois do teste
  -------------------------------------
 --- ZIP/mister/package.sh
-+++ instalada-reconstituida/mister/package.sh
++++ installed-rebuilt/mister/package.sh
 @@ -39,6 +39,7 @@
  echo "== program"
  llvm-strip -o "$ES/emulationstation" "$WORK/out/emulationstation"
@@ -224,7 +224,7 @@
                  with open(path, "rb") as f:
                      z.writestr(info, f.read())
 --- ZIP/mister/scripts/es-mister.sh
-+++ instalada-reconstituida/mister/scripts/es-mister.sh
++++ installed-rebuilt/mister/scripts/es-mister.sh
 @@ -20,7 +20,8 @@
  BENCH=0
  PROFILE=0

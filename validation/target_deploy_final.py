@@ -15,7 +15,7 @@ candidate=[r for r in nav['runs'] if r['implementation']=='candidate']
 reference=[r for r in nav['runs'] if r['implementation']=='reference']
 import statistics
 assert statistics.median(r['sdl_first_redraw_ms']['median'] for r in candidate)<statistics.median(r['sdl_first_redraw_ms']['median'] for r in reference),'No demonstrated median navigation improvement'
-archive=A/'es-mister-1080p-atualizacao-final-20261115.zip';sha=hashlib.sha256(archive.read_bytes()).hexdigest()
+archive=A/'es-mister-1080p-update-final-20261115.zip';sha=hashlib.sha256(archive.read_bytes()).hexdigest()
 win=subprocess.check_output(['wslpath','-w',str(archive)],text=True).strip()
 subprocess.run([SCP,'-i',KEY,'-o','BatchMode=yes',win,HOST+':'+BASE+'/update-final-20261115.zip'],check=True)
 code=f'''
