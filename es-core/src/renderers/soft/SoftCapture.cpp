@@ -257,8 +257,15 @@ namespace Renderer
 							continue;
 						}
 					}
-					clearPart();
 					DrawState state = stateIn(c);
+					// the first draw writing every pixel of the part: no clearing before it
+					if (!cleared && !c.stencil)
+					{
+						DrawState drawn = state;
+						drawn.texture = c.texture >= 0 ? capture.textures[c.texture].get() : nullptr;
+						cleared = coversOpaque(c.vertices.data(), (int)c.vertices.size(), c.topology, drawn, part);
+					}
+					clearPart();
 					if (c.stencil)
 						raster.setStencil(c.vertices.data(), (int)c.vertices.size(), state);
 					else

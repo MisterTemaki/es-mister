@@ -162,12 +162,21 @@ namespace Renderer
 			std::vector<uint32_t> mRowA, mRowB, mRowOut;
 			std::vector<int32_t> mColX0, mColX1;
 			std::vector<uint16_t> mColFx;
+			// nearest and made bigger: each 8 pixels' first texel, and their bytes' indices in the 8 texels from it
+			std::vector<int32_t> mNearAt;
+			std::vector<uint8_t> mNearIdx;
 		};
 
 		// Where a draw or a stencil shape of a width x height frame may reach (empty: nowhere): its vertices'
 		// box, a pixel more each side for the rounding (two for lines), in its scissor and the frame. A part
 		// of the frame it does not meet is left as it was by a draw, and marked nowhere by a stencil shape.
 		Bounds drawBounds(const SVertex* vertices, int count, Topology topology, const DrawState& state, int width, int height);
+
+		// Whether a draw (its state in the part: its scissor narrowed to it) writes every pixel of the part with
+		// alpha 255, whatever was there: a rectangle with alpha 255 at every vertex, opaque texels if textured
+		// (1:1, or made bigger and not smoothed), blended normally, not stencil-tested, covering the part. The
+		// part's clearing before it would be written over: left out (the grids' background).
+		bool coversOpaque(const SVertex* vertices, int count, Topology topology, const DrawState& state, const Bounds& part);
 
 		// Draws worth drawing together (Raster::drawLayers), in a part of the frame: a rectangle alone, not a
 		// stencil shape nor tested against one, whose box (b) covers half of the part or more. ES_SOFT_LAYERS=0:

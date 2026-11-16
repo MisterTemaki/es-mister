@@ -283,12 +283,15 @@ namespace
 		}
 	}
 
-	// the scene drawn a part at a time, as Renderer_Soft's executePart: the part cleared, then every command
-	// with its scissor narrowed to the part
+	int partsLeftUncleared = 0;
+
+	// the scene drawn a part at a time, as Renderer_Soft's executePart: the part cleared before its first
+	// command (not when that one writes every pixel of it: coversOpaque), then every command with its scissor
+	// narrowed to the part
 	void drawPart(Raster& band, const Scene& scene, int x0, int y0, int x1, int y1)
 	{
-		band.clearBox(x0, y0, x1, y1, 0);
 		const Bounds part = { x0, y0, x1, y1 };
+		bool cleared = false;
 		for (const Command& c : scene.commands)
 		{
 			// as executePart: a command that does not meet the part is left out (a stencil shape only ends the
@@ -310,31 +313,34 @@ namespace
 				state.scissor = true;
 				state.sx0 = x0; state.sy0 = y0; state.sx1 = x1; state.sy1 = y1;
 			}
+			if (!cleared)
+			{
+				DrawState drawn = state;
+				drawn.texture = c.texture >= 0 ? scene.textures[c.texture].get() : nullptr;
+				if (!c.stencil && coversOpaque(c.vertices.data(), (int)c.vertices.size(), c.topology, drawn, part))
+					partsLeftUncleared++;
+				else
+					band.clearBox(x0, y0, x1, y1, 0);
+				cleared = true;
+			}
 			run(band, scene, c, state);
 		}
+		if (!cleared)
+			band.clearBox(x0, y0, x1, y1, 0);
 	}
-}
 
-TEST(clipped_draws_leave_the_same_pixels)
-{
-	const int scenes = getenv("RASTER_SCENES") ? atoi(getenv("RASTER_SCENES")) : 3000;
-	int differing = 0;
-	// a hash of every scene drawn whole: the same before and after a change to the rasterizer means the
-	// change left every pixel of every scene as it was (RASTER_HASH=1 prints it)
-	uint64_t allPixels = 1469598103934665603ULL;
-	for (int i = 0; i < scenes; i++)
+	// The scene drawn whole, then in parts of two bands (a random line between them; random strips of rows
+	// and columns, in a random order), as the renderer draws them; the pixels compared. Returns whether they
+	// are the same (the first differing pixel reported while fewer than 5 scenes were), and adds the whole
+	// frame's pixels to the hash.
+	bool sameInParts(const Scene& scene, Random& r, int i, int differing, uint64_t& allPixels)
 	{
-		Random r(0x5eed0000u + (uint32_t)i);
-		const Scene scene = makeScene(r);
-
 		Raster whole;
 		whole.resize(scene.width, scene.height);
 		whole.clear(0);
 		for (const Command& c : scene.commands)
 			run(whole, scene, c, c.state);
 
-		// two bands with a random line between them; each split into random parts (strips of rows and
-		// columns), drawn in a random order
 		Raster owner, top, bottom;
 		owner.resize(scene.width, scene.height);
 		std::fill(owner.pixels(), owner.pixels() + (size_t)scene.width * scene.height, 0xDEADBEEFu);
@@ -362,22 +368,103 @@ TEST(clipped_draws_leave_the_same_pixels)
 		const uint32_t* b = owner.pixels();
 		for (size_t k = 0; k < (size_t)scene.width * scene.height; k++)
 			allPixels = (allPixels ^ a[k]) * 1099511628211ULL;
-		for (int y = 0; y < scene.height; y++)
+		bool same = true;
+		for (int y = 0; y < scene.height && same; y++)
 			for (int x = 0; x < scene.width; x++)
 				if (a[(size_t)y * scene.width + x] != b[(size_t)y * scene.width + x])
 				{
 					if (differing < 5)
 						fprintf(stderr, "  scene %d (%dx%d, %zu commands): pixel %d,%d is %08x drawn whole, %08x in parts\n", i, scene.width, scene.height,
 							scene.commands.size(), x, y, a[(size_t)y * scene.width + x], b[(size_t)y * scene.width + x]);
-					differing++;
-					y = scene.height;
+					same = false;
 					break;
 				}
 		scaledFrame();
+		return same;
+	}
+}
+
+TEST(clipped_draws_leave_the_same_pixels)
+{
+	const int scenes = getenv("RASTER_SCENES") ? atoi(getenv("RASTER_SCENES")) : 3000;
+	int differing = 0;
+	// a hash of every scene drawn whole: the same before and after a change to the rasterizer means the
+	// change left every pixel of every scene as it was (RASTER_HASH=1 prints it)
+	uint64_t allPixels = 1469598103934665603ULL;
+	partsLeftUncleared = 0;
+	for (int i = 0; i < scenes; i++)
+	{
+		Random r(0x5eed0000u + (uint32_t)i);
+		const Scene scene = makeScene(r);
+		if (!sameInParts(scene, r, i, differing, allPixels))
+			differing++;
 	}
 	if (getenv("RASTER_HASH") != nullptr)
-		printf("  pixels of the %d scenes: %016llx\n", scenes, (unsigned long long)allPixels);
+		printf("  pixels of the %d scenes: %016llx (%d parts not cleared)\n", scenes, (unsigned long long)allPixels, partsLeftUncleared);
 	CHECK_EQ(differing, 0);
+}
+
+// A part's clearing left out under a first draw that writes every pixel of it (coversOpaque): scenes with a
+// background first, now and then: an opaque colour, an opaque picture 1:1 or made bigger (nearest or smoothed),
+// covering the frame or nearly (edges on fractions of a pixel), with an alpha of 254 at a corner now and then;
+// drawn whole and in parts, as above.
+TEST(parts_under_an_opaque_draw_left_uncleared)
+{
+	const int scenes = getenv("RASTER_SCENES") ? atoi(getenv("RASTER_SCENES")) : 3000;
+	int differing = 0;
+	uint64_t allPixels = 1469598103934665603ULL;
+	partsLeftUncleared = 0;
+	for (int i = 0; i < scenes; i++)
+	{
+		Random r(0xc1ea0000u + (uint32_t)i);
+		Scene scene = makeScene(r);
+		if (r.chance(60))
+		{
+			Command bg;
+			const float W = (float)scene.width, H = (float)scene.height;
+			const float x0 = r.chance(60) ? 0.0f : r.coord(-1.5f, 1.5f), y0 = r.chance(60) ? 0.0f : r.coord(-1.5f, 1.5f);
+			const float x1 = r.chance(60) ? W : r.coord(W - 1.5f, W + 1.5f), y1 = r.chance(60) ? H : r.coord(H - 1.5f, H + 1.5f);
+			uint32_t c = 0xFF000000u | (uint32_t)r.range(0, 0xFFFFFF);
+			if (r.chance(50))
+				c = 0xFFFFFFFFu;
+			bg.vertices = { { x0, y0, 0, 0, c }, { x0, y1, 0, 1, c }, { x1, y0, 1, 0, c }, { x1, y1, 1, 1, c } };
+			if (r.chance(10))
+				bg.vertices[r.range(0, 3)].color = (c & 0x00FFFFFF) | 0xFE000000u; // not opaque at a corner
+			const int kind = r.range(0, 3);
+			if (kind > 0)
+			{
+				std::unique_ptr<Texture> t = makeTexture(r);
+				if (kind == 1)
+				{
+					// 1:1: the frame's size
+					t->width = scene.width;
+					t->height = scene.height;
+					t->pixels.resize((size_t)t->width * t->height);
+					for (uint32_t& p : t->pixels)
+						p = r.color();
+					bg.vertices = { { x0, y0, 0, 0, c }, { x0, y0 + H, 0, 1, c }, { x0 + W, y0, 1, 0, c }, { x0 + W, y0 + H, 1, 1, c } };
+				}
+				t->linear = kind == 3;
+				bool opaque = r.chance(85);
+				for (uint32_t& p : t->pixels)
+					p = opaque ? (p | 0xFF000000u) : p;
+				opaque = true;
+				for (uint32_t p : t->pixels)
+					opaque = opaque && (p >> 24) == 255;
+				t->opaque = opaque;
+				findClearRuns(*t);
+				bg.texture = (int)scene.textures.size();
+				scene.textures.push_back(std::move(t));
+			}
+			scene.commands.insert(scene.commands.begin(), bg);
+		}
+		if (!sameInParts(scene, r, i, differing, allPixels))
+			differing++;
+	}
+	if (getenv("RASTER_HASH") != nullptr)
+		printf("  %d parts not cleared in %d scenes\n", partsLeftUncleared, scenes);
+	CHECK_EQ(differing, 0);
+	CHECK(partsLeftUncleared > scenes); // the rule was used, many times
 }
 
 // Raster::drawLayers (draws drawn together, a row at a time, each pixel read and written once) against the

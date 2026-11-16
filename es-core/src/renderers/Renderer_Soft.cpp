@@ -411,9 +411,16 @@ namespace Renderer
 					}
 				}
 
-				clearPart();
 				DrawState state = stateIn(command);
 				const SVertex* vertices = s.vertices.data() + command.first;
+				// the first draw writing every pixel of the part: no clearing before it
+				if (!cleared && !command.stencil)
+				{
+					DrawState drawn = state;
+					drawn.texture = command.texture.get();
+					cleared = Soft::coversOpaque(vertices, (int)command.count, command.topology, drawn, partBounds);
+				}
+				clearPart();
 				if (command.stencil)
 					raster.setStencil(vertices, (int)command.count, state);
 				else

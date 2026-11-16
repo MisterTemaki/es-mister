@@ -572,36 +572,133 @@ namespace Renderer
 				}
 			}
 
-			// A span tested against the stencil: its runs of pixels the test lets through, each drawn by the
-			// NEON span (a pixel's value does not depend on where its span starts, as with clipping); the others
-			// left as they are, as spanT leaves them. Pictures with rounded corners (Carbon's game grids) are
-			// stencil-tested, and drew a pixel at a time.
-			template<int TEX, int MOD>
-			void spanNeonMasked(uint32_t* dst, const uint8_t* mask, int maskTest, int n, const Tex& tex, Span s)
+			// Pictures with rounded corners (Carbon's game grids) are stencil-tested: drawn by runs of the mask.
+			// The first i in [from, n) where (mask[i] == 1) is want, or n: 8 mask bytes at a time while none of
+			// them is (a byte is 1 where x, the bytes xor 1, has a zero byte; the test for one is exact)
+			inline int scanMask(const uint8_t* mask, int from, int n, bool want)
+			{
+				const uint64_t ones = 0x0101010101010101ULL;
+				int i = from;
+				while (i + 8 <= n)
+				{
+					uint64_t w;
+					memcpy(&w, mask + i, 8);
+					const uint64_t x = w ^ ones;
+					const bool anyOne = ((x - ones) & ~x & 0x8080808080808080ULL) != 0;
+					if (want ? anyOne : x != 0)
+						break;
+					i += 8;
+				}
+				while (i < n && (mask[i] == 1) != want)
+					i++;
+				return i;
+			}
+
+			// A span tested against the stencil: its runs of pixels the test lets through, each drawn by RUN (a
+			// pixel's value does not depend on where its span starts, as with clipping); the others left as they
+			// are, as spanT leaves them. Not for colours by vertex (RUN's spans start at u and v only).
+			template<SpanFn RUN>
+			void spanMaskedRuns(uint32_t* dst, const uint8_t* mask, int maskTest, int n, const Tex& tex, Span s)
 			{
 				if (mask == nullptr || maskTest == 0)
 				{
-					spanNeon<TEX, MOD>(dst, nullptr, 0, n, tex, s);
+					RUN(dst, nullptr, 0, n, tex, s);
 					return;
 				}
 				const bool inside = maskTest == 1; // drawn where (mask == 1) is inside
 				int i = 0;
 				while (i < n)
 				{
-					while (i < n && (mask[i] == 1) != inside)
-						i++;
-					int j = i;
-					while (j < n && (mask[j] == 1) == inside)
-						j++;
-					if (j > i)
-					{
-						Span t = s;
-						t.u = (int)(s.u + (int64_t)i * s.du);
-						t.v = (int)(s.v + (int64_t)i * s.dv);
-						spanNeon<TEX, MOD>(dst + i, nullptr, 0, j - i, tex, t);
-					}
+					i = scanMask(mask, i, n, inside);
+					if (i >= n)
+						break;
+					const int j = scanMask(mask, i, n, !inside);
+					Span t = s;
+					t.u = (int)(s.u + (int64_t)i * s.du);
+					t.v = (int)(s.v + (int64_t)i * s.dv);
+					RUN(dst + i, nullptr, 0, j - i, tex, t);
 					i = j;
 				}
+			}
+
+			template<int TEX, int MOD>
+			void spanNeonMasked(uint32_t* dst, const uint8_t* mask, int maskTest, int n, const Tex& tex, Span s)
+			{
+				spanMaskedRuns<&spanNeon<TEX, MOD>>(dst, mask, maskTest, n, tex, s);
+			}
+
+			// An opaque picture, its rows read as they are, untinted (MOD_NONE) or tinted by an opaque colour: every
+			// pixel it gives has alpha 255 (the texel's 255 times 255 is 255), and blended at 255 a pixel is that
+			// value whatever was under it (finish8's sums give it): written, what was there not read. The game
+			// tiles of Carbon's grids (an opaque colour on the tiles not selected).
+			template<int MOD>
+			void spanNeonCover(uint32_t* dst, const uint8_t* mask, int maskTest, int n, const Tex& tex, Span s)
+			{
+				const uint32_t* direct = tex.px + (s.v >> 16) * tex.w + (s.u >> 16);
+				if (MOD == MOD_NONE)
+				{
+					copyPixels(dst, direct, n);
+					return;
+				}
+				const int end = n & ~7;
+				const uint8x8_t r = vdup_n_u8((uint8_t)(s.color >> 16)), g = vdup_n_u8((uint8_t)(s.color >> 8)), b = vdup_n_u8((uint8_t)s.color);
+				const int ahead = aheadPixels();
+				for (int i = 0; i < end; i += 8)
+				{
+					if (ahead)
+						__builtin_prefetch(direct + i + ahead, 0);
+					uint8x8x4_t src = vld4_u8((const uint8_t*)(direct + i));
+					src.val[0] = div255n(vmull_u8(src.val[0], b));
+					src.val[1] = div255n(vmull_u8(src.val[1], g));
+					src.val[2] = div255n(vmull_u8(src.val[2], r));
+					vst4_u8((uint8_t*)(dst + i), src);
+				}
+				if (end < n)
+				{
+					Span t = s;
+					t.u = (int)(s.u + (int64_t)end * s.du);
+					spanT<TEX_DIRECT, MOD_CONST, BLEND_NORMAL>(dst + end, mask ? mask + end : nullptr, maskTest, n - end, tex, t);
+				}
+			}
+
+			// A picture tinted black (a shadow, a shade; not opaque: an opaque one is drawn as a colour): a texel
+			// times the colour is black with the texel's alpha times the colour's, so blended normally only what
+			// was there is darkened, by that alpha (finish8's sums with the source's colour 0, whose products are
+			// 0). The shadows under Carbon's game tiles.
+			void spanNeonShade(uint32_t* dst, const uint8_t* mask, int maskTest, int n, const Tex& tex, Span s)
+			{
+				const uint32_t* direct = tex.px + (s.v >> 16) * tex.w + (s.u >> 16);
+				const int end = n & ~7;
+				const uint8x8_t ta = vdup_n_u8((uint8_t)(s.color >> 24));
+				const int ahead = aheadPixels();
+				for (int i = 0; i < end; i += 8)
+				{
+					if (ahead)
+					{
+						__builtin_prefetch(dst + i + ahead, 1);
+						__builtin_prefetch(direct + i + ahead, 0);
+					}
+					const uint8x8x4_t src = vld4_u8((const uint8_t*)(direct + i));
+					const uint8x8_t a = div255n(vmull_u8(src.val[3], ta)), ia = vmvn_u8(a);
+					uint8x8x4_t d = vld4_u8((const uint8_t*)(dst + i));
+					d.val[0] = div255xn(vmull_u8(d.val[0], ia));
+					d.val[1] = div255xn(vmull_u8(d.val[1], ia));
+					d.val[2] = div255xn(vmull_u8(d.val[2], ia));
+					d.val[3] = div255xn(vmlal_u8(vmull_u8(a, a), d.val[3], ia));
+					vst4_u8((uint8_t*)(dst + i), d);
+				}
+				if (end < n)
+				{
+					Span t = s;
+					t.u = (int)(s.u + (int64_t)end * s.du);
+					spanT<TEX_DIRECT, MOD_CONST, BLEND_NORMAL>(dst + end, mask ? mask + end : nullptr, maskTest, n - end, tex, t);
+				}
+			}
+
+			// An opaque colour: blended at 255, the colour, whatever was under it
+			void spanFill(uint32_t* dst, const uint8_t*, int, int n, const Tex&, Span s)
+			{
+				std::fill_n(dst, n, s.color);
 			}
 #endif
 
@@ -640,14 +737,24 @@ namespace Renderer
 				return pickSpan(tex, mod, blend);
 			}
 
-			// The span of rows read as they are (the scaled path, the rows path, a picture 1:1): pickSpanFor's, or
-			// spanNeonFade for an opaque picture faded (its colour white with an alpha; constant, not by vertex)
+			// The span of rows read as they are (the scaled path, the rows path, a picture 1:1): pickSpanFor's, or (its
+			// colour constant, not by vertex; by runs of the mask when stencil-tested) for an opaque picture
+			// spanNeonCover untinted or tinted by an opaque colour, spanNeonFade faded (white with an alpha), and
+			// for any picture tinted black spanNeonShade
 			SpanFn pickRowSpan(SpanFn span, const Texture* t, int mod, uint32_t color, int blend, bool masked, bool desaturated)
 			{
 #ifdef SOFT_NEON
-				if (neonEnabled() && t != nullptr && t->opaque && mod == MOD_CONST && (color & 0x00FFFFFF) == 0x00FFFFFF &&
-					blend == BLEND_NORMAL && !masked && !desaturated)
-					return &spanNeonFade;
+				if (neonEnabled() && t != nullptr && t->opaque && blend == BLEND_NORMAL && !desaturated)
+				{
+					if (mod == MOD_NONE)
+						return masked ? &spanMaskedRuns<&spanNeonCover<MOD_NONE>> : &spanNeonCover<MOD_NONE>;
+					if (mod == MOD_CONST && (color >> 24) == 255)
+						return masked ? &spanMaskedRuns<&spanNeonCover<MOD_CONST>> : &spanNeonCover<MOD_CONST>;
+					if (mod == MOD_CONST && (color & 0x00FFFFFF) == 0x00FFFFFF)
+						return masked ? &spanMaskedRuns<&spanNeonFade> : &spanNeonFade;
+				}
+				if (neonEnabled() && t != nullptr && mod == MOD_CONST && (color & 0x00FFFFFF) == 0 && blend == BLEND_NORMAL && !desaturated)
+					return masked ? &spanMaskedRuns<&spanNeonShade> : &spanNeonShade;
 #endif
 				(void)t; (void)mod; (void)color; (void)blend; (void)masked; (void)desaturated;
 				return span;
@@ -1013,6 +1120,38 @@ namespace Renderer
 						f(y, x0, x1, first);
 				}
 			}
+		}
+
+		bool coversOpaque(const SVertex* v, int count, Topology topology, const DrawState& state, const Bounds& part)
+		{
+			if (topology != Topology::Strip || count != 4 || state.stencil != StencilTest::Off || blendModeOf(state) != BLEND_NORMAL)
+				return false;
+			const Texture* t = state.texture != nullptr && !state.texture->pixels.empty() ? state.texture : nullptr;
+			if (!(v[0].x == v[1].x && v[2].x == v[3].x && v[0].y == v[2].y && v[1].y == v[3].y &&
+				(state.texture == nullptr || (v[0].u == v[1].u && v[2].u == v[3].u && v[0].v == v[2].v && v[1].v == v[3].v))))
+				return false;
+			// alpha 255 at every pixel: its colours' (interpolated or times a texel's), its texels'
+			for (int i = 0; i < 4; i++)
+				if ((v[i].color >> 24) != 255)
+					return false;
+			if (t != nullptr && !t->opaque)
+				return false;
+			const float x0 = std::min(v[0].x, v[2].x), x1 = std::max(v[0].x, v[2].x);
+			const float y0 = std::min(v[0].y, v[1].y), y1 = std::max(v[0].y, v[1].y);
+			if (t != nullptr)
+			{
+				// not a big picture smoothed (its scaled picture may have a column fewer than a quad on a fraction
+				// of a pixel covers): 1:1, or made bigger and not smoothed (drawn 1:1 or nearest, every pixel)
+				const float su = std::fabs((v[2].u - v[0].u) * t->width / (x1 - x0)), sv = std::fabs((v[1].v - v[0].v) * t->height / (y1 - y0));
+				const bool oneToOne = std::fabs(su - 1.0f) < 0.002f && std::fabs(sv - 1.0f) < 0.002f;
+				if (!oneToOne && !(su <= 1.0f && sv <= 1.0f && !t->linear))
+					return false;
+			}
+			// the whole part: its scissor, and the pixels whose centres it covers (drawQuad's)
+			if (!state.scissor || state.sx0 > part.x0 || state.sy0 > part.y0 || state.sx1 < part.x1 || state.sy1 < part.y1)
+				return false;
+			return (int)std::ceil(x0 - 0.5f) <= part.x0 && (int)std::ceil(x1 - 0.5f) >= part.x1 &&
+				(int)std::ceil(y0 - 0.5f) <= part.y0 && (int)std::ceil(y1 - 0.5f) >= part.y1;
 		}
 
 		bool layersOn()
@@ -1636,6 +1775,36 @@ namespace Renderer
 					}
 				}
 
+#ifdef SOFT_NEON
+				// Nearest and made bigger (or 1:1) across, not repeated: 8 pixels in a row read at most 8 texels
+				// side by side, from the first one's (mNearAt); each pixel's 4 bytes picked from those 32 by
+				// index (vtbl4), the indices worked out once from the columns: the same texels, 8 at a time.
+				// Carbon's grid background (853 texels to 1920 pixels) and its tiles sampled a texel at a time.
+				int nearBlocks = 0; // the first ones of the row done this way (their 8 texels inside the row)
+				if (!linear && !tex.repeat && du > 0 && du <= (1 << 16) && neonEnabled())
+				{
+					const int blocks = n / 8;
+					if ((int)mNearAt.size() < blocks)
+					{
+						mNearAt.resize(blocks);
+						mNearIdx.resize((size_t)blocks * 32);
+					}
+					const int32_t* x0s = mColX0.data();
+					for (int b = 0; b < blocks; b++)
+					{
+						const int at = x0s[b * 8];
+						if (at < 0 || at + 8 > tex.w || x0s[b * 8 + 7] - at > 7)
+							break;
+						mNearAt[b] = at;
+						// a pixel's 4 indices: its texel's bytes, 4 * offset + 0, 1, 2, 3 (little endian)
+						uint32_t* idx = (uint32_t*)(mNearIdx.data() + (size_t)b * 32);
+						for (int j = 0; j < 8; j++)
+							idx[j] = (uint32_t)(x0s[b * 8 + j] - at) * 0x04040404u + 0x03020100u;
+						nearBlocks = b + 1;
+					}
+				}
+#endif
+
 				uint32_t* rowA = mRowA.data();
 				uint32_t* rowB = mRowB.data();
 				uint32_t* out = mRowOut.data();
@@ -1647,8 +1816,25 @@ namespace Renderer
 					if (linear)
 						sampleAcross(into, src, x0s, mColX1.data(), mColFx.data(), n);
 					else
-						for (int i = 0; i < n; i++)
+					{
+						int i = 0;
+#ifdef SOFT_NEON
+						for (int b = 0; b < nearBlocks; b++, i += 8)
+						{
+							const uint8_t* texels = (const uint8_t*)(src + mNearAt[b]);
+							const uint8x16_t lo = vld1q_u8(texels), hi = vld1q_u8(texels + 16);
+							uint8x8x4_t table;
+							table.val[0] = vget_low_u8(lo); table.val[1] = vget_high_u8(lo);
+							table.val[2] = vget_low_u8(hi); table.val[3] = vget_high_u8(hi);
+							const uint8_t* idx = mNearIdx.data() + (size_t)b * 32;
+							const uint8x16_t i0 = vld1q_u8(idx), i1 = vld1q_u8(idx + 16);
+							vst1q_u8((uint8_t*)(into + i), vcombine_u8(vtbl4_u8(table, vget_low_u8(i0)), vtbl4_u8(table, vget_high_u8(i0))));
+							vst1q_u8((uint8_t*)(into + i + 4), vcombine_u8(vtbl4_u8(table, vget_low_u8(i1)), vtbl4_u8(table, vget_high_u8(i1))));
+						}
+#endif
+						for (; i < n; i++)
 							into[i] = src[x0s[i]];
+					}
 				};
 				// row r sampled, in a slot that does not hold row keep
 				auto rowOf = [&](int r, int keep) -> const uint32_t*
@@ -1743,7 +1929,7 @@ namespace Renderer
 						const int key = wrapCoord(v >> 16, tex.h, tex.repeat);
 						if (key == lastKey)
 						{
-							memcpy(mPx + (size_t)y * mWidth + px0, mPx + (size_t)(y - 1) * mWidth + px0, (size_t)n * 4);
+							copyPixels(mPx + (size_t)y * mWidth + px0, mPx + (size_t)(y - 1) * mWidth + px0, n);
 							continue;
 						}
 						lastKey = key;
@@ -1805,6 +1991,13 @@ namespace Renderer
 			SpanFn fn = pickSpanFor(texMode, rowMod, blend, maskTest != 0, s.saturation != 256);
 			if (texMode == TEX_DIRECT)
 				fn = pickRowSpan(fn, state.texture, mod, s.color, blend, maskTest != 0, s.saturation != 256);
+#ifdef SOFT_NEON
+			// an opaque colour tested against the stencil (a game tile's background): its runs filled (an
+			// opaque colour not tested is filled above)
+			if (texMode == TEX_NONE && mod == MOD_CONST && (s.color >> 24) == 255 && blend == BLEND_NORMAL && maskTest != 0 &&
+				s.saturation == 256 && neonEnabled())
+				fn = &spanMaskedRuns<&spanFill>;
+#endif
 
 			// a picture 1:1 with clear runs (an overlay that leaves much of the frame as it is): drawn
 			// between them (blending a clear texel leaves the pixel as it was)
