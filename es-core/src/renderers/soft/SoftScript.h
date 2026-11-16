@@ -19,6 +19,7 @@
 //   quit            ES closes
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -32,7 +33,8 @@ namespace Renderer
 			bool load(const std::string& path);
 			bool active() const { return mNext < mLines.size() || !mReleases.empty(); }
 			// After each frame shown: drewNew tells whether it drew anything new
-			void frame(const uint32_t* pixels, int width, int height, bool drewNew);
+			// pixels: the frame's, asked for only when a screenshot is taken
+			void frame(const std::function<const uint32_t*()>& pixels, int width, int height, bool drewNew);
 			// "dump NAME": the file the next drawn frame's commands are written to, once ("" when none)
 			std::string takeDump() { std::string path; path.swap(mDump); return path; }
 			// "capture NAME": the file the next drawn frame is captured to, once ("" when none)

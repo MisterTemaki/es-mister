@@ -66,7 +66,7 @@ namespace Renderer
 				LOG(LogError) << "SoftRenderer: cannot write " << path;
 		}
 
-		void Script::frame(const uint32_t* pixels, int width, int height, bool drewNew)
+		void Script::frame(const std::function<const uint32_t*()>& pixels, int width, int height, bool drewNew)
 		{
 			const uint32_t now = SDL_GetTicks();
 
@@ -141,7 +141,7 @@ namespace Renderer
 				{
 					std::string name;
 					line >> name;
-					savePng(name, pixels, width, height);
+					savePng(name, pixels(), width, height);
 				}
 				else if (command == "dump")
 				{

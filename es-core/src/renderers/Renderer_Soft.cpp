@@ -99,7 +99,8 @@ namespace Renderer
 			uint64_t redrawn = 0;        // pixels drawn again
 			int checked = 0, wrong = 0;  // ES_SOFT_DIRTY_CHECK: frames drawn in part checked against whole ones
 			std::vector<float> answers;  // ms from a press of the user's to the first frame shown after it
-			int overBudget = 0;          // drawn frames that took more than 1/60 s (ES, drawing and copy)
+			int overBudget = 0;          // drawn frames that took more than 1/60 s (ES, drawing and copy, one after the other)
+			int late = 0;                // drawn frames handed to the bands more than 20 ms after the one before (a 60 Hz frame missed)
 		};
 
 		// The frame drawn in horizontal bands, one a thread: the first by the thread that swaps, the others
@@ -159,8 +160,18 @@ namespace Renderer
 			Rect scissorRect;
 			StencilTest stencil = StencilTest::Off;
 
-			std::vector<Command> commands;
+			std::vector<Command> commands;    // the frame being recorded
 			std::vector<SVertex> vertices;
+			// the frame the bands draw (the one recorded before, swapped in): with async drawing, ES records the
+			// next one meanwhile (ES_SOFT_ASYNC=0: the thread that swaps draws a band and waits, as before)
+			std::vector<Command> frameCommands;
+			std::vector<SVertex> frameVertices;
+			bool async = true;
+			bool inFlight = false;            // the bands draw frameCommands; reap() waits for them
+			double flightEsMs = 0;            // that frame's time in ES before it was swapped
+			uint64_t flightRedrawn = 0;       // and its pixels drawn again
+			Clock::time_point lastSubmit;     // when the last frame drawn was handed to the bands
+			bool lastSwapDrew = false;        // the swap before this one handed a frame to the bands
 			uint64_t hash = kHashSeed;
 			uint64_t lastHash = 0;
 			bool forceRedraw = true;
@@ -367,10 +378,10 @@ namespace Renderer
 				return Soft::layerCandidate(c.stencil, c.state, c.topology, (int)c.count, Soft::Bounds{ c.box.x0, c.box.y0, c.box.x1, c.box.y1 }, partBounds);
 			};
 			const bool layers = Soft::layersOn();
-			const size_t total = s.commands.size();
+			const size_t total = s.frameCommands.size();
 			for (size_t i = 0; i < total; i++)
 			{
-				const Command& command = s.commands[i];
+				const Command& command = s.frameCommands[i];
 				if (!command.box.meets(part))
 				{
 					// a stencil shape that marks nothing here still ends the last one: its marks cleared (it was
@@ -390,12 +401,12 @@ namespace Renderer
 					int m = 0;
 					for (size_t j = i; j < total && m < 8; j++)
 					{
-						const Command& c = s.commands[j];
+						const Command& c = s.frameCommands[j];
 						if (!c.box.meets(part) && !c.stencil)
 							continue;
 						if (!candidate(c))
 							break;
-						run[m].vertices = s.vertices.data() + c.first;
+						run[m].vertices = s.frameVertices.data() + c.first;
 						run[m].count = (int)c.count;
 						run[m].topology = c.topology;
 						run[m].state = stateIn(c);
@@ -412,7 +423,7 @@ namespace Renderer
 				}
 
 				DrawState state = stateIn(command);
-				const SVertex* vertices = s.vertices.data() + command.first;
+				const SVertex* vertices = s.frameVertices.data() + command.first;
 				// the first draw writing every pixel of the part: no clearing before it
 				if (!cleared && !command.stencil)
 				{
@@ -461,9 +472,9 @@ namespace Renderer
 					return;
 				}
 				raster.clear(0);
-				for (const Command& command : s.commands)
+				for (const Command& command : s.frameCommands)
 				{
-					const SVertex* vertices = s.vertices.data() + command.first;
+					const SVertex* vertices = s.frameVertices.data() + command.first;
 					if (command.stencil)
 					{
 						raster.setStencil(vertices, (int)command.count, command.state);
@@ -544,7 +555,7 @@ namespace Renderer
 				{
 					std::lock_guard<std::mutex> guard(b.lock);
 					if (--b.pending == 0)
-						b.finished.notify_one();
+						b.finished.notify_all(); // the thread that swaps, or one updating a texture the frame draws
 				}
 			}
 		}
@@ -566,7 +577,7 @@ namespace Renderer
 			b.copied.assign(count, 0);
 			b.split = 0;
 			b.attached = false;
-			for (int i = 1; i < count; i++)
+			for (int i = s.async ? 0 : 1; i < count; i++)
 				b.workers.push_back(std::thread(bandWorker, i));
 			LOG(LogInfo) << "SoftRenderer: drawing in " << count << (count == 1 ? " thread" : " threads");
 		}
@@ -767,9 +778,9 @@ namespace Renderer
 			Raster whole;
 			whole.resize(s.raster.width(), s.raster.height());
 			whole.clear(0);
-			for (const Command& command : s.commands)
+			for (const Command& command : s.frameCommands)
 			{
-				const SVertex* vertices = s.vertices.data() + command.first;
+				const SVertex* vertices = s.frameVertices.data() + command.first;
 				if (command.stencil)
 				{
 					whole.setStencil(vertices, (int)command.count, command.state);
@@ -830,9 +841,9 @@ namespace Renderer
 			const char* kindNames[Soft::PX_KINDS] = { "fill", "copy", "colour", "1:1", "nearest", "bilinear", "triangle" };
 			double totalMs = 0;
 			int index = 0;
-			for (const Command& command : s.commands)
+			for (const Command& command : s.frameCommands)
 			{
-				const SVertex* v = s.vertices.data() + command.first;
+				const SVertex* v = s.frameVertices.data() + command.first;
 				float x0 = v[0].x, y0 = v[0].y, x1 = v[0].x, y1 = v[0].y;
 				for (uint32_t i = 1; i < command.count; i++)
 				{
@@ -875,7 +886,7 @@ namespace Renderer
 			capture.width = s.raster.width();
 			capture.height = s.raster.height();
 			std::map<const Soft::Texture*, int> index;
-			for (const Command& command : s.commands)
+			for (const Command& command : s.frameCommands)
 			{
 				Soft::CapturedCommand c;
 				c.stencil = command.stencil;
@@ -892,14 +903,16 @@ namespace Renderer
 					}
 					c.texture = found->second;
 				}
-				c.vertices.assign(s.vertices.begin() + command.first, s.vertices.begin() + command.first + command.count);
+				c.vertices.assign(s.frameVertices.begin() + command.first, s.frameVertices.begin() + command.first + command.count);
 				capture.commands.push_back(std::move(c));
 			}
 			if (!Soft::saveCapture(path, capture))
 				LOG(LogError) << "SoftRenderer: cannot write the frame capture " << path;
 		}
 
-		void execute()
+		// the frame handed to the bands' threads. Async, the thread that swaps goes back to ES at once (reap()
+		// waits for them before the next frame); else it draws the first band and waits for the others here.
+		void kick()
 		{
 			SoftState& s = S();
 			Bands& b = s.bands;
@@ -908,20 +921,30 @@ namespace Renderer
 			placeBands();
 
 			b.present = s.output != nullptr;
-			if (b.count > 1)
+			const int first = s.async ? 0 : 1;
 			{
 				std::lock_guard<std::mutex> guard(b.lock);
-				b.pending = b.count - 1;
+				b.pending = b.count - first;
 				b.job++;
 			}
 			b.wake.notify_all();
-			timedBand(0);
-			if (b.count > 1)
-			{
-				std::unique_lock<std::mutex> guard(b.lock);
-				b.finished.wait(guard, [&] { return b.pending == 0; });
-			}
+			if (!s.async)
+				timedBand(0);
+		}
 
+		// the bands done with their frame (any thread may wait)
+		void waitBands()
+		{
+			Bands& b = S().bands;
+			std::unique_lock<std::mutex> guard(b.lock);
+			b.finished.wait(guard, [&] { return b.pending == 0; });
+		}
+
+		// after waitBands, by the thread that swaps
+		void finishBands()
+		{
+			SoftState& s = S();
+			Bands& b = s.bands;
 			if (b.present)
 			{
 				int64_t copied = 0;
@@ -977,8 +1000,9 @@ namespace Renderer
 				snprintf(answers, sizeof(answers), "; %zu presses answered in %.0f ms (median), %.0f ms (99%%), %.0f ms (longest)",
 					n, sorted[n / 2], sorted[std::min(n - 1, (size_t)std::ceil(n * 0.99) - 1)], sorted[n - 1]);
 			}
-			char budget[96];
-			snprintf(budget, sizeof(budget), "; %d of %d drawn frames over 16.7 ms", st.overBudget, st.drawn);
+			char budget[160];
+			snprintf(budget, sizeof(budget), "; %d of %d drawn frames over 16.7 ms%s, %d late (a 60 Hz frame missed)", st.overBudget, st.drawn,
+				s.async ? " (ES, drawing and copy added; drawn while ES records the next)" : "", st.late);
 			char line[1400];
 			snprintf(line, sizeof(line),
 				"SoftRenderer: %d frames, %d drawn; frame %.1f ms (max %.1f), ES before a drawn frame %.1f ms (max %.1f), drawing %.1f ms (max %.1f)%s, copy %.2f ms, %.0f k pixels copied, "
@@ -1006,6 +1030,113 @@ namespace Renderer
 			}
 			st = Stats();
 		}
+
+		// The frame the bands drew, done: checked (ES_SOFT_DIRTY_CHECK), counted, dumped if asked.
+		void frameDone()
+		{
+			SoftState& s = S();
+			const double esMs = s.flightEsMs;
+			const uint64_t redrawn = s.flightRedrawn;
+			if ((s.partial || s.stripRows > 0) && s.dirtyCheck)
+				checkParts();
+			s.stats.redrawn += redrawn;
+			s.stats.partial += s.partial ? 1 : 0;
+			Soft::scaledFrame();
+			const double rasterMs = *std::max_element(s.bands.ms.begin(), s.bands.ms.end());
+			const double copyMs = *std::max_element(s.bands.copyMs.begin(), s.bands.copyMs.end());
+
+			Stats& st = s.stats;
+			st.drawn++;
+			dumpCommands(s.pendingDump);
+			s.pendingDump.clear();
+			if (!s.pendingCapture.empty())
+			{
+				captureFrame(s.pendingCapture);
+				s.pendingCapture.clear();
+			}
+
+			// ES_SOFT_SLOW_DUMP=PREFIX: the first frames that took long to draw (ES_SOFT_SLOW_MS, default 120 ms;
+			// ES_SOFT_SLOW_DUMPS of them, default 4), each draw with what it drew and its time on one thread,
+			// in PREFIX1.txt, PREFIX2.txt...: what to make faster, seen on the machine itself
+			static const char* slowPrefix = getenv("ES_SOFT_SLOW_DUMP");
+			if (slowPrefix != nullptr && *slowPrefix != 0)
+			{
+				static const double slowMs = getenv("ES_SOFT_SLOW_MS") ? atof(getenv("ES_SOFT_SLOW_MS")) : 120.0;
+				static const int most = getenv("ES_SOFT_SLOW_DUMPS") ? atoi(getenv("ES_SOFT_SLOW_DUMPS")) : 4;
+				static int written = 0;
+				if (rasterMs >= slowMs && written < most)
+				{
+					char header[256];
+					snprintf(header, sizeof(header), "frame drawn in %.1f ms by %d threads (%s %.0f%% of the screen, %zu parts), "
+						"copy %.1f ms, ES %.1f ms before it, %dx%d", rasterMs, s.bands.count, s.partial ? "in part," : "whole,",
+						100.0 * redrawn / std::max(1, s.width * s.height), s.partial ? s.rects.size() : (size_t)1,
+						copyMs, esMs, s.width, s.height);
+					dumpCommands(std::string(slowPrefix) + std::to_string(++written) + ".txt", header);
+					// ES_SOFT_SLOW_CAPTURE=1: the frame itself too, to draw again with es-mister-replay
+					static const bool slowCapture = getenv("ES_SOFT_SLOW_CAPTURE") != nullptr && strcmp(getenv("ES_SOFT_SLOW_CAPTURE"), "0") != 0;
+					if (slowCapture)
+						captureFrame(std::string(slowPrefix) + std::to_string(written) + ".escf");
+				}
+			}
+			// the first frame on the screen (the splash), in the startup trace
+			static bool shownOnce = false;
+			if (!shownOnce && s.output != nullptr)
+			{
+				shownOnce = true;
+				StartupTrace::mark("first frame shown");
+			}
+
+			// the time from a press to the frame that shows its effect, and the frames over a 60 Hz frame's time
+			double answeredMs;
+			if (StartupTrace::inputAnswered(answeredMs))
+			{
+				st.answers.push_back((float)answeredMs);
+				static bool first = true;
+				if (first && StartupTrace::enabled())
+				{
+					first = false;
+					StartupTrace::mark("first press answered", std::to_string((int)answeredMs) + " ms");
+				}
+			}
+			if (esMs + rasterMs + copyMs > 1000.0 / 60.0)
+				st.overBudget++;
+
+			st.rasterMs += rasterMs;
+			st.rasterMax = std::max(st.rasterMax, rasterMs);
+			st.copyMs += copyMs;
+			st.copied += s.output ? (uint64_t)s.output->lastPixelsCopied() : 0;
+			st.bandMs[0] += s.bands.ms.size() > 0 ? s.bands.ms[0] : 0;
+			st.bandMs[1] += s.bands.ms.size() > 1 ? s.bands.ms[1] : 0;
+			st.vertices += s.frameVertices.size();
+			st.pixels += s.raster.stats().pixels;
+			st.quads += s.raster.stats().quads;
+			st.triangles += s.raster.stats().triangles;
+			st.together += s.raster.stats().together;
+			for (int k = 0; k < Soft::PX_KINDS; k++)
+				st.kinds[k] += s.raster.stats().kinds[k];
+
+			// a frame that kept the screen still, in the startup trace (with what ES did meanwhile there)
+			if (StartupTrace::enabled() && (esMs >= 150 || rasterMs >= 150))
+			{
+				char detail[96];
+				snprintf(detail, sizeof(detail), "ES %.0f ms before it, drawing %.0f ms (%.0f%% of the screen)", esMs, rasterMs,
+					100.0 * redrawn / std::max(1, s.width * s.height));
+				StartupTrace::mark("slow frame", detail);
+			}
+		}
+
+		// waits for the frame the bands draw, if one, and closes it
+		void reap()
+		{
+			SoftState& s = S();
+			if (!s.inFlight)
+				return;
+			waitBands();
+			s.inFlight = false;
+			finishBands();
+			frameDone();
+		}
+
 	}
 
 	bool getSoftwareOutputSize(int& width, int& height)
@@ -1064,6 +1195,10 @@ namespace Renderer
 		// pixels, two bands' strips staying in the Cortex-A9's 512 KB L2 cache: 24 rows at 1920 pixels a row.
 		// Measured on the DE10-Nano with real frames (es-mister-replay, 11 frames of the carousel and the
 		// grids at 1080p): 24 rows 1766 ms, 8 rows 1904-1984, 16 rows 1912, 32 rows 1838, a band at once 1818.
+		// ES_SOFT_ASYNC=0: the thread that swaps draws a band and waits for the frame (else ES records the next
+		// frame while the bands draw this one)
+		if (const char* async = getenv("ES_SOFT_ASYNC"))
+			s.async = strcmp(async, "0") != 0;
 		const char* strip = getenv("ES_SOFT_STRIP");
 		if (strip != nullptr && *strip != 0 && strcmp(strip, "auto") != 0)
 			s.stripRows = std::max(0, atoi(strip));
@@ -1089,6 +1224,7 @@ namespace Renderer
 	void SoftRenderer::destroyContext()
 	{
 		SoftState& s = S();
+		reap();
 		logStats();
 		stopBands();
 		s.bands.rasters.clear();
@@ -1152,6 +1288,9 @@ namespace Renderer
 		// replaced while the frame being recorded draws it: the frame keeps the old one, as it was drawn
 		// (a part updated in place is a font's new glyphs, in a place nothing drew yet)
 		const long owners = 2 + (s.bound == texture ? 1 : 0); // the table, this function, the bound texture
+		// a part written while the bands may draw it (their frame holds it): after they finish
+		if (!whole && texture.use_count() > owners)
+			waitBands();
 		if (whole && texture.use_count() > owners)
 		{
 			std::shared_ptr<Soft::Texture> copy = std::make_shared<Soft::Texture>(*texture);
@@ -1343,19 +1482,57 @@ namespace Renderer
 		SoftState& s = S();
 		StartupTrace::frameShown();
 
+		// ES's time on this frame (before waiting for the bands below)
+		const double esElapsed = s.frameStarted ? msSince(s.frameStart) : 0;
+
+		// the frame handed to the bands before (async: drawn while ES recorded this one), finished
+		reap();
+
 		// a frame with nothing drawn (ES swaps while it loads) leaves the last one on screen
 		const bool recorded = !s.commands.empty();
 		const bool redraw = recorded && (s.forceRedraw || s.bench || s.hash != s.lastHash);
+		bool drew = false;
 		if (redraw && s.open)
 		{
-			const double esMs = s.frameStarted ? msSince(s.frameStart) : 0;
+			const double esMs = esElapsed;
 			s.stats.esMs += esMs;
 			s.stats.esMax = std::max(s.stats.esMax, esMs);
 			// what changed since the last frame drawn, when it can be drawn in part (a benchmark draws all)
 			s.partial = s.dirty && !s.bench && s.lastValid && !s.forceRedraw && findParts();
-			// drawn and copied to the screen, each band by its thread; the times are the slowest band's
+			uint64_t redrawn = 0;
+			if (!s.partial)
+				redrawn = (uint64_t)s.width * s.height;
+			else
+				for (const Box& r : s.rects)
+					redrawn += (uint64_t)(r.x1 - r.x0) * (r.y1 - r.y0);
+			// the raster will hold this frame: its draws, for the next one
+			s.lastDrawn.clear();
+			for (const Command& command : s.commands)
+				if (!command.stencil)
+					s.lastDrawn.push_back({ command.sig, command.box });
+			s.lastValid = true;
+
+			// handed to the bands: drawn and copied to the screen, each band by its thread (the times are the
+			// slowest band's); the buffers it was recorded in take the next frame
+			s.commands.swap(s.frameCommands);
+			s.vertices.swap(s.frameVertices);
+			s.flightEsMs = esMs;
+			s.flightRedrawn = redrawn;
+
+			// a 60 Hz frame missed: this one handed over more than 20 ms after the one before
+			const Clock::time_point now = Clock::now();
+			if (s.lastSwapDrew && std::chrono::duration<double, std::milli>(now - s.lastSubmit).count() > 20.0)
+				s.stats.late++;
+			s.lastSubmit = now;
+			drew = true;
+
 			if (!s.partial || !s.rects.empty() || s.bands.rasters.empty())
-				execute();
+			{
+				kick();
+				s.inFlight = true;
+				if (!s.async)
+					reap();
+			}
 			else
 			{
 				// the same pixels as the last frame (its draws in another order, apart): nothing to do
@@ -1363,104 +1540,7 @@ namespace Renderer
 				std::fill(s.bands.copyMs.begin(), s.bands.copyMs.end(), 0.0);
 				if (s.output)
 					s.output->finishFrame(0);
-			}
-			if ((s.partial || s.stripRows > 0) && s.dirtyCheck)
-				checkParts();
-			uint64_t redrawn = 0;
-			if (!s.partial)
-				redrawn = (uint64_t)s.width * s.height;
-			else
-				for (const Box& r : s.rects)
-					redrawn += (uint64_t)(r.x1 - r.x0) * (r.y1 - r.y0);
-			s.stats.redrawn += redrawn;
-			s.stats.partial += s.partial ? 1 : 0;
-			// the raster now holds this frame: its draws, for the next one
-			s.lastDrawn.clear();
-			for (const Command& command : s.commands)
-				if (!command.stencil)
-					s.lastDrawn.push_back({ command.sig, command.box });
-			s.lastValid = true;
-			Soft::scaledFrame();
-			const double rasterMs = *std::max_element(s.bands.ms.begin(), s.bands.ms.end());
-			const double copyMs = *std::max_element(s.bands.copyMs.begin(), s.bands.copyMs.end());
-
-			Stats& st = s.stats;
-			st.drawn++;
-			dumpCommands(s.pendingDump);
-			s.pendingDump.clear();
-			if (!s.pendingCapture.empty())
-			{
-				captureFrame(s.pendingCapture);
-				s.pendingCapture.clear();
-			}
-
-			// ES_SOFT_SLOW_DUMP=PREFIX: the first frames that took long to draw (ES_SOFT_SLOW_MS, default 120 ms;
-			// ES_SOFT_SLOW_DUMPS of them, default 4), each draw with what it drew and its time on one thread,
-			// in PREFIX1.txt, PREFIX2.txt...: what to make faster, seen on the machine itself
-			static const char* slowPrefix = getenv("ES_SOFT_SLOW_DUMP");
-			if (slowPrefix != nullptr && *slowPrefix != 0)
-			{
-				static const double slowMs = getenv("ES_SOFT_SLOW_MS") ? atof(getenv("ES_SOFT_SLOW_MS")) : 120.0;
-				static const int most = getenv("ES_SOFT_SLOW_DUMPS") ? atoi(getenv("ES_SOFT_SLOW_DUMPS")) : 4;
-				static int written = 0;
-				if (rasterMs >= slowMs && written < most)
-				{
-					char header[256];
-					snprintf(header, sizeof(header), "frame drawn in %.1f ms by %d threads (%s %.0f%% of the screen, %zu parts), "
-						"copy %.1f ms, ES %.1f ms before it, %dx%d", rasterMs, s.bands.count, s.partial ? "in part," : "whole,",
-						100.0 * redrawn / std::max(1, s.width * s.height), s.partial ? s.rects.size() : (size_t)1,
-						copyMs, esMs, s.width, s.height);
-					dumpCommands(std::string(slowPrefix) + std::to_string(++written) + ".txt", header);
-					// ES_SOFT_SLOW_CAPTURE=1: the frame itself too, to draw again with es-mister-replay
-					static const bool slowCapture = getenv("ES_SOFT_SLOW_CAPTURE") != nullptr && strcmp(getenv("ES_SOFT_SLOW_CAPTURE"), "0") != 0;
-					if (slowCapture)
-						captureFrame(std::string(slowPrefix) + std::to_string(written) + ".escf");
-				}
-			}
-			// the first frame on the screen (the splash), in the startup trace
-			static bool shownOnce = false;
-			if (!shownOnce && s.output != nullptr)
-			{
-				shownOnce = true;
-				StartupTrace::mark("first frame shown");
-			}
-
-			// the time from a press to the frame that shows its effect, and the frames over a 60 Hz frame's time
-			double answeredMs;
-			if (StartupTrace::inputAnswered(answeredMs))
-			{
-				st.answers.push_back((float)answeredMs);
-				static bool first = true;
-				if (first && StartupTrace::enabled())
-				{
-					first = false;
-					StartupTrace::mark("first press answered", std::to_string((int)answeredMs) + " ms");
-				}
-			}
-			if (esMs + rasterMs + copyMs > 1000.0 / 60.0)
-				st.overBudget++;
-
-			st.rasterMs += rasterMs;
-			st.rasterMax = std::max(st.rasterMax, rasterMs);
-			st.copyMs += copyMs;
-			st.copied += s.output ? (uint64_t)s.output->lastPixelsCopied() : 0;
-			st.bandMs[0] += s.bands.ms.size() > 0 ? s.bands.ms[0] : 0;
-			st.bandMs[1] += s.bands.ms.size() > 1 ? s.bands.ms[1] : 0;
-			st.vertices += s.vertices.size();
-			st.pixels += s.raster.stats().pixels;
-			st.quads += s.raster.stats().quads;
-			st.triangles += s.raster.stats().triangles;
-			st.together += s.raster.stats().together;
-			for (int k = 0; k < Soft::PX_KINDS; k++)
-				st.kinds[k] += s.raster.stats().kinds[k];
-
-			// a frame that kept the screen still, in the startup trace (with what ES did meanwhile there)
-			if (StartupTrace::enabled() && (esMs >= 150 || rasterMs >= 150))
-			{
-				char detail[96];
-				snprintf(detail, sizeof(detail), "ES %.0f ms before it, drawing %.0f ms (%.0f%% of the screen)", esMs, rasterMs,
-					100.0 * redrawn / std::max(1, s.width * s.height));
-				StartupTrace::mark("slow frame", detail);
+				frameDone();
 			}
 		}
 		else if (StartupTrace::inputWaitingMs() > 250)
@@ -1470,9 +1550,12 @@ namespace Renderer
 			StartupTrace::inputAnswered(ignored);
 		}
 
+		s.lastSwapDrew = drew;
+
 		if (s.scriptLoaded && s.script.active())
 		{
-			s.script.frame(s.raster.pixels(), s.raster.width(), s.raster.height(), redraw);
+			// the pixels for a screenshot: the frame handed to the bands, finished
+			s.script.frame([&] { reap(); return s.raster.pixels(); }, s.raster.width(), s.raster.height(), redraw);
 			const std::string dump = s.script.takeDump();
 			if (!dump.empty())
 				s.pendingDump = dump;
@@ -1536,6 +1619,7 @@ namespace Renderer
 	void releaseScreen()
 	{
 		SoftState& s = S();
+		reap();
 		if (s.output)
 			s.output->close();
 		s.open = false;
