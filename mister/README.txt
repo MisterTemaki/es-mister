@@ -41,9 +41,9 @@ Using it
   MiSTer menu).
 - Menu > Quit > Restart system: the MiSTer restarts cold, as its menu's
   "Reboot" held.
-- Menu > Quit > Shutdown system: the MiSTer shuts down and its HDMI output goes
-  off (the TV shows no signal). The DE10-Nano cannot cut its own power: its
-  LEDs stay on; unplug it, or plug it in again to turn it on.
+- Menu > Quit > Shutdown operating system: the MiSTer shuts down and its HDMI
+  output goes off (the TV shows no signal). The DE10-Nano cannot cut its own
+  power: its LEDs stay on; unplug it, or plug it in again to turn it on.
 - F12 (or the controller's menu button) shows the MiSTer menu over it:
   EmulationStation stays open, paused. To go back to it: F9, or
   Scripts > __ES_DIR__ again. Meanwhile the menu's other scripts run as usual.

@@ -473,7 +473,7 @@ static void stop_main(void)
 	kill(pid, SIGKILL);
 }
 
-// ES's RESTART SYSTEM and SHUTDOWN SYSTEM (es-mister.sh runs this once ES has closed).
+// ES's RESTART SYSTEM and SHUTDOWN OPERATING SYSTEM (es-mister.sh runs this once ES has closed).
 //   reboot: as the MiSTer menu's "Reboot (hold for cold reboot)" held: the boot flag set to cold, then the
 //           system's reboot, which writes and unmounts the SD card before the board restarts.
 //   halt:   the DE10-Nano cannot cut its own power: Main_MiSTer stopped, the HDMI output off, and the

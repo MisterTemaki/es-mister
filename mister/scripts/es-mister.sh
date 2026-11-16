@@ -178,7 +178,8 @@ fi
 # keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
 echo "starting ES: framebuffer $DRAWN (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
-# RESTART SYSTEM and SHUTDOWN SYSTEM in ES's menu leave these (ES's processQuitMode) for below
+# RESTART SYSTEM and SHUTDOWN OPERATING SYSTEM in ES's menu leave these (ES's processQuitMode) for
+# below
 rm -f /tmp/reboot.please /tmp/shutdown.please
 # a console switch ES does not let go of within a second (Main_MiSTer running a script after F12 waited
 # for it for ever, the menu frozen) is let go of by the guard (es-mister-helper guard)
@@ -193,8 +194,8 @@ kill $GUARD 2>/dev/null
 "$ES/es-mister-helper" text
 
 rm -f /tmp/es-mister.pid
-# RESTART SYSTEM: the MiSTer restarted cold, as its menu's Reboot held; SHUTDOWN SYSTEM: shut down, the
-# HDMI output off (es-mister-helper reboot / halt; ES has written its files and closed)
+# RESTART SYSTEM: the MiSTer restarted cold, as its menu's Reboot held; SHUTDOWN OPERATING SYSTEM: shut
+# down, the HDMI output off (es-mister-helper reboot / halt; ES has written its files and closed)
 if [ -f /tmp/reboot.please ]; then
 	rm -f /tmp/reboot.please
 	echo "== $(date '+%F %T') RESTART SYSTEM: cold reboot"
@@ -203,7 +204,7 @@ if [ -f /tmp/reboot.please ]; then
 fi
 if [ -f /tmp/shutdown.please ]; then
 	rm -f /tmp/shutdown.please
-	echo "== $(date '+%F %T') SHUTDOWN SYSTEM: halt"
+	echo "== $(date '+%F %T') SHUTDOWN OPERATING SYSTEM: halt"
 	sync
 	exec "$ES/es-mister-helper" halt
 fi
