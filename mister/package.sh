@@ -76,7 +76,8 @@ SIZE=__ES_SIZE__
 FILL=1
 
 # 1: on a controller, the button that opens the MiSTer menu (the DualSense's PS, as the MiSTer's own button
-# settings have it) asks first while EmulationStation is shown; 0: it opens the MiSTer menu at once
+# settings have it) asks first while EmulationStation is shown, and on yes EmulationStation closes and the
+# MiSTer menu comes back; 0: it opens the MiSTer menu over EmulationStation at once, as F12 does
 MENU_ASK=1
 
 # The most frames a second ES draws (fewer leaves the ARM more time)

@@ -19,7 +19,6 @@
 //   es-mister-helper text                   the console back in text mode, after ES ended (see text_mode)
 //   es-mister-helper guard PID              while PID lives: no console switch waits more than a second
 //                                          (see guard)
-//   es-mister-helper osd                    the MiSTer menu opened (F12) over ES, which asked first (see osd)
 //   es-mister-helper ungrab PID             PID's hold on the controllers let go of (see ungrab)
 //   es-mister-helper reboot                 the MiSTer restarted cold, as its menu's Reboot held (see power)
 //   es-mister-helper halt                   the MiSTer shut down, its HDMI output off (see power)
@@ -310,30 +309,6 @@ static int ungrab(int pid)
 	if (released)
 		fprintf(stderr, "es-mister-helper: %d controller(s) let go of by %d\n", released, pid);
 	return released;
-}
-
-// The MiSTer menu over ES (its controllers given back already): F12 until Main_MiSTer takes the screen
-// from ES's console (a sleeping menu may miss the first press), at most 3 presses
-static int osd(void)
-{
-	const int before = active_console();
-	int kbd = keyboard_open();
-	if (kbd < 0)
-		return 1;
-	int done = 0;
-	for (int tries = 0; tries < 3 && !done; tries++)
-	{
-		press(kbd, KEY_F12);
-		for (int wait = 0; wait < 30 && !done; wait++)
-		{
-			sleep_ms(50);
-			done = active_console() != before;
-		}
-	}
-	keyboard_close(kbd);
-	if (!done)
-		fprintf(stderr, "es-mister-helper: the MiSTer menu did not take the screen (F12)\n");
-	return done ? 0 : 1;
 }
 
 static int guard(int es)
@@ -635,15 +610,12 @@ int main(int argc, char** argv)
 	if (argc >= 3 && !strcmp(argv[1], "guard"))
 		return guard(atoi(argv[2]));
 
-	if (argc >= 2 && !strcmp(argv[1], "osd"))
-		return osd();
-
 	if (argc >= 3 && !strcmp(argv[1], "ungrab"))
 		return ungrab(atoi(argv[2])) >= 0 ? 0 : 1;
 
 	if (argc >= 2 && (!strcmp(argv[1], "reboot") || !strcmp(argv[1], "halt")))
 		return power(!strcmp(argv[1], "halt"));
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | key NAME | core | text | guard PID | osd | ungrab PID | reboot | halt\n", argv[0]);
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | key NAME | core | text | guard PID | ungrab PID | reboot | halt\n", argv[0]);
 	return 2;
 }

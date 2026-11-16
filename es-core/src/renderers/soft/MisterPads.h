@@ -5,14 +5,18 @@
 // The MiSTer's menu button on a controller (the DualSense's PS button, as Main_MiSTer's map for it says:
 // /media/fat/config/inputs/input_VVVV_PPPP_v3.map, the two codes held together that open its menu) asks
 // first while ES is on the screen. Main_MiSTer reads every controller too, and opened its menu over ES at
-// once: "it leaves ES". While ES's console is shown, the controllers ES reads that have such a button are
-// ES's alone (EVIOCGRAB on SDL's own descriptor, so SDL still reads them); ES asks, and on yes gives them
-// back and presses F12 for Main_MiSTer (es-mister-helper osd). When ES's console is let go of (the MiSTer
-// menu over it, a game), they are given back at once, by the console's thread, whatever ES's is doing.
+// once: "it leaves ES". While ES is shown, the controllers ES reads that have such a button are ES's alone
+// (EVIOCGRAB on SDL's own descriptor, so SDL still reads them); ES asks, and on yes gives them back and
+// closes (es-mister.sh loads the MiSTer menu).
+//
+// ES cannot see the MiSTer menu over it (no console switch, nothing to read), so it holds the controllers
+// only while nothing else may have the screen: its console shown (given back by the console's thread when
+// let go of, whatever ES's thread is doing), the menu core loaded (/tmp/CORENAME: not a core Zaparoo or a
+// script loaded), and no F12 pressed on a keyboard since (the MiSTer menu over ES, which the controllers
+// must reach; held again once ES's console has been let go of and is back, or at ES's next start).
 // Keyboards are never taken (F12 always opens the MiSTer menu), nor virtual devices (Zaparoo's).
 //
 //   ES_MISTER_MENU_ASK=1  on (es-mister.sh, MENU_ASK in es-mister.ini)
-//   ES_MISTER_HELPER      es-mister-helper's path
 
 #include <string>
 
@@ -32,8 +36,9 @@ namespace Renderer
 			// a button of a controller (SDL's device path and index) pressed or let go: true when it is (part
 			// of) the MiSTer menu's, which ES keeps; ask true when the press asks for the MiSTer menu
 			bool menuButton(const std::string& devicePath, int button, bool pressed, bool& ask);
-			// yes: the controllers given back and the MiSTer menu opened
-			void openMisterMenu();
+			// the controllers given back, not taken again until ES's console is back: yes to the question
+			// (ES closes), F12 on a keyboard (the MiSTer menu over ES)
+			void giveBack(const char* why);
 		}
 	}
 }

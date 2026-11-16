@@ -2,7 +2,6 @@
 
 #if defined(MISTER) && defined(__linux__)
 
-#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -25,8 +24,6 @@ namespace Renderer
 		{
 			namespace
 			{
-				typedef std::chrono::steady_clock Clock;
-
 				struct Pad
 				{
 					int fd;
@@ -39,7 +36,7 @@ namespace Renderer
 				std::mutex lock;
 				std::vector<Pad> pads;
 				bool hiddenNow = false;
-				Clock::time_point pausedUntil;
+				bool givenBack = false; // until ES's console is shown again
 
 				bool enabled()
 				{
@@ -100,6 +97,18 @@ namespace Renderer
 					return true;
 				}
 
+				// the menu core loaded (a core loaded over ES, by Zaparoo or a script: its controllers)
+				bool menuCore()
+				{
+					char name[64] = "";
+					FILE* f = fopen("/tmp/CORENAME", "r");
+					if (f == nullptr)
+						return false;
+					const bool got = fgets(name, sizeof(name), f) != nullptr;
+					fclose(f);
+					return got && strncmp(name, "MENU", 4) == 0 && (name[4] == 0 || name[4] == '\n');
+				}
+
 				bool sameDevice(const Pad& pad)
 				{
 					struct stat st;
@@ -156,8 +165,15 @@ namespace Renderer
 				if (!enabled())
 					return;
 				std::lock_guard<std::mutex> guard(lock);
-				if (hiddenNow || Clock::now() < pausedUntil)
+				if (hiddenNow || givenBack)
 					return;
+				if (!menuCore())
+				{
+					if (!pads.empty())
+						fprintf(stderr, "MisterPads: a core was loaded: the controllers given back\n");
+					releaseLocked();
+					return;
+				}
 
 				// the descriptors SDL closed (a controller gone); those let go of from outside (es-mister-helper
 				// ungrab) held again: a grab already held answers EBUSY
@@ -221,7 +237,7 @@ namespace Renderer
 				std::lock_guard<std::mutex> guard(lock);
 				hiddenNow = !shown;
 				if (shown)
-					pausedUntil = Clock::time_point();
+					givenBack = false;
 			}
 
 			bool hidden()
@@ -252,20 +268,13 @@ namespace Renderer
 				return false;
 			}
 
-			void openMisterMenu()
+			void giveBack(const char* why)
 			{
-				{
-					// given back first, so that Main_MiSTer's menu can take them; not taken again for a while
-					// (until ES's console is back, or the menu did not open)
-					std::lock_guard<std::mutex> guard(lock);
-					releaseLocked();
-					pausedUntil = Clock::now() + std::chrono::seconds(8);
-				}
-				const char* helper = getenv("ES_MISTER_HELPER");
-				const std::string command = std::string("'") + (helper != nullptr && helper[0] ? helper : "./es-mister-helper") + "' osd >/dev/null 2>&1 &";
-				fprintf(stderr, "MisterPads: to the MiSTer menu\n");
-				if (system(command.c_str()) != 0)
-					fprintf(stderr, "MisterPads: %s failed\n", command.c_str());
+				std::lock_guard<std::mutex> guard(lock);
+				if (!pads.empty())
+					fprintf(stderr, "MisterPads: %s: the controllers given back to Main_MiSTer\n", why);
+				releaseLocked();
+				givenBack = true;
 			}
 		}
 	}
@@ -284,7 +293,7 @@ namespace Renderer
 			void shown(bool) { }
 			bool hidden() { return false; }
 			bool menuButton(const std::string&, int, bool, bool& ask) { ask = false; return false; }
-			void openMisterMenu() { }
+			void giveBack(const char*) { }
 		}
 	}
 }

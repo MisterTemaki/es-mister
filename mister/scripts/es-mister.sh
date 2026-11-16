@@ -151,9 +151,9 @@ export ES_SOFT_MISTER_MODE=1
 # ES drawn at SIZE whatever the framebuffer's size, its frames enlarged to it (1280x720 on a 1080p screen:
 # 1.5 times, filling it, where the MiSTer's scaler enlarges only by whole times)
 case "$SCREEN" in fill:*) export ES_SOFT_DRAW_SIZE=$SIZE ;; esac
-# the MiSTer menu's button on a controller (the DualSense's PS) asks first while ES is shown
+# the MiSTer menu's button on a controller (the DualSense's PS) asks first while ES is shown, and on yes
+# ES closes (the MiSTer menu loaded below)
 export ES_MISTER_MENU_ASK=$MENU_ASK
-export ES_MISTER_HELPER=$ES/es-mister-helper
 export SDL_AUDIODRIVER=alsa
 export ES_SOFT_FPS=$FPS
 export ES_SOFT_STATS=600

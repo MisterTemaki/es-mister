@@ -45,9 +45,13 @@ Using it
 - Menu > Quit > Shutdown operating system: the MiSTer shuts down and its HDMI
   output goes off (the TV shows no signal). The DE10-Nano cannot cut its own
   power: its LEDs stay on; unplug it, or plug it in again to turn it on.
-- F12 (or the controller's menu button, after a question) shows the MiSTer
-  menu over it: EmulationStation stays open, paused. To go back to it: F9, or
-  Scripts > __ES_DIR__ again. Meanwhile the menu's other scripts run as usual.
+- The controller's button for the MiSTer menu (the DualSense's PS) asks
+  first: yes closes EmulationStation and the MiSTer menu comes back.
+- F12 on the keyboard shows the MiSTer menu over it: EmulationStation stays
+  open, paused. To go back to it: F9, or Scripts > __ES_DIR__ again.
+  Meanwhile the menu's other scripts run as usual. After F12 the controller's
+  button opens the MiSTer menu at once, without asking, until
+  EmulationStation is shown again from the Scripts menu or started again.
 
 Game covers
 -----------
@@ -78,7 +82,8 @@ Settings
                  enlarges them only by whole times (1280x720 stays in the
                  middle of a 1080p screen)
   MENU_ASK=1     1 = the controller's button for the MiSTer menu (the
-                 DualSense's PS) asks first; 0 = it opens the menu at once
+                 DualSense's PS) asks first, and yes closes EmulationStation;
+                 0 = it opens the MiSTer menu over it at once
   FPS=60         the most frames a second
   BENCH=0        1 = the whole screen drawn again every frame, to measure what
                  drawing costs (see logs/es-mister-stats.txt)

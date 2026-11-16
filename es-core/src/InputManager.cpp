@@ -648,8 +648,14 @@ static void askMisterMenu(Window* window)
 	static GuiComponent* asking = nullptr;
 	if (asking != nullptr && window->peekGui() == asking)
 		return;
+	// yes: the controllers given back at once (ES's end may take a while, writing its lists), and ES
+	// closed: es-mister.sh loads the MiSTer menu
 	asking = new GuiMsgBox(window, _("LEAVE EMULATIONSTATION FOR THE MISTER MENU?"),
-		_("YES"), [] { Renderer::Soft::MisterPads::openMisterMenu(); },
+		_("YES"), []
+		{
+			Renderer::Soft::MisterPads::giveBack("leaving ES for the MiSTer menu");
+			Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT);
+		},
 		_("NO"), nullptr);
 	window->pushGui(asking);
 }
@@ -677,6 +683,9 @@ bool InputManager::parseEvent(const SDL_Event& ev, Window* window)
 			break;
 		}
 	}
+	// F12 on a keyboard: the MiSTer menu over ES, which the controllers must reach (MisterPads)
+	if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_F12)
+		Renderer::Soft::MisterPads::giveBack("F12");
 #endif
 
 	switch (ev.type)
