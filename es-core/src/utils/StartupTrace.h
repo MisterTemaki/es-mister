@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #ifndef ES_CORE_UTILS_STARTUP_TRACE_H
 #define ES_CORE_UTILS_STARTUP_TRACE_H
 
@@ -32,6 +33,10 @@ namespace StartupTrace
 	bool onMainThread();
 	void inputArrived();
 	bool inputAnswered(double& ms);
+	// the press waiting to be answered (steady clock, ns; 0: none), taken: the frame recorded after it shows it
+	int64_t takeInputPress();
+	// ms since such a press
+	double msSincePress(int64_t pressedAtNs);
 	double inputWaitingMs(); // how long the press not yet answered has waited; -1: none
 
 	class Scope

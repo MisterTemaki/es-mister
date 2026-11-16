@@ -85,9 +85,17 @@ namespace SampleProfiler
 			Counts counts;
 			uint32_t read = 0;
 			const auto started = std::chrono::steady_clock::now();
+			// ES_PROFILE_FROM=SECONDS: the samples before that time left out (ES's start, to see one moment)
+			const char* fromValue = getenv("ES_PROFILE_FROM");
+			const double from = fromValue != nullptr ? atof(fromValue) : 0.0;
 			for (;;)
 			{
-				std::this_thread::sleep_for(std::chrono::seconds(10));
+				std::this_thread::sleep_for(std::chrono::seconds(from > 0 ? 1 : 10));
+				if (std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count() < from)
+				{
+					read = gWritten.load(std::memory_order_relaxed);
+					continue;
+				}
 				const uint32_t written = gWritten.load(std::memory_order_relaxed);
 				if (written - read > kRing)
 					read = written - kRing; // more than the ring holds: the oldest are gone

@@ -162,13 +162,16 @@ namespace Renderer
 
 			std::vector<Command> commands;    // the frame being recorded
 			std::vector<SVertex> vertices;
-			// the frame the bands draw (the one recorded before, swapped in): with async drawing, ES records the
-			// next one meanwhile (ES_SOFT_ASYNC=0: the thread that swaps draws a band and waits, as before)
+			// the frame the bands draw (the one recorded before, swapped in). ES_SOFT_ASYNC=1: ES records the next
+			// one meanwhile. Not by default: on the DE10-Nano the two cores then share the memory the drawing
+			// waits for, and both go slower (720p grid: 93 frames late of 582 against 83, presses answered in
+			// 81 ms against 70); the thread that swaps draws a band and waits, as before.
 			std::vector<Command> frameCommands;
 			std::vector<SVertex> frameVertices;
-			bool async = true;
+			bool async = false;
 			bool inFlight = false;            // the bands draw frameCommands; reap() waits for them
 			double flightEsMs = 0;            // that frame's time in ES before it was swapped
+			int64_t flightPress = 0;          // the press it answers (StartupTrace::takeInputPress), 0: none
 			uint64_t flightRedrawn = 0;       // and its pixels drawn again
 			Clock::time_point lastSubmit;     // when the last frame drawn was handed to the bands
 			bool lastSwapDrew = false;        // the swap before this one handed a frame to the bands
@@ -1087,9 +1090,10 @@ namespace Renderer
 			}
 
 			// the time from a press to the frame that shows its effect, and the frames over a 60 Hz frame's time
-			double answeredMs;
-			if (StartupTrace::inputAnswered(answeredMs))
+			if (s.flightPress != 0)
 			{
+				const double answeredMs = StartupTrace::msSincePress(s.flightPress);
+				s.flightPress = 0;
 				st.answers.push_back((float)answeredMs);
 				static bool first = true;
 				if (first && StartupTrace::enabled())
@@ -1195,8 +1199,8 @@ namespace Renderer
 		// pixels, two bands' strips staying in the Cortex-A9's 512 KB L2 cache: 24 rows at 1920 pixels a row.
 		// Measured on the DE10-Nano with real frames (es-mister-replay, 11 frames of the carousel and the
 		// grids at 1080p): 24 rows 1766 ms, 8 rows 1904-1984, 16 rows 1912, 32 rows 1838, a band at once 1818.
-		// ES_SOFT_ASYNC=0: the thread that swaps draws a band and waits for the frame (else ES records the next
-		// frame while the bands draw this one)
+		// ES_SOFT_ASYNC=1: ES records the next frame while the bands draw this one (else the thread that swaps
+		// draws a band and waits for the frame)
 		if (const char* async = getenv("ES_SOFT_ASYNC"))
 			s.async = strcmp(async, "0") != 0;
 		const char* strip = getenv("ES_SOFT_STRIP");
@@ -1518,6 +1522,8 @@ namespace Renderer
 			s.vertices.swap(s.frameVertices);
 			s.flightEsMs = esMs;
 			s.flightRedrawn = redrawn;
+			// a press ES took while recording it: answered when the bands have it on the screen
+			s.flightPress = StartupTrace::takeInputPress();
 
 			// a 60 Hz frame missed: this one handed over more than 20 ms after the one before
 			const Clock::time_point now = Clock::now();

@@ -255,6 +255,16 @@ namespace StartupTrace
 		return true;
 	}
 
+	int64_t takeInputPress()
+	{
+		return pressedAt.exchange(0);
+	}
+
+	double msSincePress(int64_t pressedAtNs)
+	{
+		return (steadyNs() - pressedAtNs) / 1e6;
+	}
+
 	double inputWaitingMs()
 	{
 		const int64_t at = pressedAt.load();
