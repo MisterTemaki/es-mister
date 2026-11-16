@@ -55,3 +55,4 @@ CPackSourceConfig.cmake
 .DS_Store
 main_test
 build-mister/
+build-db-art/

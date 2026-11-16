@@ -1,0 +1,4 @@
+# SNK - Neo Geo: games libretro-thumbnails has no cover for, with where an online database has one,
+# from Hasheous' dump "Neo Geo"; made by mister/tools/make-db-art.py.
+# name<TAB>cover sources (h = hasheous.org image id, t = TheGamesDB id)<TAB>CRC32 of its dumps
+Neo Geo	hED5BF48F0C446D5D2AB00FEC0AC68645850ADAAF t24	

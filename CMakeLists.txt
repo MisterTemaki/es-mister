@@ -616,7 +616,9 @@ if(MISTER)
     mister/tests/TestMain.cpp
     mister/tests/paths-test.cpp
     mister/tests/raster-clip-test.cpp
+    mister/tests/libretro-test.cpp
     mister/tests/ApiSystemStub.cpp
+    es-app/src/scrapers/LibretroArt.cpp
   )
   target_include_directories(es-mister-tests PRIVATE ${COMMON_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/mister/tests ${CMAKE_CURRENT_SOURCE_DIR}/es-app/src)
   target_link_libraries(es-mister-tests es-core ${COMMON_LIBRARIES})

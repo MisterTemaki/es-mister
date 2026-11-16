@@ -1,0 +1,38 @@
+# The "Libretro-thumbnails" scraper's systems. One a line, tab separated:
+# ES system or platform names (comma apart; "name/.ext": only the games with that extension) |
+# libretro-thumbnails' name for the system (its repository, spaces as _) | No-Intro DAT in libretro-database
+# (1: the games are known by their CRC32; 0: by their names only) | Hasheous' dump of the system (- none), read
+# by mister/tools/make-db-art.py for <repository>.tsv: the games libretro-thumbnails has no cover for.
+nes	Nintendo - Nintendo Entertainment System	1	Nintendo Entertainment System
+fds	Nintendo - Family Computer Disk System	1	Nintendo Famicom Disk System
+snes,sfc,snes-msu1	Nintendo - Super Nintendo Entertainment System	1	Nintendo Super Nintendo Entertainment System
+sgb/.gbc,gbc	Nintendo - Game Boy Color	1	Nintendo Game Boy Color
+sgb,gb	Nintendo - Game Boy	1	Nintendo Game Boy
+gba	Nintendo - Game Boy Advance	1	Nintendo Game Boy Advance
+n64	Nintendo - Nintendo 64	1	Nintendo 64
+virtualboy	Nintendo - Virtual Boy	1	Nintendo Virtual Boy
+pokemini	Nintendo - Pokemon Mini	1	Nintendo Pokemon Mini
+mastersystem	Sega - Master System - Mark III	1	Sega Master System
+gamegear	Sega - Game Gear	1	Sega Game Gear
+sg1000	Sega - SG-1000	1	Sega SG-1000
+megadrive,genesis	Sega - Mega Drive - Genesis	1	Sega Mega Drive _ Genesis
+sega32x	Sega - 32X	1	Sega 32X
+segacd,megacd	Sega - Mega-CD - Sega CD	0	Sega Mega CD _ Sega CD
+saturn	Sega - Saturn	0	Sega Saturn
+pcengine,tg16	NEC - PC Engine - TurboGrafx 16	1	TurboGrafx-16_PC Engine
+supergrafx	NEC - PC Engine SuperGrafx	1	NEC SuperGrafx
+pcenginecd,tg16cd	NEC - PC Engine CD - TurboGrafx-CD	0	NEC PC-Engine CD & TurboGrafx-16 CD
+neogeo	SNK - Neo Geo	0	Neo Geo
+neogeocd	SNK - Neo Geo CD	0	Neo Geo CD
+psx	Sony - PlayStation	0	Sony PlayStation
+atari2600	Atari - 2600	1	Atari 2600
+atari7800	Atari - 7800	1	Atari 7800
+lynx,atarilynx	Atari - Lynx	1	Atari Lynx
+colecovision	Coleco - ColecoVision	1	ColecoVision
+intellivision	Mattel - Intellivision	1	Mattel Intellivision
+vectrex	GCE - Vectrex	1	Vectrex
+o2em,odyssey2	Magnavox - Odyssey2	1	Magnavox Odyssey 2
+wswan,wonderswan	Bandai - WonderSwan	1	Bandai WonderSwan
+wswanc,wonderswancolor	Bandai - WonderSwan Color	1	Bandai WonderSwan Color
+ngp	SNK - Neo Geo Pocket	1	Neo Geo Pocket
+ngpc	SNK - Neo Geo Pocket Color	1	Neo Geo Pocket Color

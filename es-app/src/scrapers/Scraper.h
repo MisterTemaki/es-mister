@@ -148,6 +148,9 @@ public:
 	std::string getImageFileName() { return mSavePath; }
 
 private:
+	void startRequest(const std::string& url);
+	bool tryNextUrl();
+
 	HttpReq* mRequest;
 
 	int	mRetryCount;
@@ -158,6 +161,10 @@ private:
 	std::string mSavePath;
 	int mMaxWidth;
 	int mMaxHeight;
+
+	std::vector<std::string> mUrls; // the addresses to try, in turn
+	int mUrlIndex;
+	int mLinkHops;
 };
 
 

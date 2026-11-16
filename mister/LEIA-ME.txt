@@ -90,10 +90,22 @@ Se algo travar
   (sem o primeiro comando, o F9 e os scripts do menu deixam de funcionar até
   reiniciar o MiSTer)
 
+Capas dos jogos
+---------------
+Menu > Scraper > Procurar em: "Libretro-thumbnails". Não precisa de conta nem de
+chave. As imagens vêm do libretro-thumbnails (a mesma fonte do snes9x do PS5):
+capa, tela-título e screenshot. O jogo é reconhecido pelo CRC32 da ROM (lista
+No-Intro) ou pelo nome do arquivo, inclusive "(JP)", "(US)", "(EU)" e hacks como
+"- Fastrom". Para os jogos que o libretro-thumbnails não tem (hacks, homebrew,
+cartuchos piratas), a capa vem do Hasheous (imagem do IGDB) ou do TheGamesDB.
+A lista de imagens de cada sistema fica em home/.emulationstation/scrapers/libretro
+(atualizada a cada 14 dias).
+O IGDB também funciona, com o seu Client ID e Secret da Twitch (aba Contas).
+
 Limitações desta versão
 -----------------------
 - Sem vídeos de prévia (mostra a imagem do jogo no lugar).
-- Sem HTTPS: o scraper e os downloads de temas ainda não funcionam.
+- ScreenScraper e TheGamesDB (com busca) precisam de chaves na compilação.
 - Jogos em .zip e várias pastas de jogos por sistema ainda não.
 - Sem efeitos de shader (desfoque etc.).
 

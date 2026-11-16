@@ -1,0 +1,6 @@
+# Magnavox - Odyssey2: games libretro-thumbnails has no cover for, with where an online database has one,
+# from Hasheous' dump "Magnavox Odyssey 2"; made by mister/tools/make-db-art.py.
+# name<TAB>cover sources (h = hasheous.org image id, t = TheGamesDB id)<TAB>CRC32 of its dumps
+Martian Threat	hF398DB544E85969CDF5C50A566055785D1A72D20 t22927	335481F1,39E31BF0
+Philips C52 BIOS	hD8724F4536EF05E1C6A2E32E60B662E3B0A0D808	A318E8D6
+Red Green	hC46FF909C20D934E1B6285ADCAA80D188DF19C81	B6C36DBD

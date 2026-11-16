@@ -554,7 +554,13 @@ std::string HttpReq::getResponseHeader(const std::string& header)
 	auto it = mResponseHeaders.find(header);
 	if (it != mResponseHeaders.cend())
 		return it->second;
-		
+
+	// header names are case-insensitive: HTTP/2 servers send them in lower case ("content-type")
+	const std::string wanted = Utils::String::toLower(header);
+	for (const auto& h : mResponseHeaders)
+		if (Utils::String::toLower(h.first) == wanted)
+			return h.second;
+
 	return "";
 }
 

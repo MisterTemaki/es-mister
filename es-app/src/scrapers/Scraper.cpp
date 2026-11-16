@@ -23,6 +23,7 @@
 #include <SDL_timer.h>
 #include "HfsDBScraper.h"
 #include "IGDBScraper.h"
+#include "LibretroThumbnailsScraper.h"
 #include "utils/Uri.h"
 
 #define OVERQUOTA_RETRY_DELAY 15000
@@ -43,7 +44,8 @@ std::vector<std::pair<std::string, Scraper*>> Scraper::scrapers
 #endif
 
 	{ "IGDB", new IGDBScraper() },
-	{ "ArcadeDB", new ArcadeDBScraper() }
+	{ "ArcadeDB", new ArcadeDBScraper() },
+	{ "Libretro-thumbnails", new LibretroThumbnailsScraper() }
 };
 
 std::string Scraper::getScraperName(Scraper* scraper)
@@ -544,8 +546,22 @@ ImageDownloadHandle::ImageDownloadHandle(const std::string& url, const std::stri
 	mOverQuotaRetryDelay = OVERQUOTA_RETRY_DELAY;
 	mOverQuotaRetryCount = OVERQUOTA_RETRY_COUNT;
 
+	// several addresses, tab apart: each tried in turn until one gives the image
+	mUrls = Utils::String::split(url, '\t', true);
+	if (mUrls.empty())
+		mUrls.push_back(url);
+	mUrlIndex = 0;
+	mLinkHops = 0;
+	mRequest = nullptr;
+	startRequest(mUrls[0]);
+}
+
+void ImageDownloadHandle::startRequest(const std::string& url)
+{
+	delete mRequest;
+
 	HttpReqOptions options;
-	options.outputFilename = path;
+	options.outputFilename = mSavePath;
 
 	if (url.find("screenscraper") != std::string::npos && url.find("/medias/") != std::string::npos)
 	{
@@ -554,25 +570,83 @@ ImageDownloadHandle::ImageDownloadHandle(const std::string& url, const std::stri
 			options.customHeaders.push_back("Referer: https://" + splits[1] + "/gameinfos.php?gameid=" + splits[splits.size() - 2] + "&action=onglet&zone=gameinfosmedias");
 	}
 
-	if (url.find("screenscraper") != std::string::npos && (path.find(".jpg") != std::string::npos || path.find(".png") != std::string::npos) && url.find("media=map") == std::string::npos)
+	if (url.find("screenscraper") != std::string::npos && (mSavePath.find(".jpg") != std::string::npos || mSavePath.find(".png") != std::string::npos) && url.find("media=map") == std::string::npos)
 	{
 		Utils::Uri uri(url);
 
-		if (maxWidth > 0)
+		if (mMaxWidth > 0)
 		{
-			uri.arguments.set("maxwidth", std::to_string(maxWidth));
-			uri.arguments.set("maxheight", std::to_string(maxWidth));
+			uri.arguments.set("maxwidth", std::to_string(mMaxWidth));
+			uri.arguments.set("maxheight", std::to_string(mMaxWidth));
 		}
-		else if (maxHeight > 0)
+		else if (mMaxHeight > 0)
 		{
-			uri.arguments.set("maxwidth", std::to_string(maxHeight));
-			uri.arguments.set("maxheight", std::to_string(maxHeight));
+			uri.arguments.set("maxwidth", std::to_string(mMaxHeight));
+			uri.arguments.set("maxheight", std::to_string(mMaxHeight));
 		}
 
 		mRequest = new HttpReq(uri.toString(), &options);
 	}
 	else
 		mRequest = new HttpReq(url, &options);
+}
+
+bool ImageDownloadHandle::tryNextUrl()
+{
+	if (mUrlIndex + 1 >= (int)mUrls.size())
+		return false;
+
+	mUrlIndex++;
+	mLinkHops = 0;
+	mRetryCount = 0;
+	LOG(LogDebug) << "ImageDownloadHandle : trying " << mUrls[mUrlIndex];
+	startRequest(mUrls[mUrlIndex]);
+	return true;
+}
+
+// ".png", ".jpg", ".gif" or ".webp" by a file's first bytes, or ""
+static std::string sniffImageExtension(const std::string& path)
+{
+	unsigned char head[12] = {};
+	FILE* f = fopen(path.c_str(), "rb");
+	if (f == nullptr)
+		return "";
+	const size_t n = fread(head, 1, sizeof(head), f);
+	fclose(f);
+
+	if (n >= 8 && memcmp(head, "\x89PNG\r\n\x1a\n", 8) == 0)
+		return ".png";
+	if (n >= 3 && head[0] == 0xFF && head[1] == 0xD8 && head[2] == 0xFF)
+		return ".jpg";
+	if (n >= 6 && (memcmp(head, "GIF87a", 6) == 0 || memcmp(head, "GIF89a", 6) == 0))
+		return ".gif";
+	if (n >= 12 && memcmp(head, "RIFF", 4) == 0 && memcmp(head + 8, "WEBP", 4) == 0)
+		return ".webp";
+	return "";
+}
+
+// A symbolic link of a libretro-thumbnails repository: GitHub's raw server answers with the name of the file it points
+// to (a few bytes of text), not with the image. The address of that file, or "".
+static std::string libretroLinkTarget(const std::string& url, const std::string& file)
+{
+	if (url.find("raw.githubusercontent.com/libretro-thumbnails/") == std::string::npos || Utils::FileSystem::getFileSize(file) > 512)
+		return "";
+
+	std::string target = Utils::String::trim(Utils::FileSystem::readAllText(file));
+	if (target.empty() || target.find('\n') != std::string::npos || Utils::String::toLower(Utils::FileSystem::getExtension(target)) != ".png")
+		return "";
+
+	std::string base = url.substr(0, url.rfind('/'));
+	for (auto part : Utils::String::split(target, '/', true))
+	{
+		if (part == ".")
+			continue;
+		if (part == "..")
+			base = base.substr(0, base.rfind('/'));
+		else
+			base += "/" + HttpReq::urlEncode(part);
+	}
+	return base;
 }
 
 ImageDownloadHandle::~ImageDownloadHandle()
@@ -635,6 +709,10 @@ void ImageDownloadHandle::update()
 		return;
 	}
 
+	// Another address to try: any error sends to it
+	if (status != HttpReq::REQ_SUCCESS && tryNextUrl())
+		return;
+
 	// Ignored errors
 	if (status == HttpReq::REQ_404_NOTFOUND || status == HttpReq::REQ_IO_ERROR)
 	{
@@ -653,11 +731,46 @@ void ImageDownloadHandle::update()
 	{
 		std::string ext = Utils::String::toLower(Utils::FileSystem::getExtension(mSavePath));
 
-		// Make sure extension is the good one, according to the response 'Content-Type'
-		std::string contentType = mRequest->getResponseHeader("Content-Type");
-		if (!contentType.empty())
+		// Make sure extension is the good one, according to the response 'Content-Type' (without its parameters:
+		// "image/jpeg; x-api-version=1")
+		std::string contentType = Utils::String::toLower(mRequest->getResponseHeader("Content-Type"));
+		if (contentType.find(';') != std::string::npos)
+			contentType = Utils::String::trim(contentType.substr(0, contentType.find(';')));
+
+		// Text where a picture was asked for: a libretro-thumbnails link (its target is fetched), else an error page
+		if (Utils::String::startsWith(contentType, "text/"))
 		{
-			std::string trueExtension;
+			std::string target = libretroLinkTarget(mRequest->getUrl(), mSavePath);
+			Utils::FileSystem::removeFile(mSavePath);
+
+			if (!target.empty() && mLinkHops < 4)
+			{
+				mLinkHops++;
+				LOG(LogDebug) << "ImageDownloadHandle : link to " << target;
+				startRequest(target);
+				return;
+			}
+
+			if (tryNextUrl())
+				return;
+
+			setStatus(ASYNC_DONE);
+			return;
+		}
+
+		// what the file is, by its first bytes (some servers name a PNG image/jpeg), else by what the server says
+		std::string trueExtension = sniffImageExtension(mSavePath);
+		if (!trueExtension.empty() && trueExtension != ext)
+		{
+			auto newFileName = Utils::FileSystem::changeExtension(mSavePath, trueExtension);
+			if (Utils::FileSystem::renameFile(mSavePath, newFileName))
+			{
+				mSavePath = newFileName;
+				ext = trueExtension;
+			}
+		}
+		else if (trueExtension.empty() && !contentType.empty())
+		{
 			if (Utils::String::startsWith(contentType, "image/"))
 			{
 				trueExtension = "." + contentType.substr(6);

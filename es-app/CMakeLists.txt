@@ -112,6 +112,9 @@ set(ES_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ArcadeDBJSONScraper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/HfsDBScraper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/IGDBScraper.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/LibretroArt.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/LibretroArtMatch.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/LibretroThumbnailsScraper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ScreenScraper.h    
 
     # Views
@@ -217,6 +220,8 @@ set(ES_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ArcadeDBJSONScraper.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/HfsDBScraper.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/IGDBScraper.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/LibretroArt.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/LibretroThumbnailsScraper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ScreenScraper.cpp	
 
     # Views
