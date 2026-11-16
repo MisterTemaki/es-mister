@@ -13,8 +13,13 @@
 //   es-mister-helper key NAME               a key pressed and let go (F9, F12, ESC, ENTER)
 //   es-mister-helper core                   the core loaded now (/tmp/CORENAME)
 //   es-mister-helper text                   the console back in text mode, after ES ended (see text_mode)
+//   es-mister-helper guard PID              while PID lives: no console switch waits more than a second
+//                                          (see guard)
 
+#include <dirent.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <linux/fb.h>
 #include <linux/kd.h>
 #include <linux/uinput.h>
@@ -147,9 +152,9 @@ static int chvt(int n)
 // where the kernel ignores console switches: F9 no longer showed the Linux framebuffer, and the MiSTer
 // menu could not show a script, until the next reboot. es-mister.sh runs this once ES has ended.
 //
-// ES holds its console with VT_PROCESS (the kernel asks it before switching away); ended by a signal it
-// leaves that too, which the kernel undoes at the next switch, but not before: every console (1 to 8)
-// left in graphics mode or held is let go here, not only the active one (ES's may not be).
+// ES holds its console with VT_PROCESS (the kernel asks it before switching away) and turns its keys off
+// (K_OFF); ended by a signal it leaves those too: every console (1 to 8) left in graphics mode, held or
+// with its keys off is let go here, not only the active one (ES's may not be).
 static int text_mode(void)
 {
 	int fd = open("/dev/tty0", O_RDWR | O_CLOEXEC);
@@ -178,6 +183,12 @@ static int text_mode(void)
 			fprintf(stderr, "es-mister-helper: tty%d was left in graphics mode: back to text mode\n", n);
 			ioctl(tty, KDSETMODE, KD_TEXT);
 		}
+		int keyboard = K_UNICODE;
+		if (ioctl(tty, KDGKBMODE, &keyboard) == 0 && keyboard == K_OFF)
+		{
+			fprintf(stderr, "es-mister-helper: tty%d was left with its keys off: on again\n", n);
+			ioctl(tty, KDSKBMODE, K_UNICODE);
+		}
 		struct vt_mode vt;
 		if (ioctl(tty, VT_GETMODE, &vt) == 0 && vt.mode == VT_PROCESS)
 		{
@@ -189,6 +200,72 @@ static int text_mode(void)
 		close(tty);
 	}
 	return ok ? 0 : 1;
+}
+
+// A process waiting in VT_WAITACTIVE (ioctl, 0x5607) for console n, as /proc/PID/syscall shows it (ARM's
+// ioctl is 54, x86-64's 16): n, 0 when it is not
+static int waiting_for_console(const char* pid)
+{
+	char path[300], line[256];
+	snprintf(path, sizeof(path), "/proc/%s/syscall", pid);
+	if (!read_line(path, line, sizeof(line)))
+		return 0;
+	long nr = -1;
+	unsigned long fd = 0, request = 0, arg = 0;
+	if (sscanf(line, "%ld 0x%lx 0x%lx 0x%lx", &nr, &fd, &request, &arg) != 4)
+		return 0;
+	if ((nr != 54 && nr != 16) || request != VT_WAITACTIVE)
+		return 0;
+	return (int)arg;
+}
+
+// While ES (pid) runs: whenever a process (Main_MiSTer running a script: F12 and Scripts) waits more than
+// a second for a switch away from a console held by ES (VT_PROCESS) that ES has not let go, the switch is
+// let go here (VT_RELDISP on that console, as ES would). ES answers such a switch itself at once; this is
+// the guard for when it does not, whatever the reason: the MiSTer's menu waited for ever then.
+static int guard(int es)
+{
+	signal(SIGPIPE, SIG_IGN);
+	int waited = 0; // quarters of a second something has waited for a switch
+	while (kill(es, 0) == 0 || errno == EPERM)
+	{
+		sleep_ms(250);
+		const int active = active_console();
+		int wanted = 0;
+		DIR* dir = opendir("/proc");
+		if (dir)
+		{
+			struct dirent* e;
+			while ((e = readdir(dir)) != NULL && !wanted)
+			{
+				if (e->d_name[0] < '0' || e->d_name[0] > '9')
+					continue;
+				const int n = waiting_for_console(e->d_name);
+				if (n > 0 && n != active)
+					wanted = n;
+			}
+			closedir(dir);
+		}
+		waited = wanted ? waited + 1 : 0;
+		if (waited < 4 || active <= 0)
+			continue;
+
+		char path[32];
+		snprintf(path, sizeof(path), "/dev/tty%d", active);
+		int tty = open(path, O_RDWR | O_CLOEXEC | O_NOCTTY);
+		if (tty < 0)
+			continue;
+		struct vt_mode vt;
+		if (ioctl(tty, VT_GETMODE, &vt) == 0 && vt.mode == VT_PROCESS)
+		{
+			const int ok = ioctl(tty, VT_RELDISP, 1) == 0;
+			fprintf(stderr, "es-mister-helper: a switch from tty%d to tty%d waited %d ms: %s\n", active, wanted,
+				waited * 250, ok ? "let go here" : strerror(errno));
+		}
+		close(tty);
+		waited = 0;
+	}
+	return 0;
 }
 
 // the Linux framebuffer's size as it is now; 0 when it cannot be read
@@ -328,6 +405,9 @@ int main(int argc, char** argv)
 	if (argc >= 2 && !strcmp(argv[1], "text"))
 		return text_mode();
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto | key NAME | core | text\n", argv[0]);
+	if (argc >= 3 && !strcmp(argv[1], "guard"))
+		return guard(atoi(argv[2]));
+
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto | key NAME | core | text | guard PID\n", argv[0]);
 	return 2;
 }
