@@ -15,6 +15,10 @@ SRC=$WORK/src
 TOOLS=$WORK/toolchain
 STAGE=$WORK/package
 VERSION=${VERSION:-$(git -C "$ROOT" describe --always --dirty 2>/dev/null || echo dev)}
+# ES_SIZE=1280x720 (say): ES drawn at that size (SIZE in es-mister.ini) and the theme's pictures made for it;
+# unset, SIZE=auto (the MiSTer's own) and the pictures made for 1080p
+ES_SIZE=${ES_SIZE:-}
+THEME_SIZE=${ES_SIZE:-1920x1080}
 
 # Batocera's theme and controller database, at the versions batocera.linux pins
 THEME_COMMIT=a897233e9bf6b9cca5c248ffceebf443882de926
@@ -51,7 +55,7 @@ cat >"$ES/es-mister.ini" <<'EOF'
 # follows the screen (video_mode in MiSTer.ini): the sharpest, and the slowest (a 1080p screen is nine
 # times the pixels of 640x360). auto/2: half of it (960x540 on 1080p), auto/3: a third (640x360 on
 # 1080p, the fastest). Or WIDTHxHEIGHT.
-SIZE=auto
+SIZE=__ES_SIZE__
 
 # The most frames a second ES draws (fewer leaves the ARM more time)
 FPS=60
@@ -95,6 +99,8 @@ INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
 EOF
 
+sed -i "s/^SIZE=__ES_SIZE__$/SIZE=${ES_SIZE:-auto}/" "$ES/es-mister.ini"
+
 echo "== resources and translations"
 cp -r "$ROOT/resources" "$ES/resources"
 mkdir -p "$ES/resources/locale"
@@ -113,7 +119,7 @@ EOF
 cp "$SRC/batocera.linux/package/batocera/emulationstation/batocera-emulationstation/controllers/es_input.cfg" "$ES/defaults/es_input.cfg"
 
 echo "== theme"
-python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv" 1920x1080
+python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv" "$THEME_SIZE"
 
 cp "$ROOT/mister/LEIA-ME.txt" "$ES/"
 cp "$ROOT/LICENSE.md" "$ES/LICENSE-EmulationStation.md"
@@ -122,7 +128,7 @@ cp "$ROOT/LICENSE.md" "$ES/LICENSE-EmulationStation.md"
 find "$STAGE" -name '*.sh' -exec sed -i 's/\r$//' {} \;
 
 mkdir -p "$WORK/dist"
-ZIP=$WORK/dist/es-mister-$VERSION.zip
+ZIP=$WORK/dist/es-mister-$VERSION${ES_SIZE:+-$ES_SIZE}.zip
 rm -f "$ZIP"
 (cd "$STAGE" && python3 -I -c '
 import os, sys, zipfile
