@@ -246,8 +246,15 @@ void Settings::setDefaults()
 	mStringMap["GamelistViewStyle"] = "automatic";
 
 	mStringMap["Scraper"] = "ScreenScraper";
+#ifdef MISTER
+	// the MiSTer port: the box as the game's picture (the grids show it), and no second copy of it as
+	// the box picture (the scraper's menu does not offer the same source for both)
+	mStringMap["ScrapperImageSrc"] = "box-2D";
+	mStringMap["ScrapperThumbSrc"] = "";
+#else
 	mStringMap["ScrapperImageSrc"] = "ss";
 	mStringMap["ScrapperThumbSrc"] = "box-2D";
+#endif
 	mStringMap["ScrapperLogoSrc"] = "wheel";
 	mBoolMap["ScrapeVideos"] = false;
 	mBoolMap["ScrapeShortTitle"] = false;

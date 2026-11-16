@@ -400,12 +400,14 @@ namespace Renderer
 					fclose(f);
 					if (got != 4 || (width == mWidth && height == mHeight))
 						return;
+					// Main_MiSTer sets the mode later (a shell writes it to the driver), and the driver clears the
+					// framebuffer then: the frame drawn again follows that clearing (FbdevOutput's res_count), not
+					// this command
 					FILE* cmd = fopen("/dev/MiSTer_cmd", "w");
 					if (cmd == nullptr)
 						return;
 					fprintf(cmd, "fb_cmd1 8888 1 %d %d\n", mWidth, mHeight);
 					fclose(cmd);
-					mRedraw.store(true);
 				}
 
 				std::string mPath;
@@ -480,6 +482,14 @@ namespace Renderer
 					// the same as ours (0xAARRGGBB in a 32-bit word): rows are copied as they are
 					mNative = mBpp == 32 && mRed.offset == 16 && mGreen.offset == 8 && mBlue.offset == 0 && mRed.length == 8 && mGreen.length == 8 && mBlue.length == 8;
 
+					// The MiSTer's framebuffer driver clears all of the framebuffer each time its mode is set (the
+					// mode parameter written: by Main_MiSTer at F9, after a game, at fb_cmd, and by ES's console
+					// below), and counts those sets in res_count. A set while ES is shown left the screen black but
+					// for the parts ES drew after it; each new count is the frame drawn whole again.
+					mResFd = ::open("/sys/module/MiSTer_fb/parameters/res_count", O_RDONLY | O_CLOEXEC);
+					if (mResFd >= 0)
+						readResCount(mResCount);
+
 					// the console stops drawing (its text and its cursor) over the frames, and lets another
 					// console have the screen when asked (Console)
 					mConsoleHeld = mConsole.open(mWidth, mHeight, env("ES_SOFT_MISTER_MODE") == "1");
@@ -501,6 +511,11 @@ namespace Renderer
 						::close(mFd);
 						mFd = -1;
 					}
+					if (mResFd >= 0)
+					{
+						::close(mResFd);
+						mResFd = -1;
+					}
 					if (mConsoleHeld)
 					{
 						mConsole.close();
@@ -508,7 +523,21 @@ namespace Renderer
 					}
 				}
 
-				bool takeRedraw() override { return mConsoleHeld && mConsole.takeRedraw(); }
+				// Asked before each frame. The driver counts a mode set after clearing the framebuffer, so a frame
+				// drawn after a new count is seen is never cleared by that set; one cleared while being copied is
+				// followed by a new count, and drawn whole again at the next frame.
+				bool takeRedraw() override
+				{
+					bool redraw = mConsoleHeld && mConsole.takeRedraw();
+					long count = 0;
+					if (mResFd >= 0 && readResCount(count) && count != mResCount)
+					{
+						fprintf(stderr, "SoftOutput: the framebuffer's mode was set (res_count %ld, was %ld): cleared, drawn whole again\n", count, mResCount);
+						mResCount = count;
+						redraw = true;
+					}
+					return redraw;
+				}
 
 				// Straight to the framebuffer: the renderer gives only what changed, so no copy of the screen is
 				// kept to compare rows with (that read and wrote each row twice more)
@@ -557,6 +586,19 @@ namespace Renderer
 				}
 
 			private:
+				// res_count as it is now (a sysfs file: read again from its start each time)
+				bool readResCount(long& count) const
+				{
+					char text[32];
+					const ssize_t got = pread(mResFd, text, sizeof(text) - 1, 0);
+					if (got <= 0)
+						return false;
+					text[got] = 0;
+					char* end = nullptr;
+					count = strtol(text, &end, 10);
+					return end != text;
+				}
+
 				static uint32_t place(uint32_t value8, const fb_bitfield& field)
 				{
 					if (field.length == 0)
@@ -588,6 +630,8 @@ namespace Renderer
 
 				std::string mPath;
 				int mFd = -1;
+				int mResFd = -1;
+				long mResCount = 0;
 				Console mConsole;
 				bool mConsoleHeld = false;
 				uint8_t* mMap = nullptr;

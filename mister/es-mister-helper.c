@@ -137,8 +137,12 @@ static int chvt(int n)
 	int fd = open("/dev/tty0", O_RDWR | O_CLOEXEC);
 	if (fd < 0)
 		return 0;
+	// in graphics mode the kernel ignores the switch, unless the program drawing there is asked first
+	// (VT_PROCESS: ES holds its console that way and lets it go)
 	int mode = KD_TEXT;
-	if (ioctl(fd, KDGETMODE, &mode) == 0 && mode == KD_GRAPHICS)
+	struct vt_mode held = { 0 };
+	if (ioctl(fd, KDGETMODE, &mode) == 0 && mode == KD_GRAPHICS &&
+		!(ioctl(fd, VT_GETMODE, &held) == 0 && held.mode == VT_PROCESS))
 		fprintf(stderr, "es-mister-helper: the console is in graphics mode (a program drawing on it holds it): it cannot switch\n");
 	int ok = ioctl(fd, VT_ACTIVATE, n) == 0;
 	close(fd);
