@@ -1,4 +1,5 @@
 #include "SoftOutput.h"
+#include "SoftScale.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -490,14 +491,34 @@ namespace Renderer
 					if (mResFd >= 0)
 						readResCount(mResCount);
 
+					// ES's size: the framebuffer's, or ES_SOFT_DRAW_SIZE's with its frames enlarged to the
+					// framebuffer as they are copied (Scale)
+					int drawWidth = mWidth, drawHeight = mHeight;
+					const std::string drawSize = env("ES_SOFT_DRAW_SIZE");
+					int w = 0, h = 0;
+					if (!drawSize.empty() && sscanf(drawSize.c_str(), "%dx%d", &w, &h) == 2 && w >= 16 && h >= 16 && w <= 7680 && h <= 4320)
+					{
+						if (mNative)
+						{
+							drawWidth = w;
+							drawHeight = h;
+						}
+						else
+							fprintf(stderr, "SoftOutput: ES_SOFT_DRAW_SIZE needs a framebuffer of 32 bits a pixel as ES's frames: drawn at its size\n");
+					}
+					mScale.setup(drawWidth, drawHeight, mWidth, mHeight);
+					mScale.clearAround(mMap, mPitch, copyBytes);
+
 					// the console stops drawing (its text and its cursor) over the frames, and lets another
 					// console have the screen when asked (Console)
 					mConsoleHeld = mConsole.open(mWidth, mHeight, env("ES_SOFT_MISTER_MODE") == "1");
 
-					width = mWidth;
-					height = mHeight;
+					width = drawWidth;
+					height = drawHeight;
 					return true;
 				}
+
+				int rowStep() const override { return mScale.rowStep(); }
 
 				void close() override
 				{
@@ -553,6 +574,9 @@ namespace Renderer
 						Console* console;
 						~Done() { if (console) console->done(); }
 					} done{ mConsoleHeld ? &mConsole : nullptr };
+					// enlarged (the frame at the size ES draws at)
+					if (mScale.kind() != Scale::Kind::Copy && width == mScale.drawWidth() && height == mScale.drawHeight())
+						return mScale.present(pixels, x0, y0, x1, y1, mMap, mPitch, copyBytes);
 					x0 = std::max(0, x0); y0 = std::max(0, y0);
 					x1 = std::min(std::min(width, mWidth), x1);
 					y1 = std::min(std::min(height, mHeight), y1);
@@ -582,7 +606,8 @@ namespace Renderer
 
 				std::string describe() const override
 				{
-					return mPath + " " + std::to_string(mWidth) + "x" + std::to_string(mHeight) + " " + std::to_string(mBpp) + " bpp" + (mNative ? "" : " (converted)");
+					return mPath + " " + std::to_string(mWidth) + "x" + std::to_string(mHeight) + " " + std::to_string(mBpp) + " bpp" + (mNative ? "" : " (converted)") +
+						(mScale.kind() != Scale::Kind::Copy ? ", " + mScale.describe() : "");
 				}
 
 			private:
@@ -639,6 +664,7 @@ namespace Renderer
 				int mWidth = 0, mHeight = 0, mBpp = 0, mPitch = 0;
 				fb_bitfield mRed = {}, mGreen = {}, mBlue = {}, mAlpha = {};
 				bool mNative = false;
+				Scale mScale;
 			};
 #endif
 		}

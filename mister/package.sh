@@ -68,6 +68,13 @@ cat >"$ES/es-mister.ini" <<'EOF'
 # 1080p, the fastest). Or WIDTHxHEIGHT.
 SIZE=__ES_SIZE__
 
+# 1: the picture fills the screen with SIZE as WIDTHxHEIGHT: the framebuffer at the screen's size, and ES's
+# frames, drawn at SIZE, enlarged to it as they are copied (1280x720 on a 1080p screen: 1.5 times,
+# smoothed; the drawing costs the same, the copy a little more). Unless the MiSTer fills the screen with
+# SIZE itself (960x540 on 1080p: twice). 0: the framebuffer at SIZE, which the MiSTer enlarges only by
+# whole times (1280x720 on 1080p stays in the middle, at two thirds of the screen).
+FILL=1
+
 # The most frames a second ES draws (fewer leaves the ARM more time)
 FPS=60
 

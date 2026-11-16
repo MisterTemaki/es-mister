@@ -14,8 +14,9 @@ exec >>"$LOG" 2>&1
 uptime() { cut -d' ' -f1 /proc/uptime; }
 echo "== $(date '+%F %T') es-mister.sh (uptime $(uptime) s)"
 
-# settings (es-mister.ini): SIZE, FPS, GAMES_ROOTS
+# settings (es-mister.ini): SIZE, FILL, FPS, GAMES_ROOTS
 SIZE=auto
+FILL=1
 FPS=60
 BENCH=0
 PROFILE=0
@@ -28,13 +29,21 @@ INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
 [ -f "$ES/es-mister.ini" ] && . "$ES/es-mister.ini"
 
+# the framebuffer's size: SIZE, or with FILL=1 and SIZE as WIDTHxHEIGHT the screen's (unless the MiSTer
+# fills the screen with SIZE itself), ES's frames enlarged to it as they are copied (ES_SOFT_DRAW_SIZE)
+SCREEN=$SIZE
+case "$FILL:$SIZE" in
+1:auto*) ;;
+1:*x*) SCREEN=fill:$SIZE ;;
+esac
+
 # ES on the screen again (the Scripts menu's emulationstation.sh, with ES running hidden: after F12 the
 # MiSTer menu covers it). The script's screen closes first, then F9 until Main_MiSTer shows ES's console,
 # at the size ES draws at (as after a game).
 show() {
 	local drawn
 	drawn=$(cat "$LOGS/es-mister.size" 2>/dev/null)
-	[ -n "$drawn" ] || drawn=$SIZE
+	[ -n "$drawn" ] || drawn=$SCREEN
 	echo "== $(date '+%F %T') ES running: on the screen again at $drawn"
 	sleep 2
 	for attempt in 1 2 3 4 5 6 7; do
@@ -112,13 +121,14 @@ for i in $(seq 30); do
 	sleep 1
 done
 
-# the framebuffer ES draws in: at SIZE, or with auto at the size Main_MiSTer gives it for the menu.
+# the framebuffer ES draws in: at SIZE, with auto at the size Main_MiSTer gives it for the menu, with fill
+# at the screen's (ES enlarges its frames to it).
 # Started from the Scripts menu, Main_MiSTer is still closing the script's screen and does not take F9
 # yet: a moment first, then short tries (8 presses, about 4 s each) until it does, for up to ~30 s.
 sleep 2
 DRAWN=""
 for attempt in 1 2 3 4 5 6 7; do
-	DRAWN=$("$ES/es-mister-helper" console "$SIZE" 8) && break
+	DRAWN=$("$ES/es-mister-helper" console "$SCREEN" 8) && break
 	DRAWN=""
 	echo "the framebuffer is not on yet (try $attempt)"
 	sleep 1
@@ -137,6 +147,9 @@ export HOME=$HOME_DIR
 # the framebuffer kept at ES's size whenever ES's console is shown (F9 after F12 or after a script shows
 # it at the console's size)
 export ES_SOFT_MISTER_MODE=1
+# ES drawn at SIZE whatever the framebuffer's size, its frames enlarged to it (1280x720 on a 1080p screen:
+# 1.5 times, filling it, where the MiSTer's scaler enlarges only by whole times)
+case "$SCREEN" in fill:*) export ES_SOFT_DRAW_SIZE=$SIZE ;; esac
 export SDL_AUDIODRIVER=alsa
 export ES_SOFT_FPS=$FPS
 export ES_SOFT_STATS=600
@@ -164,7 +177,9 @@ if [ "$SLOW_DUMPS" -gt 0 ] 2>/dev/null; then
 fi
 # keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
-echo "starting ES at $DRAWN (SIZE=$SIZE, uptime $(uptime) s)"
+echo "starting ES: framebuffer $DRAWN (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
+# RESTART SYSTEM and SHUTDOWN SYSTEM in ES's menu leave these (ES's processQuitMode) for below
+rm -f /tmp/reboot.please /tmp/shutdown.please
 # a console switch ES does not let go of within a second (Main_MiSTer running a script after F12 waited
 # for it for ever, the menu frozen) is let go of by the guard (es-mister-helper guard)
 "$ES/es-mister-helper" guard $$ &
@@ -178,5 +193,19 @@ kill $GUARD 2>/dev/null
 "$ES/es-mister-helper" text
 
 rm -f /tmp/es-mister.pid
+# RESTART SYSTEM: the MiSTer restarted cold, as its menu's Reboot held; SHUTDOWN SYSTEM: shut down, the
+# HDMI output off (es-mister-helper reboot / halt; ES has written its files and closed)
+if [ -f /tmp/reboot.please ]; then
+	rm -f /tmp/reboot.please
+	echo "== $(date '+%F %T') RESTART SYSTEM: cold reboot"
+	sync
+	exec "$ES/es-mister-helper" reboot
+fi
+if [ -f /tmp/shutdown.please ]; then
+	rm -f /tmp/shutdown.please
+	echo "== $(date '+%F %T') SHUTDOWN SYSTEM: halt"
+	sync
+	exec "$ES/es-mister-helper" halt
+fi
 # back to the MiSTer menu
 echo "load_core /media/fat/menu.rbf" >/dev/MiSTer_cmd

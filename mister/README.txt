@@ -37,7 +37,13 @@ Using it
   and go back to the MiSTer menu (System > Reboot, a short press, not held).
   The MiSTer menu loads again and EmulationStation comes back by itself within
   a few seconds.
-- To leave EmulationStation: Menu > Quit > Quit EmulationStation.
+- To leave EmulationStation: Menu > Quit > Quit EmulationStation (back to the
+  MiSTer menu).
+- Menu > Quit > Restart system: the MiSTer restarts cold, as its menu's
+  "Reboot" held.
+- Menu > Quit > Shutdown system: the MiSTer shuts down and its HDMI output goes
+  off (the TV shows no signal). The DE10-Nano cannot cut its own power: its
+  LEDs stay on; unplug it, or plug it in again to turn it on.
 - F12 (or the controller's menu button) shows the MiSTer menu over it:
   EmulationStation stays open, paused. To go back to it: F9, or
   Scripts > __ES_DIR__ again. Meanwhile the menu's other scripts run as usual.
@@ -65,6 +71,11 @@ Settings
   SIZE=__ES_SIZE__   the size EmulationStation draws at: auto is the screen's
                  (1920x1080 on a 1080p TV), the sharpest and the slowest;
                  auto/2 is half of it, auto/3 a third, or WIDTHxHEIGHT
+  FILL=1         1 = the picture fills the screen when SIZE is WIDTHxHEIGHT:
+                 EmulationStation enlarges its frames to the screen's size
+                 (1280x720 on a 1080p TV: 1.5 times); 0 = the MiSTer
+                 enlarges them only by whole times (1280x720 stays in the
+                 middle of a 1080p screen)
   FPS=60         the most frames a second
   BENCH=0        1 = the whole screen drawn again every frame, to measure what
                  drawing costs (see logs/es-mister-stats.txt)

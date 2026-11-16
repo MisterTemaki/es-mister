@@ -171,6 +171,7 @@ namespace Renderer
 			std::vector<int64_t> copied;      // the pixels it copied to the screen
 			bool present = false;             // the bands copy their rows to the output
 			int split = 0;                    // the first band's last row + 1, when there are two
+			int step = 1;                     // the rows bands start at a multiple of (the output's rowStep)
 			int fullSplit = 0;                // that line for a whole frame, moved toward balance after each
 			bool attached = false;
 
@@ -763,7 +764,11 @@ namespace Renderer
 				}
 				split = std::max(1, std::min(height - 1, split));
 			}
-			if (b.attached && split == b.split)
+			// on rows the output takes them at (pairs, when it makes 2 rows 3)
+			const int step = s.output ? std::max(1, s.output->rowStep()) : 1;
+			auto onStep = [&](int y) { return std::max(0, std::min(height, y - y % step)); };
+			split = std::max(std::min(step, height), onStep(split));
+			if (b.attached && split == b.split && step == b.step)
 				return;
 
 			// a band's stencil rows may become another's: each clears what it marked first
@@ -771,11 +776,12 @@ namespace Renderer
 				raster->resetStencil();
 			for (int i = 0; i < b.count; i++)
 			{
-				const int y0 = i == 0 ? 0 : (b.count == 2 ? split : height * i / b.count);
-				const int y1 = i == b.count - 1 ? height : (i == 0 && b.count == 2 ? split : height * (i + 1) / b.count);
+				const int y0 = i == 0 ? 0 : (b.count == 2 ? split : onStep(height * i / b.count));
+				const int y1 = i == b.count - 1 ? height : (i == 0 && b.count == 2 ? split : onStep(height * (i + 1) / b.count));
 				b.rasters[i]->attach(s.raster, y0, y1);
 			}
 			b.split = split;
+			b.step = step;
 			b.attached = true;
 		}
 

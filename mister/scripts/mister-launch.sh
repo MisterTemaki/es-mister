@@ -12,7 +12,14 @@ LOG=$ES/logs/es-mister.log
 exec >>"$LOG" 2>&1
 
 SIZE=auto
+FILL=1
 [ -f "$ES/es-mister.ini" ] && . "$ES/es-mister.ini"
+# the framebuffer's size, as es-mister.sh chooses it
+SCREEN=$SIZE
+case "$FILL:$SIZE" in
+1:auto*) ;;
+1:*x*) SCREEN=fill:$SIZE ;;
+esac
 
 system=$1
 game=$2
@@ -68,7 +75,7 @@ else
 fi
 
 for attempt in 1 2 3; do
-	DRAWN=$("$ES/es-mister-helper" console "$SIZE") && break
+	DRAWN=$("$ES/es-mister-helper" console "$SCREEN") && break
 	echo "the framebuffer is not on yet (try $attempt)"
 	sleep 3
 done

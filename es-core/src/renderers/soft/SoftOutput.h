@@ -8,7 +8,10 @@
 //   ES_SOFT_OUTPUT  fbdev[:path] (the default when /dev/fb0 exists) or null
 //   ES_SOFT_SIZE    WIDTHxHEIGHT for the null output (default 640x360)
 //   ES_SOFT_TTY     the console put in graphics mode while drawing (default: the active one), "none" to leave it
-//   ES_SOFT_MISTER_MODE=1  the MiSTer's framebuffer mode kept at ES's size (es-mister.sh sets it)
+//   ES_SOFT_MISTER_MODE=1  the MiSTer's framebuffer mode kept at its size (es-mister.sh sets it)
+//   ES_SOFT_DRAW_SIZE  WIDTHxHEIGHT: ES draws at that size whatever the framebuffer's, and its frames are
+//                   enlarged (or made smaller) to the framebuffer as they are copied to it (SoftScale.h:
+//                   1280x720 on a 1920x1080 framebuffer fills it, where the MiSTer's scaler could not)
 //
 // The console ES draws on is in graphics mode, where the kernel switches away from it only when the
 // program drawing agrees (VT_PROCESS, as X servers do): asked to (Main_MiSTer runs a script on another
@@ -47,6 +50,9 @@ namespace Renderer
 			// what the screen shows is no longer the last frame (a console switch back to ES's, the framebuffer
 			// cleared by a mode set): the next one goes to it whole. True once each time.
 			virtual bool takeRedraw() { return false; }
+			// the rows each band of a frame starts at a multiple of (2 when the output makes 2 rows 3: both
+			// of a pair in the same band)
+			virtual int rowStep() const { return 1; }
 			// pixels copied by the last frame, for the statistics
 			int64_t lastPixelsCopied() const { return mCopied; }
 

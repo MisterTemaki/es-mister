@@ -197,7 +197,8 @@ namespace Utils
 #ifdef WIN32 // windows
 			return system("shutdown -s -t 0");
 #elif defined(MISTER)
-			// the MiSTer has no shutdown: ES closes, and es-mister.sh brings its menu back
+			// es-mister.sh, once ES has closed, sees /tmp/shutdown.please and shuts the MiSTer down
+			// (es-mister-helper halt: the HDMI output off, the SD card unmounted)
 			return 0;
 #else // osx / linux
 		return system("shutdown -P -h now");
@@ -209,7 +210,9 @@ namespace Utils
 #ifdef WIN32 // windows
 			return system("shutdown -r -t 0");
 #elif defined(MISTER)
-			return system("reboot");
+			// es-mister.sh, once ES has closed (its console back in text mode), sees /tmp/reboot.please and
+			// restarts the MiSTer cold (es-mister-helper reboot, as its menu's Reboot held)
+			return 0;
 #else // osx / linux
 			return system("shutdown -r now");
 #endif
