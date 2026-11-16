@@ -28,7 +28,29 @@ INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
 [ -f "$ES/es-mister.ini" ] && . "$ES/es-mister.ini"
 
+# ES on the screen again (the Scripts menu's emulationstation.sh, with ES running hidden: after F12 the
+# MiSTer menu covers it). The script's screen closes first, then F9 until Main_MiSTer shows ES's console,
+# at the size ES draws at (as after a game).
+show() {
+	local drawn
+	drawn=$(cat "$LOGS/es-mister.size" 2>/dev/null)
+	[ -n "$drawn" ] || drawn=$SIZE
+	echo "== $(date '+%F %T') ES running: on the screen again at $drawn"
+	sleep 2
+	for attempt in 1 2 3 4 5 6 7; do
+		"$ES/es-mister-helper" console "$drawn" 8 >/dev/null && return 0
+		echo "the framebuffer is not on yet (try $attempt)"
+		sleep 1
+	done
+	echo "ES could not be shown again"
+	return 1
+}
+
 if [ -f /tmp/es-mister.pid ] && kill -0 "$(cat /tmp/es-mister.pid)" 2>/dev/null; then
+	if [ "${1:-}" = "--show" ]; then
+		show
+		exit $?
+	fi
 	echo "already running"
 	exit 0
 fi
@@ -107,8 +129,14 @@ if [ -z "$DRAWN" ]; then
 	exit 1
 fi
 
+# its size, to show it again at it (show, above)
+echo "$DRAWN" >"$LOGS/es-mister.size"
+
 cd "$ES"
 export HOME=$HOME_DIR
+# the framebuffer kept at ES's size whenever ES's console is shown (F9 after F12 or after a script shows
+# it at the console's size)
+export ES_SOFT_MISTER_MODE=1
 export SDL_AUDIODRIVER=alsa
 export ES_SOFT_FPS=$FPS
 export ES_SOFT_STATS=600

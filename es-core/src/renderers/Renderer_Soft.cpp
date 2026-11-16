@@ -1632,6 +1632,10 @@ namespace Renderer
 		// the frame handed to the bands before (async: drawn while ES recorded this one), finished
 		reap();
 
+		// the screen given back to ES (a console switch back to its): the next frame whole
+		if (s.output && s.output->takeRedraw())
+			s.forceRedraw = true;
+
 		// a frame with nothing drawn (ES swaps while it loads) leaves the last one on screen
 		const bool recorded = !s.commands.empty();
 		const bool redraw = recorded && (s.forceRedraw || s.bench || s.hash != s.lastHash);

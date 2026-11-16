@@ -146,6 +146,10 @@ static int chvt(int n)
 // closes; ended by a signal (killall, a crash, the kernel out of memory) it leaves it in graphics mode,
 // where the kernel ignores console switches: F9 no longer showed the Linux framebuffer, and the MiSTer
 // menu could not show a script, until the next reboot. es-mister.sh runs this once ES has ended.
+//
+// ES holds its console with VT_PROCESS (the kernel asks it before switching away); ended by a signal it
+// leaves that too, which the kernel undoes at the next switch, but not before: every console (1 to 8)
+// left in graphics mode or held is let go here, not only the active one (ES's may not be).
 static int text_mode(void)
 {
 	int fd = open("/dev/tty0", O_RDWR | O_CLOEXEC);
@@ -161,6 +165,29 @@ static int text_mode(void)
 	if (!ok)
 		perror("es-mister-helper: KDSETMODE");
 	close(fd);
+
+	for (int n = 1; n <= 8; n++)
+	{
+		char path[32];
+		snprintf(path, sizeof(path), "/dev/tty%d", n);
+		int tty = open(path, O_RDWR | O_CLOEXEC | O_NOCTTY);
+		if (tty < 0)
+			continue;
+		if (ioctl(tty, KDGETMODE, &mode) == 0 && mode == KD_GRAPHICS)
+		{
+			fprintf(stderr, "es-mister-helper: tty%d was left in graphics mode: back to text mode\n", n);
+			ioctl(tty, KDSETMODE, KD_TEXT);
+		}
+		struct vt_mode vt;
+		if (ioctl(tty, VT_GETMODE, &vt) == 0 && vt.mode == VT_PROCESS)
+		{
+			fprintf(stderr, "es-mister-helper: tty%d was left held: let go\n", n);
+			memset(&vt, 0, sizeof(vt));
+			vt.mode = VT_AUTO;
+			ioctl(tty, VT_SETMODE, &vt);
+		}
+		close(tty);
+	}
 	return ok ? 0 : 1;
 }
 
