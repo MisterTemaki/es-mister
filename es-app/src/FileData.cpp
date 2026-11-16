@@ -196,6 +196,12 @@ const std::string FileData::getThumbnailPath(bool fallbackWithImage)
 {
 	std::string thumbnail = getMetadata(MetaDataId::Thumbnail);
 
+	// a thumbnail whose file is gone (deleted with the images folder, its scraper set to none since): the
+	// image instead, as with no thumbnail at all. The grid's tiles showed the empty cartridge for those
+	// games though their image was there. Its entry is kept (only looked past: the file may come back).
+	if (fallbackWithImage && !thumbnail.empty() && thumbnail[0] != ':' && !Utils::FileSystem::exists(thumbnail))
+		thumbnail.clear();
+
 	// no thumbnail, try image
 	if (thumbnail.empty())
 	{
