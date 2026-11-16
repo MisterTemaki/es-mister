@@ -34,6 +34,10 @@ Usar
   página do sistema e escolha "Reboot" com um toque (sem segurar). O menu do
   MiSTer recarrega e o EmulationStation volta sozinho em alguns segundos.
 - Para sair do EmulationStation: Menu > Sair > Sair do EmulationStation.
+- F12 (ou o botão de menu do controle) mostra o menu do MiSTer por cima: o
+  EmulationStation continua aberto, parado. Para voltar a ele: F9, ou
+  Scripts > emulationstation de novo. Com ele assim, os outros scripts do menu
+  rodam normalmente.
 
 Ajustes
 -------
