@@ -194,6 +194,12 @@ namespace Renderer
 		// Big pictures drawn scaled keep their scaled pixels (ES_SOFT_SCALED_MB, default 40; 0: none): after
 		// each drawn frame, those not drawn for a while are let go of
 		void scaledFrame();
+		// how big scaled pictures are kept: SCALED_OFF never (ES_SOFT_SCALED_MB=0), SCALED_SMOOTHED those smoothed
+		// as sampled (as before nearest ones and tints were kept), SCALED_ALL (the default) also those made bigger
+		// not smoothed, and a constant colour in their pixels. The tests compare the ways.
+		enum { SCALED_OFF = 0, SCALED_ALL = 1, SCALED_SMOOTHED = 2 };
+		int scaledMode();
+		void setScaledMode(int mode);
 		size_t scaledBytes();
 	}
 }

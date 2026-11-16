@@ -934,6 +934,17 @@ namespace Renderer
 				uint64_t generation = 0;
 				int w = 0, h = 0;             // its size in pixels: the quad's, rounded
 				float u0 = 0, u1 = 0, t0 = 0, t1 = 0;
+				// nearest (a picture made bigger, not smoothed, its quad on whole pixels): its texels at the very
+				// columns and rows drawQuad samples, from these (its column c: uFirst + c * du, 16.16; its row r:
+				// floor(vFirst + r * dvF)), so its pixels are the ones drawn sampling each time
+				bool nearest = false;
+				int uFirst = 0, du = 0;
+				float vFirst = 0, dvF = 0;
+				// its pixels desaturated and tinted as drawQuad does a texel (a constant colour of alpha 255: Carbon's
+				// grid background, ff051222), so that it is then drawn as it is (an opaque picture: copied); white
+				// and 256: as sampled
+				uint32_t tint = 0xFFFFFFFF;
+				int saturation = 256;
 				// a column and a row more than w x h, for a quad that covers one more
 				std::vector<int32_t> x0s, x1s;
 				std::vector<uint16_t> fxs;
@@ -972,6 +983,13 @@ namespace Renderer
 			void setGrid(Scaled& sc, const Texture* t)
 			{
 				const int columns = sc.w + 1;
+				if (sc.nearest)
+				{
+					sc.x0s.resize(columns);
+					for (int i = 0; i < columns; i++)
+						sc.x0s[i] = wrapCoord((sc.uFirst + i * sc.du) >> 16, t->width, t->repeat);
+					return;
+				}
 				const int du = toFixed((sc.u1 - sc.u0) * t->width / sc.w);
 				const int uStart = toFixed((sc.u0 + 0.5f * (sc.u1 - sc.u0) / sc.w) * t->width - 0.5f);
 				sc.x0s.resize(columns);
@@ -988,8 +1006,10 @@ namespace Renderer
 				sc.vStart = toFixed((sc.t0 + 0.5f * (sc.t1 - sc.t0) / sc.h) * t->height - 0.5f);
 			}
 
-			// the scaled picture of a quad: kept, or (no room) one whose rows are sampled each time
-			std::shared_ptr<Scaled> scaledFor(const Texture* t, int w, int h, float u0, float u1, float t0, float t1)
+			// the scaled picture of a quad: kept, or (no room) one whose rows are sampled each time. near: a nearest
+			// one's sampling (Scaled::nearest), else smoothed from its texture coordinates.
+			std::shared_ptr<Scaled> scaledFor(const Texture* t, int w, int h, float u0, float u1, float t0, float t1, const Scaled* near,
+				uint32_t tint, int saturation)
 			{
 				ScaledCache& cache = scaledCache();
 				std::lock_guard<std::mutex> guard(cache.lock);
@@ -1000,9 +1020,12 @@ namespace Renderer
 					cache.budget = (size_t)(mb ? std::max(0, atoi(mb)) : 40) << 20;
 				}
 				const uint64_t frame = cache.frame.load();
+				const bool nearest = near != nullptr;
 				for (auto& entry : cache.entries)
 					if (entry->id == t->id && entry->generation == t->generation && entry->w == w && entry->h == h &&
-						entry->u0 == u0 && entry->u1 == u1 && entry->t0 == t0 && entry->t1 == t1)
+						entry->nearest == nearest && entry->tint == tint && entry->saturation == saturation &&
+						(nearest ? entry->uFirst == near->uFirst && entry->du == near->du && entry->vFirst == near->vFirst && entry->dvF == near->dvF
+							: entry->u0 == u0 && entry->u1 == u1 && entry->t0 == t0 && entry->t1 == t1))
 					{
 						entry->used = frame;
 						return entry;
@@ -1012,6 +1035,13 @@ namespace Renderer
 				sc->id = t->id; sc->generation = t->generation;
 				sc->w = w; sc->h = h;
 				sc->u0 = u0; sc->u1 = u1; sc->t0 = t0; sc->t1 = t1;
+				sc->tint = tint; sc->saturation = saturation;
+				if (nearest)
+				{
+					sc->nearest = true;
+					sc->uFirst = near->uFirst; sc->du = near->du;
+					sc->vFirst = near->vFirst; sc->dvF = near->dvF;
+				}
 				sc->used = frame;
 				setGrid(*sc, t);
 
@@ -1040,6 +1070,17 @@ namespace Renderer
 			}
 
 			// row r of a scaled picture: kept, or sampled now (into the scratch's row)
+			// a sampled row desaturated and tinted as drawQuad's spans do a texel (Scaled::tint)
+			inline void finishScaledRow(const Scaled& sc, uint32_t* row, int columns)
+			{
+				if (sc.saturation != 256)
+					for (int i = 0; i < columns; i++)
+						row[i] = desaturate(row[i], sc.saturation);
+				if (sc.tint != 0xFFFFFFFF)
+					for (int i = 0; i < columns; i++)
+						row[i] = modulate(row[i], sc.tint);
+			}
+
 			const uint32_t* scaledRow(Scaled& sc, const Texture* t, int r, ScaledScratch& scratch)
 			{
 				const int columns = sc.w + 1;
@@ -1053,6 +1094,27 @@ namespace Renderer
 					// not sampled: this thread samples it (another sampling it now: sampled here too, not kept)
 					if (state == 0 && sc.state[r].compare_exchange_strong(state, 1, std::memory_order_acq_rel))
 						keep = row;
+				}
+
+				if (sc.nearest)
+				{
+					// the texel row and columns drawQuad's nearest sampling reads
+					if ((int)scratch.out.size() < columns)
+					{
+						// the three together: a smoothed picture's sampling resizes them when out is short
+						scratch.a.resize(columns); scratch.b.resize(columns); scratch.out.resize(columns);
+					}
+					scratch.owner = nullptr;
+					const int y = wrapCoord(toFixed(sc.vFirst + r * sc.dvF) >> 16, t->height, t->repeat); // as the rows path
+					const uint32_t* src = t->pixels.data() + (size_t)y * t->width;
+					uint32_t* out = keep ? keep : scratch.out.data();
+					const int32_t* x0s = sc.x0s.data();
+					for (int i = 0; i < columns; i++)
+						out[i] = src[x0s[i]];
+					finishScaledRow(sc, out, columns);
+					if (keep)
+						sc.state[r].store(2, std::memory_order_release);
+					return out;
 				}
 
 				if (scratch.owner != &sc || (int)scratch.out.size() < columns)
@@ -1082,6 +1144,7 @@ namespace Renderer
 				const uint32_t* bottom = rowOf(r1, r0);
 				uint32_t* out = keep ? keep : scratch.out.data();
 				lerpRows(out, top, bottom, ((uint32_t)v >> 8) & 0xFF, columns);
+				finishScaledRow(sc, out, columns);
 				if (keep)
 					sc.state[r].store(2, std::memory_order_release);
 				return out;
@@ -1612,12 +1675,36 @@ namespace Renderer
 			// a big picture scaled and smoothed (a quarter of the frame or more, by its own size, not the part
 			// drawn: the same choice in every band and part): its scaled picture, kept (Scaled)
 			std::shared_ptr<Scaled> scaled;
-			static const int scaledOn = getenv("ES_SOFT_SCALED_MB") == nullptr || atoi(getenv("ES_SOFT_SCALED_MB")) > 0 ? 1 : 0;
-			if (scaledOn && texMode == TEX_LINEAR && !state.texture->pixels.empty())
+			const int scaledWay = scaledMode();
+			if (scaledWay != SCALED_OFF && (texMode == TEX_LINEAR || (texMode == TEX_NEAREST && scaledWay == SCALED_ALL)) && !state.texture->pixels.empty())
 			{
 				const int sw = (int)std::lround(w), sh = (int)std::lround(h);
 				if (sw >= 8 && sh >= 8 && (int64_t)sw * sh * 4 >= (int64_t)mWidth * mHeight && (int64_t)(sw + 1) * (sh + 1) <= (int64_t)1 << 24)
-					scaled = scaledFor(state.texture, sw, sh, u0, u1, t0, t1);
+				{
+					// one colour of alpha 255 (or white) kept in its pixels, with the desaturation: drawn as they are
+					const bool tinted = scaledWay == SCALED_ALL && mod != MOD_VARY && (s.color >> 24) == 255;
+					const uint32_t tint = tinted && mod == MOD_CONST ? s.color : 0xFFFFFFFF;
+					const int saturation = tinted ? s.saturation : 256;
+					if (texMode == TEX_LINEAR)
+						scaled = scaledFor(state.texture, sw, sh, u0, u1, t0, t1, nullptr, tint, saturation);
+					else if (x0 == (float)qx0 && y0 == (float)qy0 && texelDu > 0)
+					{
+						// a picture made bigger, not smoothed, on whole pixels (Carbon's grid background): kept with
+						// the sampling below (sampled from the quad's first column), drawn 1:1 the next frames
+						Scaled near;
+						near.uFirst = toFixed(texelU0);
+						near.du = toFixed(texelDu);
+						near.vFirst = texelV0;
+						near.dvF = texelDv;
+						scaled = scaledFor(state.texture, sw, sh, u0, u1, t0, t1, &near, tint, saturation);
+					}
+					if (scaled && tinted)
+					{
+						mod = MOD_NONE;
+						s.saturation = 256;
+						s.color = 0xFFFFFFFF;
+					}
+				}
 			}
 
 			// a picture's flat part stretched (the middle of a frame drawn in nine parts, a white square): every
@@ -2313,6 +2400,25 @@ namespace Renderer
 				return;
 			texture.clearAt.swap(at);
 			texture.clear.swap(runs);
+		}
+
+		namespace
+		{
+			std::atomic<int>& scaledSwitch()
+			{
+				static std::atomic<int> on{ getenv("ES_SOFT_SCALED_MB") == nullptr || atoi(getenv("ES_SOFT_SCALED_MB")) > 0 ? SCALED_ALL : SCALED_OFF };
+				return on;
+			}
+		}
+
+		int scaledMode()
+		{
+			return scaledSwitch().load(std::memory_order_relaxed);
+		}
+
+		void setScaledMode(int mode)
+		{
+			scaledSwitch().store(mode);
 		}
 
 		void scaledFrame()

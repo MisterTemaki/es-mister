@@ -44,12 +44,32 @@ namespace Renderer
 		constexpr uint64_t kHashSeed = 1469598103934665603ULL;
 		constexpr uint64_t kHashPrime = 1099511628211ULL;
 
+		// FNV-1a over 32-bit words, four words at a time in four lanes of their own, then the lanes together:
+		// each step waits for the one before in its lane only (on the A9 a 64-bit step is several cycles of
+		// latency; one lane made hashing a frame's vertices 4% of the processor scrolling a grid)
 		inline uint64_t hashWords(uint64_t hash, const void* data, size_t bytes)
 		{
 			const uint32_t* words = (const uint32_t*)data;
-			for (size_t i = 0; i < bytes / 4; i++)
-				hash = (hash ^ words[i]) * kHashPrime;
-			return hash;
+			const size_t n = bytes / 4;
+			uint64_t h0 = hash, h1 = kHashSeed ^ 1, h2 = kHashSeed ^ 2, h3 = kHashSeed ^ 3;
+			size_t i = 0;
+			for (; i + 4 <= n; i += 4)
+			{
+				h0 = (h0 ^ words[i]) * kHashPrime;
+				h1 = (h1 ^ words[i + 1]) * kHashPrime;
+				h2 = (h2 ^ words[i + 2]) * kHashPrime;
+				h3 = (h3 ^ words[i + 3]) * kHashPrime;
+			}
+			for (; i < n; i++)
+				h0 = (h0 ^ words[i]) * kHashPrime;
+			if (n < 4)
+				return h0;
+			h0 = (h0 ^ (uint32_t)h1) * kHashPrime;
+			h0 = (h0 ^ (uint32_t)(h1 >> 32)) * kHashPrime;
+			h0 = (h0 ^ (uint32_t)h2) * kHashPrime;
+			h0 = (h0 ^ (uint32_t)(h2 >> 32)) * kHashPrime;
+			h0 = (h0 ^ (uint32_t)h3) * kHashPrime;
+			return (h0 ^ (uint32_t)(h3 >> 32)) * kHashPrime;
 		}
 
 		inline uint64_t hashValue(uint64_t hash, uint64_t value)
@@ -302,16 +322,17 @@ namespace Renderer
 			command.texture = stencil ? nullptr : texture;
 
 			const float* m = s.m;
+			s.vertices.resize(s.vertices.size() + count); // grows as push_back does, without a check a vertex
+			SVertex* out = s.vertices.data() + command.first;
 			for (unsigned int i = 0; i < count; i++)
 			{
 				const Vertex& v = vertices[i];
-				SVertex sv;
+				SVertex& sv = out[i];
 				sv.x = m[0] * v.pos.x() + m[1] * v.pos.y() + m[2];
 				sv.y = m[3] * v.pos.x() + m[4] * v.pos.y() + m[5];
 				sv.u = v.tex.x();
 				sv.v = v.tex.y();
 				sv.color = toArgb(v.col);
-				s.vertices.push_back(sv);
 			}
 
 			uint64_t h = kHashSeed;

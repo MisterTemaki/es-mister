@@ -652,3 +652,115 @@ TEST(layers_drawn_together_leave_the_same_pixels)
 	CHECK_EQ(outside, 0);
 	CHECK(together * 4 >= scenes); // the runs were drawn together in many scenes, not left to draw
 }
+
+// Big pictures scaled and kept the new ways (made bigger and not smoothed, on whole pixels; a constant colour
+// of alpha 255 and the desaturation kept in their pixels) give the pixels they gave before: those sampled each
+// time (a nearest one) or kept smoothed and tinted when drawn (SCALED_SMOOTHED). Drawn the old way, then the
+// new twice (the second from what was kept), one by one and together with a colour under them (drawLayers),
+// at whole or fractional positions, tinted any way, desaturated, blended any way, scissored.
+TEST(scaled_pictures_kept_leave_the_pixels_sampled)
+{
+	const int scenes = getenv("RASTER_SCENES") ? atoi(getenv("RASTER_SCENES")) : 3000;
+	int differing = 0, kept = 0;
+	for (int i = 0; i < scenes; i++)
+	{
+		Random r(0x5ca1e000u + (uint32_t)i);
+		const int W = r.range(24, 320), H = r.range(16, 200);
+		std::unique_ptr<Texture> texture = makeTexture(r);
+		Texture* t = texture.get();
+		t->linear = r.chance(50);
+
+		auto quad = [](float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, uint32_t c)
+		{
+			return std::vector<SVertex>{ { x0, y0, u0, v0, c }, { x0, y1, u0, v1, c }, { x1, y0, u1, v0, c }, { x1, y1, u1, v1, c } };
+		};
+		const bool whole = r.chance(70);
+		float w = r.real(W * 0.5f, W * 1.3f), h = r.real(H * 0.5f, H * 1.3f);
+		float x0 = r.coord(-w / 4, W - w / 2), y0 = r.coord(-h / 4, H - h / 2);
+		if (whole)
+		{
+			x0 = std::floor(x0); y0 = std::floor(y0);
+			if (r.chance(60)) { w = std::floor(w); h = std::floor(h); }
+		}
+		float u0 = 0, u1 = 1, v0 = 0, v1 = 1;
+		switch (r.range(0, 4))
+		{
+		case 1: v0 = 1; v1 = 0; break;                                            // uploaded bottom up
+		case 2: u0 = r.real(0.0f, 0.4f); u1 = r.real(0.6f, 1.0f); v0 = r.real(0.0f, 0.4f); v1 = r.real(0.6f, 1.0f); break; // a part
+		case 3: u0 = r.real(-1, 1); u1 = r.real(-1, 3); v0 = r.real(-1, 1); v1 = r.real(-1, 3); break; // repeated
+		default: break;
+		}
+		uint32_t c;
+		switch (r.range(0, 4))
+		{
+		case 0: c = 0xFFFFFFFFu; break;
+		case 1: c = 0xFF000000u | (uint32_t)r.range(0, 0xFFFFFF); break; // a colour of alpha 255 (kept in the pixels)
+		case 2: c = 0xFF000000u | (uint32_t)r.range(0, 0x3F3F3F); break; // dark, as Carbon's grid background
+		case 3: c = ((uint32_t)r.range(1, 254) << 24) | 0x00FFFFFFu; break; // faded
+		default: c = r.color(); break;
+		}
+		std::vector<SVertex> picture = quad(x0, y0, x0 + w, y0 + h, u0, v0, u1, v1, c);
+		if (r.chance(10))
+			picture[1].color = picture[3].color = r.color(); // a gradient
+		DrawState state;
+		state.texture = t;
+		if (r.chance(20))
+			state.saturation = r.chance(50) ? 0.0f : r.real(0, 1);
+		if (r.chance(15))
+		{
+			state.srcBlend = 1; state.dstBlend = 5;
+		}
+		if (r.chance(20))
+		{
+			state.scissor = true;
+			state.sx0 = r.range(0, W / 2); state.sy0 = r.range(0, H / 2);
+			state.sx1 = r.range(W / 2, W); state.sy1 = r.range(H / 2, H);
+		}
+		const std::vector<SVertex> under = quad(-5, -5, W + 5.0f, H + 5.0f, 0, 0, 0, 0, 0xFF000000u | (uint32_t)r.range(0, 0xFFFFFF));
+		DrawState underState;
+
+		Raster owner, band;
+		owner.resize(W, H);
+		band.attach(owner, 0, H);
+		auto drawn = [&](int mode, bool together)
+		{
+			setScaledMode(mode);
+			std::fill(owner.pixels(), owner.pixels() + (size_t)W * H, 0xDEADBEEFu);
+			const Bounds part = { 0, 0, W, H };
+			LayerDraw run[2];
+			run[0].vertices = under.data(); run[0].count = 4; run[0].state = underState;
+			run[1].vertices = picture.data(); run[1].count = 4; run[1].state = state;
+			if (!together || band.drawLayers(run, 2, &part) < 2)
+			{
+				band.clearBox(0, 0, W, H, 0);
+				band.draw(under.data(), 4, Topology::Strip, underState);
+				band.draw(picture.data(), 4, Topology::Strip, state);
+			}
+			scaledFrame();
+			return std::vector<uint32_t>(owner.pixels(), owner.pixels() + (size_t)W * H);
+		};
+
+		const std::vector<uint32_t> expected = drawn(SCALED_SMOOTHED, false);
+		const size_t before = scaledBytes();
+		const std::vector<uint32_t> got[4] = { drawn(SCALED_ALL, false), drawn(SCALED_ALL, false), drawn(SCALED_ALL, true), drawn(SCALED_ALL, true) };
+		if (scaledBytes() > before)
+			kept++;
+		for (int g = 0; g < 4; g++)
+			if (got[g] != expected)
+			{
+				size_t at = 0;
+				while (got[g][at] == expected[at])
+					at++;
+				if (differing < (getenv("RASTER_SHOW") ? atoi(getenv("RASTER_SHOW")) : 5))
+					fprintf(stderr, "  scene %d (%dx%d, %s, quad %g,%g %gx%g, uv %g,%g-%g,%g, sat %g, colour %08x, way %d): pixel %d,%d is %08x before, %08x now\n", i, W, H,
+						t->linear ? "smoothed" : "nearest", x0, y0, w, h, u0, v0, u1, v1, state.saturation, c, g, (int)(at % W), (int)(at / W), expected[at], got[g][at]);
+				differing++;
+				break;
+			}
+	}
+	setScaledMode(SCALED_ALL);
+	if (getenv("RASTER_HASH") != nullptr)
+		printf("  %d of %d scenes kept a scaled picture the new way\n", kept, scenes);
+	CHECK_EQ(differing, 0);
+	CHECK(kept * 5 >= scenes); // many scenes used the cache
+}
