@@ -25,6 +25,28 @@ namespace Renderer
 				F_DST_COLOR = 6, F_ONE_MINUS_DST_COLOR = 7, F_DST_ALPHA = 8, F_ONE_MINUS_DST_ALPHA = 9
 			};
 
+			// (int)std::floor(f) and (int)std::ceil(f), the same for every value, without the library call: the A9 has no
+			// rounding instruction, and floorf/ceilf move the value to the ARM registers and back. The conversion
+			// truncates toward zero, one step down (up) when that was above (below) the value. Out of the int's range,
+			// and NaN, as before.
+			template<typename F>
+			inline int floorInt(F f)
+			{
+				if (!(f > (F)-2147483648.0 && f < (F)2147483648.0))
+					return (int)std::floor(f);
+				const int t = (int)f;
+				return (F)t > f ? t - 1 : t;
+			}
+
+			template<typename F>
+			inline int ceilInt(F f)
+			{
+				if (!(f > (F)-2147483648.0 && f < (F)2147483648.0))
+					return (int)std::ceil(f);
+				const int t = (int)f;
+				return (F)t < f ? t + 1 : t;
+			}
+
 			enum TexMode { TEX_NONE = 0, TEX_NEAREST = 1, TEX_LINEAR = 2, TEX_DIRECT = 3 };
 			enum ModMode { MOD_NONE = 0, MOD_CONST = 1, MOD_VARY = 2 };
 			enum BlendMode { BLEND_NORMAL = 0, BLEND_ADD = 1, BLEND_GENERIC = 2 };
@@ -223,6 +245,8 @@ namespace Renderer
 			{
 				if (repeat)
 				{
+					if ((unsigned)x < (unsigned)size)
+						return x; // inside the texture: no division (the A9 divides in software)
 					x %= size;
 					return x < 0 ? x + size : x;
 				}
@@ -877,7 +901,7 @@ namespace Renderer
 				const float f = v * 65536.0f;
 				if (f > 2.0e9f) return 2000000000;
 				if (f < -2.0e9f) return -2000000000;
-				return (int)std::floor(f);
+				return floorInt(f);
 			}
 
 			// Whether every texel a quad samples (columns from u, rows from v, as the samplers step them; the
@@ -1086,8 +1110,8 @@ namespace Renderer
 				if (v2->y < v1->y) std::swap(v1, v2);
 				if (v1->y < v0->y) std::swap(v0, v1);
 
-				const int yStart = std::max(cy0, (int)std::ceil(v0->y - 0.5f));
-				const int yEnd = std::min(cy1, (int)std::ceil(v2->y - 0.5f));
+				const int yStart = std::max(cy0, ceilInt(v0->y - 0.5f));
+				const int yEnd = std::min(cy1, ceilInt(v2->y - 0.5f));
 				if (yStart >= yEnd)
 					return;
 
@@ -1113,9 +1137,9 @@ namespace Renderer
 					}
 
 					const float left = std::min(xl, xs), right = std::max(xl, xs);
-					const int first = (int)std::ceil(left - 0.5f); // the row's first column, before the clip
+					const int first = ceilInt(left - 0.5f); // the row's first column, before the clip
 					const int x0 = std::max(cx0, first);
-					const int x1 = std::min(cx1, (int)std::ceil(right - 0.5f));
+					const int x1 = std::min(cx1, ceilInt(right - 0.5f));
 					if (x0 < x1)
 						f(y, x0, x1, first);
 				}
@@ -1150,8 +1174,8 @@ namespace Renderer
 			// the whole part: its scissor, and the pixels whose centres it covers (drawQuad's)
 			if (!state.scissor || state.sx0 > part.x0 || state.sy0 > part.y0 || state.sx1 < part.x1 || state.sy1 < part.y1)
 				return false;
-			return (int)std::ceil(x0 - 0.5f) <= part.x0 && (int)std::ceil(x1 - 0.5f) >= part.x1 &&
-				(int)std::ceil(y0 - 0.5f) <= part.y0 && (int)std::ceil(y1 - 0.5f) >= part.y1;
+			return ceilInt(x0 - 0.5f) <= part.x0 && ceilInt(x1 - 0.5f) >= part.x1 &&
+				ceilInt(y0 - 0.5f) <= part.y0 && ceilInt(y1 - 0.5f) >= part.y1;
 		}
 
 		bool layersOn()
@@ -1272,7 +1296,7 @@ namespace Renderer
 						rowsAt[l] = scaledRow(*L.scaled, L.texture, std::min(y - L.qy0, L.scaled->h), scratches[l]) + L.c0;
 					else if (L.kind == Layer::ROWS)
 					{
-						const int vy = (int)std::floor(L.v0 + (y - L.qy0) * L.dv);
+						const int vy = floorInt(L.v0 + (y - L.qy0) * L.dv);
 						rowsAt[l] = L.texture->pixels.data() + (size_t)vy * L.texture->width + L.ux;
 						if (!L.texture->clearAt.empty())
 						{
@@ -1498,12 +1522,12 @@ namespace Renderer
 
 			// its first row and column, unclipped: texels and colours count from them, so a pixel is the same
 			// whatever clips the quad (a band's rows, a scissor, the part of the frame drawn again)
-			const int qy0 = (int)std::ceil(y0 - 0.5f);
-			const int qx0 = (int)std::ceil(x0 - 0.5f);
+			const int qy0 = ceilInt(y0 - 0.5f);
+			const int qx0 = ceilInt(x0 - 0.5f);
 			const int px0 = std::max(clip.x0, qx0);
-			const int px1 = std::min(clip.x1, (int)std::ceil(x1 - 0.5f));
+			const int px1 = std::min(clip.x1, ceilInt(x1 - 0.5f));
 			const int py0 = std::max(clip.y0, qy0);
-			const int py1 = std::min(clip.y1, (int)std::ceil(y1 - 0.5f));
+			const int py1 = std::min(clip.y1, ceilInt(y1 - 0.5f));
 			if (px0 >= px1 || py0 >= py1)
 				return;
 
@@ -1547,10 +1571,10 @@ namespace Renderer
 					texelDv = texelDv > 0 ? 1.0f : -1.0f;
 					// runs of a texture row read straight, left to right, with no wrapping (the rows may go either way:
 					// images are uploaded bottom up)
-					const int ux = (int)std::floor(texelU0) + skip;
+					const int ux = floorInt(texelU0) + skip;
 					const int ulast = ux + (px1 - px0 - 1);
-					const int vfirst = (int)std::floor(texelV0 + (py0 - qy0) * texelDv);
-					const int vlast = (int)std::floor(texelV0 + (py1 - 1 - qy0) * texelDv);
+					const int vfirst = floorInt(texelV0 + (py0 - qy0) * texelDv);
+					const int vlast = floorInt(texelV0 + (py1 - 1 - qy0) * texelDv);
 					if (texelDu > 0 && ux >= 0 && ulast < t->width && std::min(vfirst, vlast) >= 0 && std::max(vfirst, vlast) < t->height)
 						texMode = TEX_DIRECT;
 				}
@@ -1567,7 +1591,7 @@ namespace Renderer
 			const int du = toFixed(texelDu);
 			// the first drawn column's texel, in 16.16: the quad's first, and a step a column skipped
 			const int uStart = (int)((int64_t)toFixed(texelU0) + (int64_t)skip * du);
-			const int uxStart = (int)std::floor(texelU0) + skip; // the same, 1:1
+			const int uxStart = floorInt(texelU0) + skip; // the same, 1:1
 
 			// An opaque picture tinted black (a shade over the screen, Carbon's grid): every texel times the
 			// tint is the tint's alpha and black (an opaque texel's alpha is 255, x * 255 / 255 is x, and its
@@ -1677,7 +1701,7 @@ namespace Renderer
 				const int ux = uxStart;
 				for (int y = py0; y < py1; y++)
 				{
-					const int vy = (int)std::floor(texelV0 + (y - qy0) * texelDv);
+					const int vy = floorInt(texelV0 + (y - qy0) * texelDv);
 					copyPixels(mPx + (size_t)y * mWidth + px0, tex.px + (size_t)vy * tex.w + ux, px1 - px0);
 				}
 				mStats.pixels += (uint64_t)(px1 - px0) * (py1 - py0);
@@ -2008,7 +2032,7 @@ namespace Renderer
 				uint64_t drawn = 0;
 				for (int y = py0; y < py1; y++)
 				{
-					const int vy = (int)std::floor(texelV0 + (y - qy0) * texelDv);
+					const int vy = floorInt(texelV0 + (y - qy0) * texelDv);
 					const size_t offset = (size_t)y * mWidth + px0;
 					s.v = vy << 16;
 					s.du = du;
@@ -2053,7 +2077,7 @@ namespace Renderer
 					if (texMode == TEX_DIRECT)
 					{
 						s.u = uxStart << 16;
-						s.v = (int)std::floor(tv) << 16;
+						s.v = floorInt(tv) << 16;
 					}
 				}
 
@@ -2168,7 +2192,7 @@ namespace Renderer
 		void Raster::drawLine(const SVertex& a, const SVertex& b, const DrawState& state, const Clip& clip)
 		{
 			const float dx = b.x - a.x, dy = b.y - a.y;
-			const int steps = (int)std::ceil(std::max(std::fabs(dx), std::fabs(dy)));
+			const int steps = ceilInt(std::max(std::fabs(dx), std::fabs(dy)));
 			if (steps <= 0)
 				return;
 
@@ -2177,8 +2201,8 @@ namespace Renderer
 			for (int i = 0; i < steps; i++)
 			{
 				const float t = (i + 0.5f) / steps;
-				const int x = (int)std::floor(a.x + dx * t);
-				const int y = (int)std::floor(a.y + dy * t);
+				const int x = floorInt(a.x + dx * t);
+				const int y = floorInt(a.y + dy * t);
 				if (x < clip.x0 || x >= clip.x1 || y < clip.y0 || y >= clip.y1)
 					continue;
 				const size_t offset = (size_t)y * mWidth + x;
@@ -2234,10 +2258,10 @@ namespace Renderer
 			{
 				const int margin = topology == Topology::Lines ? 2 : 1;
 				auto limit = [](float value, int size) { return std::max(-8.0f, std::min((float)size + 8.0f, value)); };
-				box.x0 = std::max(box.x0, (int)std::floor(limit(x0, width)) - margin);
-				box.y0 = std::max(box.y0, (int)std::floor(limit(y0, height)) - margin);
-				box.x1 = std::min(box.x1, (int)std::ceil(limit(x1, width)) + margin);
-				box.y1 = std::min(box.y1, (int)std::ceil(limit(y1, height)) + margin);
+				box.x0 = std::max(box.x0, floorInt(limit(x0, width)) - margin);
+				box.y0 = std::max(box.y0, floorInt(limit(y0, height)) - margin);
+				box.x1 = std::min(box.x1, ceilInt(limit(x1, width)) + margin);
+				box.y1 = std::min(box.y1, ceilInt(limit(y1, height)) + margin);
 			}
 			if (state.scissor)
 			{
