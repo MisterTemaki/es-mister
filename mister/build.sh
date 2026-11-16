@@ -68,6 +68,9 @@ sources() {
 	fetch alsa-lib https://github.com/alsa-project/alsa-lib.git v1.2.16.1
 	fetch SDL2 https://github.com/libsdl-org/SDL.git release-2.32.10
 	fetch SDL2_mixer https://github.com/libsdl-org/SDL_mixer.git release-2.8.2
+	fetch mbedtls https://github.com/Mbed-TLS/mbedtls.git mbedtls-3.6.7
+	# its build files are in a submodule
+	[ -f "$SRC/mbedtls/framework/CMakeLists.txt" ] || git -C "$SRC/mbedtls" submodule update -q --init --depth 1
 	fetch curl https://github.com/curl/curl.git curl-8_19_0
 	fetch rapidjson https://github.com/Tencent/rapidjson.git master
 	fetch vlc https://github.com/videolan/vlc.git 3.0.21
@@ -134,11 +137,24 @@ deps() {
 			-DSDL2MIXER_VORBIS=STB -DSDL2MIXER_WAVE=ON -DSDL2MIXER_WAVPACK=OFF -DSDL2MIXER_INSTALL=ON
 	fi
 
-	if [ ! -f "$PREFIX/lib/libcurl.a" ]; then
+	if [ ! -f "$PREFIX/lib/libmbedtls.a" ]; then
+		echo "== mbedtls"
+		# TLS for curl (HTTPS: the scrapers, theme downloads), small and static; its generated files come with
+		# the release, so no Python is needed
+		cmake_dep "$SRC/mbedtls" "$WORK/obj/mbedtls" -DENABLE_PROGRAMS=OFF -DENABLE_TESTING=OFF -DGEN_FILES=OFF \
+			-DUSE_SHARED_MBEDTLS_LIBRARY=OFF -DUSE_STATIC_MBEDTLS_LIBRARY=ON -DMBEDTLS_FATAL_WARNINGS=OFF
+	fi
+
+	# built again when it was built without TLS (HTTP only, before)
+	if [ ! -f "$PREFIX/lib/libcurl.a" ] || ! grep -q "define USE_MBEDTLS 1" "$WORK/obj/curl/lib/curl_config.h" 2>/dev/null; then
 		echo "== curl"
-		# HTTP only for now: HTTPS (the scrapers, theme downloads) comes with a TLS library later
+		# HTTPS with mbedtls. The certificates: the MiSTer's (ES itself does not check them, as Batocera's)
 		cmake_dep "$SRC/curl" "$WORK/obj/curl" -DBUILD_CURL_EXE=OFF -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF \
-			-DCURL_ENABLE_SSL=OFF -DCURL_USE_LIBPSL=OFF -DCURL_USE_LIBSSH2=OFF -DUSE_NGHTTP2=OFF -DUSE_LIBIDN2=OFF \
+			-DCURL_ENABLE_SSL=ON -DCURL_USE_MBEDTLS=ON -DCURL_USE_OPENSSL=OFF \
+			-DMBEDTLS_INCLUDE_DIR="$PREFIX/include" -DMBEDTLS_LIBRARY="$PREFIX/lib/libmbedtls.a" \
+			-DMBEDX509_LIBRARY="$PREFIX/lib/libmbedx509.a" -DMBEDCRYPTO_LIBRARY="$PREFIX/lib/libmbedcrypto.a" \
+			-DCURL_CA_BUNDLE=/etc/ssl/cert.pem -DCURL_CA_PATH=none -DCURL_CA_FALLBACK=OFF \
+			-DCURL_USE_LIBPSL=OFF -DCURL_USE_LIBSSH2=OFF -DUSE_NGHTTP2=OFF -DUSE_LIBIDN2=OFF \
 			-DCURL_BROTLI=OFF -DCURL_ZSTD=OFF -DCURL_ZLIB=OFF -DCURL_DISABLE_LDAP=ON -DENABLE_CURL_MANUAL=OFF \
 			-DBUILD_LIBCURL_DOCS=OFF -DBUILD_MISC_DOCS=OFF -DCURL_USE_PKGCONFIG=OFF
 	fi
@@ -166,13 +182,21 @@ es() {
 	local build=$WORK/obj/es
 	# the static libraries in the order they need each other
 	local sdl="$PREFIX/lib/libSDL2.a;$PREFIX/lib/libasound.a;m;pthread"
+	local curl="$PREFIX/lib/libcurl.a;$PREFIX/lib/libmbedtls.a;$PREFIX/lib/libmbedx509.a;$PREFIX/lib/libmbedcrypto.a"
+	# the scrapers' keys, when given (Batocera puts its own in at build time; without them ES has only the
+	# scrapers that need none or the user's own: IGDB, with a Twitch client ID and secret, and ArcadeDB):
+	# SCREENSCRAPER_DEV_LOGIN="devid=...&devpassword=...", GAMESDB_APIKEY=..., HFS_DEV_LOGIN=...
+	local keys=()
+	[ -n "${SCREENSCRAPER_DEV_LOGIN:-}" ] && keys+=("-DSCREENSCRAPER_DEV_LOGIN=$SCREENSCRAPER_DEV_LOGIN")
+	[ -n "${GAMESDB_APIKEY:-}" ] && keys+=("-DGAMESDB_APIKEY=$GAMESDB_APIKEY")
+	[ -n "${HFS_DEV_LOGIN:-}" ] && keys+=("-DHFS_DEV_LOGIN=$HFS_DEV_LOGIN")
 	cmake -S "$ROOT" -B "$build" -G Ninja -DCMAKE_TOOLCHAIN_FILE="$TOOLS/armhf.cmake" -DCMAKE_BUILD_TYPE=Release \
 		-DMISTER=ON -DCEC=OFF -DENABLE_PULSE=OFF \
 		-DCMAKE_EXE_LINKER_FLAGS="-static" \
 		-DSDL2_INCLUDE_DIR="$PREFIX/include/SDL2" -DSDL2_LIBRARY="$sdl" \
 		-DSDLMIXER_INCLUDE_DIR="$PREFIX/include/SDL2" -DSDLMIXER_LIBRARY="$PREFIX/lib/libSDL2_mixer.a" \
 		-DFREETYPE_INCLUDE_DIRS="$PREFIX/include/freetype2" -DFREETYPE_LIBRARY="$PREFIX/lib/libfreetype.a" \
-		-DCURL_INCLUDE_DIR="$PREFIX/include" -DCURL_LIBRARY="$PREFIX/lib/libcurl.a" \
+		-DCURL_INCLUDE_DIR="$PREFIX/include" -DCURL_LIBRARY="$curl" "${keys[@]}" \
 		-DALSA_INCLUDE_DIR="$PREFIX/include" -DALSA_LIBRARY="$PREFIX/lib/libasound.a" \
 		-DRAPIDJSON_INCLUDE_DIRS="$PREFIX/include" -DVLC_INCLUDE_DIR="$PREFIX/include" \
 		-DUDEV_FOUND=OFF >/dev/null
