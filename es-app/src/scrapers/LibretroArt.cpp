@@ -126,7 +126,7 @@ namespace LibretroArt
 		mIndex.reset();
 	}
 
-	std::string Names::resolve(const std::string& name, const std::string& region) const
+	std::string Names::resolve(const std::string& name, const std::string& region, bool whole) const
 	{
 		if (mList.empty() || name.empty())
 			return std::string();
@@ -136,7 +136,7 @@ namespace LibretroArt
 			mIndex.reset(new LibretroArtMatch::Index);
 			LibretroArtMatch::Build(*mIndex, mList);
 		}
-		return LibretroArtMatch::Resolve(*mIndex, name, regionOfSetting(region));
+		return LibretroArtMatch::Resolve(*mIndex, name, regionOfSetting(region), false, whole);
 	}
 
 	// DbTable ------------------------------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ namespace LibretroArt
 		}
 		for (const std::string& name : names)
 		{
-			const std::string found = mNames.resolve(name, "");
+			const std::string found = mNames.resolve(name, "", true);
 			auto it = mByName.find(found);
 			if (it != mByName.end())
 				return &mRows[it->second];

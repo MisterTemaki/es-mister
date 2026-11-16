@@ -70,6 +70,8 @@ TEST(rom_hack_suffixes_leave_the_game_title)
 	CHECK_EQ(LibretroArtMatch::Parse("Gradius III - SA-1").title, std::string("Gradius III"));
 	CHECK_EQ(LibretroArtMatch::Parse("Final Fight 3 Optimized Fastrom").title, std::string("Final Fight 3"));
 	CHECK_EQ(LibretroArtMatch::Parse("Adventures of Kid Kleets, The (U) - Fastrom - Camera Fix").title, std::string("Adventures of Kid Kleets, The"));
+	CHECK_EQ(LibretroArtMatch::Parse("Gundam Wing - Endless Duel - Fastrom & Flash Reduction 1.0").title, std::string("Gundam Wing - Endless Duel"));
+	CHECK_EQ(LibretroArtMatch::Parse("Contra III - The Alien Wars SA-1").title, std::string("Contra III - The Alien Wars"));
 	// a title's own words stay
 	CHECK_EQ(LibretroArtMatch::Parse("Mega Man X (USA)").title, std::string("Mega Man X"));
 	CHECK_EQ(LibretroArtMatch::Parse("Street Fighter II - The World Warrior (USA)").title, std::string("Street Fighter II - The World Warrior"));
@@ -219,6 +221,12 @@ TEST(database_rows_are_found_by_crc_or_name)
 	row = db.find({ 0x12345678 }, { "Kaizo Mario World (Hack) - Fastrom" });
 	CHECK(row != nullptr && row->name == "Kaizo Mario World");
 	CHECK(db.find({ 0x12345678 }, { "Super Mario World (US)" }) == nullptr);
+
+	// a variant is not the game: the whole title must fit
+	DbTable variants;
+	variants.parse("Chrono Trigger - Trial Version\th17C9F363AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\t17C9F363\n");
+	CHECK(variants.find({}, { "Chrono Trigger (USA)" }) == nullptr);
+	CHECK(variants.find({}, { "Chrono Trigger - Trial Version (Japan)" }) != nullptr);
 }
 
 TEST(systems_are_found_by_name_platform_and_extension)

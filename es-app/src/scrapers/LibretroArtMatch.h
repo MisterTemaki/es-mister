@@ -198,21 +198,24 @@ inline Parsed Parse(const std::string& name)
             if (w == h) return true;
         return (w.size() >= 4 && w[0] == 't' && (w[1] == '+' || w[1] == '-')) || IsVersion(w);
     };
+    // A part after " - " goes whole when it starts with such a word or is two words at most ("- Fastrom v1.1",
+    // "- Camera Fix"); otherwise only such words at its end ("Contra III - The Alien Wars SA-1").
     for (bool cut = true; cut && words.size() > 1;)
     {
         cut = false;
         size_t dash = words.size();
         while (dash > 0 && words[dash - 1] != "-") --dash;
-        if (dash > 1)
+        bool any = false;
+        for (size_t i = dash; i < words.size() && !any; ++i) any = hackWord(words[i]);
+        if (dash > 1 && dash < words.size() && any && (hackWord(words[dash]) || words.size() - dash <= 2))
         {
-            for (size_t i = dash; i < words.size() && !cut; ++i) cut = hackWord(words[i]);
-            if (cut) { words.resize(dash - 1); out.translated = true; }
+            words.resize(dash - 1);
+            out.translated = cut = true;
         }
         else if (hackWord(words.back()) && words.size() > 2)
         {
             words.pop_back();
-            out.translated = true;
-            cut = true;
+            out.translated = cut = true;
         }
     }
     for (size_t i = 0; i < words.size(); ++i) out.title += (i ? " " : "") + words[i];
@@ -599,7 +602,9 @@ inline int UsaOfTwo(const Index& ix, const std::vector<std::pair<int, double>>& 
 // The art name of the game this file name means, or "" when it cannot be told from others.
 // region_hint: the region to prefer when the name carries none.
 // usa_on_tie: when games fit equally well, take the USA one of two games that share a main title (UsaOfTwo), instead of none.
-inline std::string Resolve(const Index& ix, const std::string& requested, const std::string& region_hint = "", bool usa_on_tie = false)
+// whole_title: the whole title must fit (not only its main part before " - "), for lists of variants and hacks.
+inline std::string Resolve(const Index& ix, const std::string& requested, const std::string& region_hint = "", bool usa_on_tie = false,
+                           bool whole_title = false)
 {
     Parsed q = Parse(requested);
     if (q.region.empty()) q.region = region_hint;
@@ -639,13 +644,13 @@ inline std::string Resolve(const Index& ix, const std::string& requested, const 
     for (int k : candidates)
     {
         const Entry& e = ix.entries[size_t(k)];
-        const double f = Score(ix, words, head, e);
+        const double f = whole_title ? Fit(ix, words, e.all) : Score(ix, words, head, e);
         scored.emplace_back(k, f);
         if (f > best_fit) { second_fit = best_fit; best_fit = f; best = k; }
         else if (f > second_fit) second_fit = f;
         // what the whole query says, apart from the main-title tiers: a game that explains all of it comes first
         // ("Front Mission - Gun Hazard" is "Front Mission Series - Gun Hazard", not the "Front Mission" its head names)
-        const double w = std::max(Fit(ix, words, e.all), Fit(ix, words, e.head));
+        const double w = whole_title ? f : std::max(Fit(ix, words, e.all), Fit(ix, words, e.head));
         if (w > whole_fit) { second_whole = whole_fit; whole_fit = w; whole = k; }
         else if (w > second_whole) second_whole = w;
     }

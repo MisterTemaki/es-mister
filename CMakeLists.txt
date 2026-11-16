@@ -623,6 +623,15 @@ if(MISTER)
   target_include_directories(es-mister-tests PRIVATE ${COMMON_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/mister/tests ${CMAKE_CURRENT_SOURCE_DIR}/es-app/src)
   target_link_libraries(es-mister-tests es-core ${COMMON_LIBRARIES})
 
+  # what the Libretro-thumbnails scraper picks for each game of a folder (mister/tests/libretro-probe.cpp)
+  add_executable(es-mister-libretro-probe EXCLUDE_FROM_ALL
+    mister/tests/libretro-probe.cpp
+    mister/tests/ApiSystemStub.cpp
+    es-app/src/scrapers/LibretroArt.cpp
+  )
+  target_include_directories(es-mister-libretro-probe PRIVATE ${COMMON_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/es-app/src)
+  target_link_libraries(es-mister-libretro-probe es-core ${COMMON_LIBRARIES})
+
   # frames captured from the renderer drawn again, timed, with a hash of their pixels (mister/tests/replay.cpp)
   add_executable(es-mister-replay EXCLUDE_FROM_ALL
     mister/tests/replay.cpp

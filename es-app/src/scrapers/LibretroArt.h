@@ -53,8 +53,9 @@ namespace LibretroArt
 		size_t size() const { return mList.size(); }
 		const std::vector<std::string>& list() const { return mList; }
 
-		// the name of the list's that means the same game as name, or "" (LibretroArtMatch::Resolve)
-		std::string resolve(const std::string& name, const std::string& region) const;
+		// the name of the list's that means the same game as name, or "" (LibretroArtMatch::Resolve); whole: by the
+		// whole title, not by its main part before " - " (a list of variants and hacks)
+		std::string resolve(const std::string& name, const std::string& region, bool whole = false) const;
 
 	private:
 		std::vector<std::string> mList;
