@@ -1,5 +1,12 @@
 #include "resources/Font.h"
 
+#include <mutex>
+#ifdef MISTER
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
 #include "renderers/Renderer.h"
 #include "utils/FileSystemUtil.h"
 #include "utils/StringUtil.h"
@@ -47,14 +54,55 @@ Font::FontFace::FontFace(ResourceData&& d, int size) : data(d)
 		face = nullptr;
 }
 
-Font::FontFace::FontFace(const std::string& file, int size) : data({ nullptr, 0 })
+#ifdef MISTER
+namespace
 {
-	int err = FT_New_Face(sLibrary, file.c_str(), 0, &face);
-	if (!err)
+	// A font file read by FreeType through pread: the parts it asks for, nothing kept open in memory. Not a
+	// mapping: a file written over while ES runs (an update copied over the install) makes a read fail, where
+	// a mapped page would stop ES (SIGBUS).
+	unsigned long readFontFile(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count)
+	{
+		if (count == 0)
+			return offset > stream->size ? 1 : 0; // a seek: 0 when it is in the file
+		const ssize_t got = pread((int)stream->descriptor.value, buffer, count, (off_t)offset);
+		return got < 0 ? 0 : (unsigned long)got;
+	}
+
+	void closeFontFile(FT_Stream stream)
+	{
+		close((int)stream->descriptor.value);
+		delete stream;
+	}
+}
+
+Font::FontFace::FontFace(const std::string& file, int size) : data({ nullptr, 0 }), face(nullptr)
+{
+	const int fd = open(file.c_str(), O_RDONLY | O_CLOEXEC);
+	struct stat st;
+	if (fd < 0)
+		return;
+	if (fstat(fd, &st) != 0 || st.st_size <= 0)
+	{
+		close(fd);
+		return;
+	}
+
+	FT_Stream stream = new FT_StreamRec();
+	stream->size = (unsigned long)st.st_size;
+	stream->descriptor.value = fd;
+	stream->read = &readFontFile;
+	stream->close = &closeFontFile;
+
+	FT_Open_Args args = {};
+	args.flags = FT_OPEN_STREAM;
+	args.stream = stream;
+	// FreeType closes the stream (closeFontFile) with the face, or at once when it cannot open one
+	if (FT_Open_Face(sLibrary, &args, 0, &face) == 0)
 		FT_Set_Pixel_Sizes(face, 0, size);
 	else
 		face = nullptr;
 }
+#endif
 
 Font::FontFace::~FontFace()
 {
@@ -318,6 +366,14 @@ std::vector<std::string> getFallbackFontPaths()
 static std::map<std::string, ResourceData> globalTTFCache;
 #endif
 
+// Whether fallback font i (1: the first) has a character: its file's character map, the same at any size
+// and for any font, asked once each. A new font renders its ASCII glyphs at once, DEL (127) among them,
+// which no font has: each new font read all the fallback fonts (8 MB, CJK) to find that out, ~50 MB to
+// enter a system on the MiSTer (0.5 s of its 0.7 s), over 100 MB at ES's start. A character known not to
+// be in a fallback font skips it, unread: the same face is found, so the same glyph drawn.
+static std::mutex sFallbackHasLock;
+static std::map<std::pair<unsigned int, unsigned int>, bool> sFallbackHas;
+
 FT_Face Font::getFaceForChar(unsigned int id)
 {
 	static const std::vector<std::string> fallbackFonts = getFallbackFontPaths();
@@ -325,6 +381,14 @@ FT_Face Font::getFaceForChar(unsigned int id)
 	// look through our current font + fallback fonts to see if any have the glyph we're looking for
 	for(unsigned int i = 0; i < fallbackFonts.size() + 1; i++)
 	{
+		if (i > 0)
+		{
+			std::lock_guard<std::mutex> lock(sFallbackHasLock);
+			auto known = sFallbackHas.find(std::make_pair(i, id));
+			if (known != sFallbackHas.cend() && !known->second)
+				continue;
+		}
+
 		auto fit = mFaceCache.find(i);
 
 		if(fit == mFaceCache.cend()) // doesn't exist yet
@@ -347,10 +411,8 @@ FT_Face Font::getFaceForChar(unsigned int id)
 
 			mFaceCache[i] = std::unique_ptr<FontFace>(new FontFace(std::move(itCache->second), mSize));
 #elif defined(MISTER)
-			// The file mapped by FreeType, not read whole each time: a font's faces are dropped after its
-			// ASCII glyphs (clearFaceCache) and the fallback fonts (8 MB, CJK) taken again for each new size
-			// with a character the theme's font lacks. Entering a system read ~50 MB that way (0.5 s of its
-			// 0.7 s on the MiSTer), ES's start over 100 MB. The same file: the same glyphs.
+			// read by FreeType as it needs (its tables, the glyphs asked for), not the whole file each time: a
+			// font's faces are dropped once its ASCII glyphs are rendered, and taken again for any later glyph
 			const std::string file = ResourceManager::getInstance()->getResourcePath(path);
 			if (Utils::FileSystem::exists(file))
 				mFaceCache[i] = std::unique_ptr<FontFace>(new FontFace(file, mSize));
@@ -368,7 +430,14 @@ FT_Face Font::getFaceForChar(unsigned int id)
 		if (i == 2 && Utils::String::isKorean(id))
 			continue;
 
-		if(FT_Get_Char_Index(fit->second->face, id) != 0)
+		const bool has = FT_Get_Char_Index(fit->second->face, id) != 0;
+		if (i > 0)
+		{
+			std::lock_guard<std::mutex> lock(sFallbackHasLock);
+			sFallbackHas[std::make_pair(i, id)] = has;
+		}
+
+		if(has)
 			return fit->second->face;
 	}
 
