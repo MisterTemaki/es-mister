@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # The MiSTer package: what goes on the SD card, as a ZIP to extract at its root.
 #
-#   emulationstation/          the program, its scripts, resources and translations, its default
-#                              settings and controllers, and the Carbon theme (trimmed to its systems)
-#   Scripts/emulationstation.sh  starts it from the MiSTer's Scripts menu
+#   NAME/              the program, its scripts, resources and translations, its default settings
+#                      and controllers, and the Carbon theme (trimmed to its systems)
+#   Scripts/NAME.sh    starts it from the MiSTer's Scripts menu
 #
-# Run by build.sh after the binary is built (build-mister/out/emulationstation).
+# NAME is ES_NAME (emulationstation unless set). Run by build.sh after the binary is built
+# (build-mister/out/emulationstation).
 
 set -euo pipefail
 
@@ -19,6 +20,15 @@ VERSION=${VERSION:-$(git -C "$ROOT" describe --always --dirty 2>/dev/null || ech
 # unset, SIZE=auto (the MiSTer's own) and the pictures made for 1080p
 ES_SIZE=${ES_SIZE:-}
 THEME_SIZE=${ES_SIZE:-1920x1080}
+# ES_NAME=es-mister-720p (say): the folder on the SD card (/media/fat/NAME) and the script (Scripts/NAME.sh)
+ES_NAME=${ES_NAME:-emulationstation}
+# ES_TITLE: the package's name in README.txt
+ES_TITLE=${ES_TITLE:-ES-MiSTer}
+# ES_LANGUAGE: the language ES starts in, until changed in its menu (System settings > Language)
+ES_LANGUAGE=${ES_LANGUAGE:-en_US}
+case "$ES_NAME" in
+	*[!A-Za-z0-9._-]*|"") echo "ES_NAME: letters, digits, '.', '_' and '-' only" >&2; exit 1 ;;
+esac
 
 # Batocera's theme and controller database, at the versions batocera.linux pins
 THEME_COMMIT=a897233e9bf6b9cca5c248ffceebf443882de926
@@ -37,7 +47,7 @@ if [ ! -d "$SRC/batocera.linux" ]; then
 fi
 
 rm -rf "$STAGE"
-ES=$STAGE/emulationstation
+ES=$STAGE/$ES_NAME
 mkdir -p "$ES/defaults" "$ES/logs" "$ES/home/.emulationstation/themes" "$STAGE/Scripts"
 
 echo "== program"
@@ -47,7 +57,8 @@ llvm-strip -o "$ES/emulationstation" "$WORK/out/emulationstation"
 "$TOOLS/zc++" -O2 -s -static -pthread -std=c++17 -I "$ROOT/es-core/src" -o "$ES/es-mister-replay" "$ROOT/mister/tests/replay.cpp" \
 	"$ROOT/es-core/src/renderers/soft/SoftCapture.cpp" "$ROOT/es-core/src/renderers/soft/SoftRaster.cpp"
 cp "$ROOT/mister/scripts/es-mister.sh" "$ROOT/mister/scripts/mister-launch.sh" "$ROOT/mister/systems.tsv" "$ES/"
-cp "$ROOT/mister/scripts/emulationstation.sh" "$STAGE/Scripts/"
+sed -e "s|^ES=/media/fat/emulationstation$|ES=/media/fat/$ES_NAME|" "$ROOT/mister/scripts/emulationstation.sh" >"$STAGE/Scripts/$ES_NAME.sh"
+grep -q "^ES=/media/fat/$ES_NAME$" "$STAGE/Scripts/$ES_NAME.sh" || { echo "the Scripts launcher has no ES= line to set" >&2; exit 1; }
 cat >"$ES/es-mister.ini" <<'EOF'
 # EmulationStation on the MiSTer: settings read by es-mister.sh and mister-launch.sh
 
@@ -111,29 +122,30 @@ cat >"$ES/defaults/es_settings.cfg" <<'EOF'
 <?xml version="1.0"?>
 <config>
 	<string name="ThemeSet" value="es-theme-carbon" />
-	<string name="Language" value="pt_BR" />
+	<string name="Language" value="__ES_LANGUAGE__" />
 	<bool name="DrawFramerate" value="false" />
 	<bool name="VSync" value="true" />
 </config>
 EOF
+sed -i "s/__ES_LANGUAGE__/$ES_LANGUAGE/" "$ES/defaults/es_settings.cfg"
 cp "$SRC/batocera.linux/package/batocera/emulationstation/batocera-emulationstation/controllers/es_input.cfg" "$ES/defaults/es_input.cfg"
 
 echo "== theme"
 python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv" "$THEME_SIZE"
 
-cp "$ROOT/mister/LEIA-ME.txt" "$ES/"
+sed -e "s|__ES_DIR__|$ES_NAME|g" -e "s|__ES_SIZE__|${ES_SIZE:-auto}|g" -e "s|__ES_TITLE__|$ES_TITLE|g" "$ROOT/mister/README.txt" >"$ES/README.txt"
 cp "$ROOT/LICENSE.md" "$ES/LICENSE-EmulationStation.md"
 
 # every script with Unix line ends
 find "$STAGE" -name '*.sh' -exec sed -i 's/\r$//' {} \;
 
 mkdir -p "$WORK/dist"
-ZIP=$WORK/dist/es-mister-$VERSION${ES_SIZE:+-$ES_SIZE}.zip
+ZIP=$WORK/dist/$ES_NAME-$VERSION${ES_SIZE:+-$ES_SIZE}.zip
 rm -f "$ZIP"
 (cd "$STAGE" && python3 -I -c '
 import os, sys, zipfile
 with zipfile.ZipFile(sys.argv[1], "w", zipfile.ZIP_DEFLATED) as z:
-    for top in ("emulationstation", "Scripts"):
+    for top in (sys.argv[2], "Scripts"):
         for folder, dirs, files in os.walk(top):
             dirs.sort()
             for name in sorted(files):
@@ -144,5 +156,5 @@ with zipfile.ZipFile(sys.argv[1], "w", zipfile.ZIP_DEFLATED) as z:
                     info.external_attr = 0o100755 << 16
                 with open(path, "rb") as f:
                     z.writestr(info, f.read())
-' "$ZIP")
-du -sh "$STAGE/emulationstation" "$ZIP"
+' "$ZIP" "$ES_NAME")
+du -sh "$ES" "$ZIP"

@@ -245,7 +245,12 @@ void Settings::setDefaults()
 	mStringMap["ScreenSaverBehavior"] = "dim";
 	mStringMap["GamelistViewStyle"] = "automatic";
 
+#ifdef MISTER
+	// the MiSTer port: the source that needs no account nor key (ScreenScraper is built only with its keys)
+	mStringMap["Scraper"] = "Libretro-thumbnails";
+#else
 	mStringMap["Scraper"] = "ScreenScraper";
+#endif
 #ifdef MISTER
 	// the MiSTer port: the box as the game's picture (the grids show it), and no second copy of it as
 	// the box picture (the scraper's menu does not offer the same source for both)
