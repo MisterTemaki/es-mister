@@ -840,6 +840,21 @@ void ThemeData::loadFile(const std::string& system, const std::map<std::string, 
 	parseSubsetsDefaults(root);
 	parseVariables(root);
 	parseTheme(root);
+
+#ifdef MISTER
+	// no game carousel view on the MiSTer (asked for): the theme's "gamecarousel" view, and its custom
+	// views made from it, as if the theme had none. A system set to it shows the default view.
+	{
+		std::vector<std::string> carousels;
+		for (const auto& view : mViews)
+			if (view.first == "gamecarousel" || view.second.baseType == "gamecarousel")
+				carousels.push_back(view.first);
+		for (const auto& view : carousels)
+			mViews.erase(view);
+	}
+	if (mDefaultView == "gamecarousel")
+		mDefaultView.clear();
+#endif
 	
 	std::string themeName = Utils::String::toLower(Settings::getInstance()->getString("ThemeSet"));
 	if (themeName.find("next-pixel") != std::string::npos || themeName.find("alekfull") != std::string::npos)
