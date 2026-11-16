@@ -92,7 +92,7 @@ namespace Renderer
 			double copyMs = 0;
 			double esMs = 0, esMax = 0;   // ES's own work before a drawn frame (update, render, recording)
 			uint64_t copied = 0, vertices = 0, pixels = 0; // copied: pixels to the screen
-			uint32_t quads = 0, triangles = 0;
+			uint32_t quads = 0, triangles = 0, together = 0;
 			double bandMs[2] = { 0, 0 }; // the first two bands' drawing, to see the balance
 			uint64_t kinds[Soft::PX_KINDS] = {};
 			int partial = 0;             // frames drawn in part (what changed)
@@ -336,17 +336,18 @@ namespace Renderer
 		void executePart(Raster& raster, const Box& part)
 		{
 			SoftState& s = S();
-			raster.clearBox(part.x0, part.y0, part.x1, part.y1, 0);
-			for (const Command& command : s.commands)
+			// cleared before the first command that reaches it is drawn; draws drawn together first clear it
+			// themselves (drawLayers: written once)
+			bool cleared = false;
+			auto clearPart = [&]
 			{
-				if (!command.box.meets(part))
-				{
-					// a stencil shape that marks nothing here still ends the last one: its marks cleared (it was
-					// set in every part, every strip of 8 rows: the grids' rounded corners, one a tile)
-					if (command.stencil)
-						raster.resetStencil();
-					continue;
-				}
+				if (!cleared)
+					raster.clearBox(part.x0, part.y0, part.x1, part.y1, 0);
+				cleared = true;
+			};
+			// the command's state in this part: its scissor narrowed to it
+			auto stateIn = [&part](const Command& command)
+			{
 				DrawState state = command.state;
 				if (state.scissor)
 				{
@@ -358,6 +359,60 @@ namespace Renderer
 					state.scissor = true;
 					state.sx0 = part.x0; state.sy0 = part.y0; state.sx1 = part.x1; state.sy1 = part.y1;
 				}
+				return state;
+			};
+			const Soft::Bounds partBounds = { part.x0, part.y0, part.x1, part.y1 };
+			auto candidate = [&partBounds](const Command& c)
+			{
+				return Soft::layerCandidate(c.stencil, c.state, c.topology, (int)c.count, Soft::Bounds{ c.box.x0, c.box.y0, c.box.x1, c.box.y1 }, partBounds);
+			};
+			const bool layers = Soft::layersOn();
+			const size_t total = s.commands.size();
+			for (size_t i = 0; i < total; i++)
+			{
+				const Command& command = s.commands[i];
+				if (!command.box.meets(part))
+				{
+					// a stencil shape that marks nothing here still ends the last one: its marks cleared (it was
+					// set in every part, every strip of 8 rows: the grids' rounded corners, one a tile)
+					if (command.stencil)
+						raster.resetStencil();
+					continue;
+				}
+
+				// big rectangles one over the other (a carousel's backgrounds, the frame over them): drawn
+				// together, each pixel read and written once (Raster::drawLayers); those that do not reach the
+				// part between them draw nothing here
+				if (layers && candidate(command))
+				{
+					Soft::LayerDraw run[8];
+					size_t at[8];
+					int m = 0;
+					for (size_t j = i; j < total && m < 8; j++)
+					{
+						const Command& c = s.commands[j];
+						if (!c.box.meets(part) && !c.stencil)
+							continue;
+						if (!candidate(c))
+							break;
+						run[m].vertices = s.vertices.data() + c.first;
+						run[m].count = (int)c.count;
+						run[m].topology = c.topology;
+						run[m].state = stateIn(c);
+						run[m].state.texture = c.texture.get();
+						at[m++] = j;
+					}
+					const int done = m >= 2 ? raster.drawLayers(run, m, cleared ? nullptr : &partBounds) : 0;
+					if (done >= 2)
+					{
+						cleared = true;
+						i = at[done - 1];
+						continue;
+					}
+				}
+
+				clearPart();
+				DrawState state = stateIn(command);
 				const SVertex* vertices = s.vertices.data() + command.first;
 				if (command.stencil)
 					raster.setStencil(vertices, (int)command.count, state);
@@ -367,6 +422,7 @@ namespace Renderer
 					raster.draw(vertices, (int)command.count, command.topology, state);
 				}
 			}
+			clearPart();
 		}
 
 		// The frame's commands, in one band: all of it, or (drawn in part) each part. A few rows at a time
@@ -876,6 +932,7 @@ namespace Renderer
 				total.pixels += raster->stats().pixels;
 				total.quads += raster->stats().quads;
 				total.triangles += raster->stats().triangles;
+				total.together += raster->stats().together;
 				for (int k = 0; k < Soft::PX_KINDS; k++)
 					total.kinds[k] += raster->stats().kinds[k];
 			}
@@ -918,10 +975,10 @@ namespace Renderer
 			char line[1400];
 			snprintf(line, sizeof(line),
 				"SoftRenderer: %d frames, %d drawn; frame %.1f ms (max %.1f), ES before a drawn frame %.1f ms (max %.1f), drawing %.1f ms (max %.1f)%s, copy %.2f ms, %.0f k pixels copied, "
-				"%.0f vertices, %.0f k pixels, %u quads, %u triangles a drawn frame%s; k pixels: fill %.0f, copy %.0f, colour %.0f, "
+				"%.0f vertices, %.0f k pixels, %u quads (%u drawn together), %u triangles a drawn frame%s; k pixels: fill %.0f, copy %.0f, colour %.0f, "
 				"picture 1:1 %.0f, nearest %.0f, bilinear %.0f, triangles %.0f%s%s",
 				st.frames, st.drawn, st.frameMs / st.frames, st.frameMax, st.esMs / drawn, st.esMax, st.rasterMs / drawn, st.rasterMax, bands, st.copyMs / drawn,
-				(double)st.copied / drawn / 1000.0, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.triangles / drawn, parts,
+				(double)st.copied / drawn / 1000.0, (double)st.vertices / drawn, (double)st.pixels / drawn / 1000.0, st.quads / drawn, st.together / drawn, st.triangles / drawn, parts,
 				kpx(Soft::PX_FILL), kpx(Soft::PX_COPY), kpx(Soft::PX_COLOR), kpx(Soft::PX_TEX_1TO1), kpx(Soft::PX_TEX_NEAREST), kpx(Soft::PX_TEX_LINEAR), kpx(Soft::PX_TRIANGLE),
 				budget, answers);
 			LOG(LogInfo) << line;
@@ -1386,6 +1443,7 @@ namespace Renderer
 			st.pixels += s.raster.stats().pixels;
 			st.quads += s.raster.stats().quads;
 			st.triangles += s.raster.stats().triangles;
+			st.together += s.raster.stats().together;
 			for (int k = 0; k < Soft::PX_KINDS; k++)
 				st.kinds[k] += s.raster.stats().kinds[k];
 

@@ -379,3 +379,189 @@ TEST(clipped_draws_leave_the_same_pixels)
 		printf("  pixels of the %d scenes: %016llx\n", scenes, (unsigned long long)allPixels);
 	CHECK_EQ(differing, 0);
 }
+
+// Raster::drawLayers (draws drawn together, a row at a time, each pixel read and written once) against the
+// same draws one after another: random runs of colours, pictures 1:1 (opaque, with alpha, with clear runs),
+// big pictures scaled (the scaled-picture cache), tinted white, faded (white with an alpha: spanNeonFade's
+// case) or by any colour, at whole or fractional positions, with draws it does not take (a gradient, a
+// stencil test, desaturated, added) among them; into a part not cleared yet (it clears it) or after other
+// draws. The pixels must be the same in the part, and none written outside it.
+TEST(layers_drawn_together_leave_the_same_pixels)
+{
+	const int scenes = getenv("RASTER_SCENES") ? atoi(getenv("RASTER_SCENES")) : 3000;
+	int differing = 0, outside = 0, together = 0;
+	// a hash of the pixels drawn one by one: the same with ES_SOFT_NEON=0 means the NEON spans (spanNeonFade's
+	// faded pictures among them) gave spanT's pixels (RASTER_HASH=1 prints it)
+	uint64_t allPixels = 1469598103934665603ULL;
+	for (int i = 0; i < scenes; i++)
+	{
+		Random r(0x1a7e0000u + (uint32_t)i);
+		const int W = r.range(24, 320), H = r.range(8, 200);
+		std::vector<std::unique_ptr<Texture>> textures;
+		struct Draw { std::vector<SVertex> v; DrawState state; };
+		std::vector<Draw> draws;
+		auto quad = [](float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, uint32_t c)
+		{
+			return std::vector<SVertex>{ { x0, y0, u0, v0, c }, { x0, y1, u0, v1, c }, { x1, y0, u1, v0, c }, { x1, y1, u1, v1, c } };
+		};
+		auto tint = [&r]()
+		{
+			switch (r.range(0, 3))
+			{
+			case 0: return 0xFFFFFFFFu;
+			case 1: return ((uint32_t)(r.chance(20) ? (r.chance(50) ? 0 : 255) : r.range(1, 254)) << 24) | 0x00FFFFFFu; // faded
+			default: return r.color();
+			}
+		};
+		const int before = r.chance(30) ? r.range(1, 2) : 0; // draws before the run: the part already drawn
+		const int count = before + r.range(2, 6) + r.range(0, 2);
+		for (int k = 0; k < count; k++)
+		{
+			Draw d;
+			const int kind = r.range(0, 9);
+			if (kind <= 1)
+			{
+				// a colour over much of the frame
+				const float x0 = r.coord(-10, W / 2.0f), y0 = r.coord(-10, H / 2.0f);
+				d.v = quad(x0, y0, r.coord(W / 2.0f, W + 10.0f), r.coord(H / 2.0f, H + 10.0f), 0, 0, 0, 0, r.color());
+			}
+			else
+			{
+				textures.push_back(makeTexture(r));
+				Texture* t = textures.back().get();
+				d.state.texture = t;
+				if (kind <= 5)
+				{
+					// 1:1
+					const float x0 = r.coord(-(float)t->width / 2, (float)W), y0 = r.coord(-(float)t->height / 2, (float)H);
+					d.v = quad(x0, y0, x0 + t->width, y0 + t->height, 0, 0, 1, 1, tint());
+				}
+				else
+				{
+					// big and scaled (a quarter of the frame or more): the scaled-picture cache when smoothed
+					t->linear = r.chance(80);
+					const float w = r.real(W * 0.5f, W * 1.3f), h = r.real(H * 0.5f, H * 1.3f);
+					const float x0 = r.coord(-w / 4, W - w / 2), y0 = r.coord(-h / 4, H - h / 2);
+					d.v = quad(x0, y0, x0 + w, y0 + h, 0, 0, 1, 1, tint());
+				}
+			}
+			// now and then one drawLayers does not take
+			switch (r.range(0, 19))
+			{
+			case 0: d.v[1].color = d.v[3].color = r.color(); break;  // a gradient
+			case 1: d.state.stencil = StencilTest::Inside; break;
+			case 2: d.state.saturation = 0.5f; break;
+			case 3: d.state.srcBlend = 1; d.state.dstBlend = 1; break; // added
+			default: break;
+			}
+			if (r.chance(15))
+			{
+				d.state.scissor = true;
+				d.state.sx0 = r.range(0, W / 2); d.state.sy0 = r.range(0, H / 2);
+				d.state.sx1 = r.range(W / 2, W); d.state.sy1 = r.range(H / 2, H);
+			}
+			draws.push_back(d);
+		}
+
+		// a part of a band, as the renderer draws one: the commands' scissors narrowed to it
+		Raster owner, band;
+		owner.resize(W, H);
+		const int bandTop = r.chance(50) ? 0 : r.range(0, H - 1);
+		band.attach(owner, bandTop, H);
+		const int py0 = r.range(bandTop, H - 1), py1 = r.range(py0 + 1, H);
+		const int px0 = r.chance(70) ? 0 : r.range(0, W - 1), px1 = r.chance(70) ? W : r.range(px0 + 1, W);
+		const Bounds part = { px0, py0, px1, py1 };
+		auto stateIn = [&](const DrawState& s0)
+		{
+			DrawState s = s0;
+			if (s.scissor)
+			{
+				s.sx0 = std::max(s.sx0, px0); s.sy0 = std::max(s.sy0, py0);
+				s.sx1 = std::min(s.sx1, px1); s.sy1 = std::min(s.sy1, py1);
+			}
+			else
+			{
+				s.scissor = true;
+				s.sx0 = px0; s.sy0 = py0; s.sx1 = px1; s.sy1 = py1;
+			}
+			return s;
+		};
+
+		// one after another
+		std::vector<uint32_t> expected;
+		{
+			std::fill(owner.pixels(), owner.pixels() + (size_t)W * H, 0xDEADBEEFu);
+			band.clearBox(px0, py0, px1, py1, 0);
+			for (const Draw& d : draws)
+				band.draw(d.v.data(), 4, Topology::Strip, stateIn(d.state));
+			expected.assign(owner.pixels(), owner.pixels() + (size_t)W * H);
+			for (uint32_t p : expected)
+				allPixels = (allPixels ^ p) * 1099511628211ULL;
+			scaledFrame();
+		}
+		// the draws before one by one, then the run together (from the first that is), the rest one by one
+		{
+			std::fill(owner.pixels(), owner.pixels() + (size_t)W * H, 0xDEADBEEFu);
+			bool cleared = false;
+			size_t k = 0;
+			if (before > 0)
+			{
+				band.clearBox(px0, py0, px1, py1, 0);
+				cleared = true;
+				for (; k < (size_t)before; k++)
+					band.draw(draws[k].v.data(), 4, Topology::Strip, stateIn(draws[k].state));
+			}
+			while (k < draws.size())
+			{
+				LayerDraw run[8];
+				int m = 0;
+				for (size_t j = k; j < draws.size() && m < 8; j++, m++)
+				{
+					run[m].vertices = draws[j].v.data();
+					run[m].count = 4;
+					run[m].topology = Topology::Strip;
+					run[m].state = stateIn(draws[j].state);
+				}
+				const int done = band.drawLayers(run, m, cleared ? nullptr : &part);
+				if (done >= 2)
+				{
+					together++;
+					cleared = true;
+					k += (size_t)done;
+					continue;
+				}
+				if (!cleared)
+					band.clearBox(px0, py0, px1, py1, 0);
+				cleared = true;
+				band.draw(draws[k].v.data(), 4, Topology::Strip, stateIn(draws[k].state));
+				k++;
+			}
+			if (!cleared)
+				band.clearBox(px0, py0, px1, py1, 0);
+			scaledFrame();
+		}
+
+		const uint32_t* got = owner.pixels();
+		bool reported = false;
+		for (int y = 0; y < H; y++)
+			for (int x = 0; x < W; x++)
+			{
+				const size_t at = (size_t)y * W + x;
+				const bool in = x >= px0 && x < px1 && y >= py0 && y < py1;
+				if (!in && got[at] != 0xDEADBEEFu)
+					outside++;
+				if (in && got[at] != expected[at] && !reported)
+				{
+					if (differing < 5)
+						fprintf(stderr, "  scene %d (%dx%d, %zu draws): pixel %d,%d is %08x one by one, %08x together\n", i, W, H, draws.size(), x, y, expected[at], got[at]);
+					differing++;
+					reported = true;
+				}
+			}
+	}
+	if (getenv("RASTER_HASH") != nullptr)
+		printf("  %d of %d scenes drew a run together; pixels: %016llx\n", together, scenes, (unsigned long long)allPixels);
+	CHECK_EQ(differing, 0);
+	CHECK_EQ(outside, 0);
+	CHECK(together * 4 >= scenes); // the runs were drawn together in many scenes, not left to draw
+}

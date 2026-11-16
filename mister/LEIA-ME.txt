@@ -66,6 +66,9 @@ Com CAPTURE=1 no es-mister.ini, os quadros lentos também são gravados inteiros
   /media/fat/emulationstation/es-mister-replay logs/es-slow-frame-*.escf
 Ele desenha cada quadro de novo e mostra o tempo do desenho e um código dos
 pixels: duas versões que dão o mesmo código desenharam a mesma imagem.
+Com ES_SOFT_LAYERS=0 antes do comando, as camadas grandes (os fundos do
+carrossel e o que fica sobre eles) são desenhadas uma a uma em vez de juntas,
+para comparar o tempo; o código dos pixels é o mesmo.
 
 O que mandar de volta depois do teste
 -------------------------------------

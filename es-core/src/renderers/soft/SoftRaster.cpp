@@ -532,6 +532,46 @@ namespace Renderer
 					scalar(dst + end, mask ? mask + end : nullptr, maskTest, n - end, tex, at(end));
 			}
 
+			// An opaque picture faded (its colour white with alpha a), its rows read as they are: a texel times the
+			// colour is the texel with alpha a (div255(x * 255) is x for every x in 0..255, checked for all of
+			// them, and the texel's alpha is 255), so only the blend is worked out, the same alpha for every pixel:
+			// finish8's sums without the colour's. On the A9's NEON the colour was 12 of the 30 operations of 8
+			// pixels; two backgrounds crossing in a carousel's move are two such pictures over the whole frame.
+			void spanNeonFade(uint32_t* dst, const uint8_t* mask, int maskTest, int n, const Tex& tex, Span s)
+			{
+				const SpanFn scalar = &spanT<TEX_DIRECT, MOD_CONST, BLEND_NORMAL>;
+				const int end = n & ~7;
+				if (end == 0)
+				{
+					scalar(dst, mask, maskTest, n, tex, s);
+					return;
+				}
+				const uint8x8_t a = vdup_n_u8((uint8_t)(s.color >> 24)), ia = vmvn_u8(a);
+				const uint32_t* direct = tex.px + (s.v >> 16) * tex.w + (s.u >> 16);
+				const int ahead = aheadPixels();
+				for (int i = 0; i < end; i += 8)
+				{
+					if (ahead)
+					{
+						__builtin_prefetch(dst + i + ahead, 1);
+						__builtin_prefetch(direct + i + ahead, 0);
+					}
+					const uint8x8x4_t src = vld4_u8((const uint8_t*)(direct + i));
+					uint8x8x4_t d = vld4_u8((const uint8_t*)(dst + i));
+					d.val[0] = div255xn(vmlal_u8(vmull_u8(src.val[0], a), d.val[0], ia));
+					d.val[1] = div255xn(vmlal_u8(vmull_u8(src.val[1], a), d.val[1], ia));
+					d.val[2] = div255xn(vmlal_u8(vmull_u8(src.val[2], a), d.val[2], ia));
+					d.val[3] = div255xn(vmlal_u8(vmull_u8(a, a), d.val[3], ia));
+					vst4_u8((uint8_t*)(dst + i), d);
+				}
+				if (end < n)
+				{
+					Span t = s;
+					t.u = (int)(s.u + (int64_t)end * s.du);
+					scalar(dst + end, mask ? mask + end : nullptr, maskTest, n - end, tex, t);
+				}
+			}
+
 			// A span tested against the stencil: its runs of pixels the test lets through, each drawn by the
 			// NEON span (a pixel's value does not depend on where its span starts, as with clipping); the others
 			// left as they are, as spanT leaves them. Pictures with rounded corners (Carbon's game grids) are
@@ -598,6 +638,114 @@ namespace Renderer
 				(void)masked;
 				(void)desaturated;
 				return pickSpan(tex, mod, blend);
+			}
+
+			// The span of rows read as they are (the scaled path, the rows path, a picture 1:1): pickSpanFor's, or
+			// spanNeonFade for an opaque picture faded (its colour white with an alpha; constant, not by vertex)
+			SpanFn pickRowSpan(SpanFn span, const Texture* t, int mod, uint32_t color, int blend, bool masked, bool desaturated)
+			{
+#ifdef SOFT_NEON
+				if (neonEnabled() && t != nullptr && t->opaque && mod == MOD_CONST && (color & 0x00FFFFFF) == 0x00FFFFFF &&
+					blend == BLEND_NORMAL && !masked && !desaturated)
+					return &spanNeonFade;
+#endif
+				(void)t; (void)mod; (void)color; (void)blend; (void)masked; (void)desaturated;
+				return span;
+			}
+
+			// A layer's pixels in a stretch of a row (drawLayers): its texels from px (none: its colour), times
+			// its colour (MOD_CONST) or as they are, blended normally; drawn by fn on its own
+			struct LayerRow
+			{
+				const uint32_t* px;
+				uint32_t color;
+				int mod;
+				bool opaque; // every pixel it gives has alpha 255: what was under it is not read
+				bool fade;   // an opaque picture faded: its texels with the colour's alpha (spanNeonFade)
+				SpanFn fn;
+			};
+
+			// n pixels through the k layers, the first first: each pixel's value through each layer in turn, as
+			// each layer's span drawn after the last gives. NEON: 8 pixels at a time, with finish8's sums (the
+			// colour times the texels, then the blend) on the pixels kept in registers between the layers, read
+			// and written once; the rest by each layer's span, one after another. cleared: the pixels are not
+			// drawn yet, and start as the part's clear colour, 0 (not read: written once, with their value).
+			void layersSpan(uint32_t* dst, int n, const LayerRow* rows, int k, bool cleared)
+			{
+				int i = 0;
+#ifdef SOFT_NEON
+				if (neonEnabled() && n >= 8)
+				{
+					uint8x8x4_t colors[8];
+					for (int l = 0; l < k; l++)
+						for (int c = 0; c < 4; c++)
+							colors[l].val[c] = vdup_n_u8((uint8_t)(rows[l].color >> (8 * c)));
+					const int ahead = aheadPixels();
+					// an opaque first layer leaves nothing of what was there
+					const int from = rows[0].opaque ? 1 : 0;
+					for (; i + 8 <= n; i += 8)
+					{
+						if (ahead)
+						{
+							__builtin_prefetch(dst + i + ahead, 1);
+							for (int l = 0; l < k; l++)
+								if (rows[l].px)
+									__builtin_prefetch(rows[l].px + i + ahead, 0);
+						}
+						uint8x8x4_t d;
+						for (int l = 0; l < k; l++)
+						{
+							uint8x8x4_t src;
+							if (rows[l].px == nullptr)
+								src = colors[l];
+							else
+							{
+								src = vld4_u8((const uint8_t*)(rows[l].px + i));
+								if (rows[l].fade)
+									src.val[3] = colors[l].val[3];
+								else if (rows[l].mod == MOD_CONST)
+									for (int c = 0; c < 4; c++)
+										src.val[c] = div255n(vmull_u8(src.val[c], colors[l].val[c]));
+							}
+							if (l < from)
+							{
+								d = src; // blended with alpha 255: itself (finish8's sums give it, whatever was there)
+								continue;
+							}
+							const uint8x8_t a = src.val[3];
+							if (l == 0 && cleared)
+							{
+								// over the clear colour, 0: its part of the sum is 0
+								for (int c = 0; c < 4; c++)
+									d.val[c] = div255xn(vmull_u8(src.val[c], a));
+								continue;
+							}
+							if (l == 0)
+								d = vld4_u8((const uint8_t*)(dst + i));
+							const uint8x8_t ia = vmvn_u8(a);
+							for (int c = 0; c < 4; c++)
+								d.val[c] = div255xn(vmlal_u8(vmull_u8(src.val[c], a), d.val[c], ia));
+						}
+						vst4_u8((uint8_t*)(dst + i), d);
+					}
+				}
+#endif
+				if (i >= n)
+					return;
+				if (cleared)
+					std::fill(dst + i, dst + n, 0u);
+				for (int l = 0; l < k; l++)
+				{
+					Tex t;
+					t.px = rows[l].px ? rows[l].px + i : nullptr;
+					t.w = n - i;
+					t.h = 1;
+					Span s;
+					s.u = 0; s.du = 1 << 16;
+					s.v = 0; s.dv = 0;
+					s.color = rows[l].color;
+					rows[l].fn(dst + i, nullptr, 0, n - i, t, s);
+				}
 			}
 
 			int blendModeOf(const DrawState& state)
@@ -867,6 +1015,211 @@ namespace Renderer
 			}
 		}
 
+		bool layersOn()
+		{
+			static const bool on = getenv("ES_SOFT_LAYERS") == nullptr || strcmp(getenv("ES_SOFT_LAYERS"), "0") != 0;
+			return on;
+		}
+
+		// A draw drawn with others, a row at a time (drawLayers), as drawQuad describes it
+		struct Raster::Layer
+		{
+			enum Kind { NOTHING, COLOR, ROWS, SCALED };
+			bool ok = true;           // drawn this way (or draws nothing)
+			Kind kind = NOTHING;
+			int x0 = 0, x1 = 0, y0 = 0, y1 = 0; // the pixels it reaches
+			int mod = MOD_NONE;       // its texels times color (MOD_CONST), or as they are
+			uint32_t color = 0;
+			const Texture* texture = nullptr;
+			// ROWS: the texture 1:1, from column ux, frame row y on texture row floor(v0 + (y - qy0) * dv), drawn
+			// between its clear runs if it has them
+			float v0 = 0, dv = 0;
+			int qy0 = 0, ux = 0;
+			// SCALED: a big picture's scaled rows (frame row y on row y - qy0), from column c0
+			std::shared_ptr<Scaled> scaled;
+			int c0 = 0;
+		};
+
+		bool Raster::layerOf(const LayerDraw& d, Layer& out)
+		{
+			out = Layer();
+			// a rectangle alone (draw's quad: one drawQuad)
+			if (d.topology != Topology::Strip || d.count != 4)
+				return false;
+			const SVertex* v = d.vertices;
+			const bool textured = d.state.texture != nullptr;
+			if (!(v[0].x == v[1].x && v[2].x == v[3].x && v[0].y == v[2].y && v[1].y == v[3].y &&
+				(!textured || (v[0].u == v[1].u && v[2].u == v[3].u && v[0].v == v[2].v && v[1].v == v[3].v))))
+				return false;
+			const Clip clip = clipOf(d.state);
+			if (clip.x0 >= clip.x1 || clip.y0 >= clip.y1)
+				return true; // draws nothing
+			if (blendModeOf(d.state) != BLEND_NORMAL)
+				return false;
+			if (((v[0].color | v[1].color | v[2].color | v[3].color) >> 24) == 0)
+				return true; // no alpha at any vertex: draws nothing (as draw)
+			mLayer = &out;
+			drawQuad(v, d.state, clip);
+			mLayer = nullptr;
+			return out.ok;
+		}
+
+		int Raster::drawLayers(const LayerDraw* draws, int count, const Bounds* uncleared)
+		{
+			thread_local std::vector<Layer> layers;
+			layers.clear();
+			int drawing = 0;
+			for (int i = 0; i < count && i < 8; i++)
+			{
+				layers.emplace_back();
+				if (!layerOf(draws[i], layers.back()))
+				{
+					layers.pop_back();
+					break;
+				}
+				if (layers.back().kind != Layer::NOTHING)
+					drawing++;
+			}
+			if (drawing < 2)
+				return 0;
+
+			const int k = (int)layers.size();
+			int top = INT32_MAX, bottom = INT32_MIN;
+			for (const Layer& L : layers)
+				if (L.kind != Layer::NOTHING)
+				{
+					top = std::min(top, L.y0);
+					bottom = std::max(bottom, L.y1);
+				}
+			// a part not cleared yet: all its rows, cleared where no layer draws, from 0 where one does
+			if (uncleared)
+			{
+				top = std::max(mBandY0, uncleared->y0);
+				bottom = std::min(mBandY1, uncleared->y1);
+			}
+
+			// each layer's sampling of its texture rows, its own (two scaled pictures a row each, in turn)
+			thread_local std::vector<ScaledScratch> scratches;
+			if ((int)scratches.size() < k)
+				scratches.resize(k);
+			for (int l = 0; l < k; l++)
+				scratches[l].owner = nullptr; // their texture rows are another picture's
+
+			// the spans of each: as drawQuad draws it, on its own
+			SpanFn fns[8];
+			for (int l = 0; l < k; l++)
+			{
+				const Layer& L = layers[l];
+				fns[l] = L.kind == Layer::COLOR ? pickSpanFor(TEX_NONE, MOD_CONST, BLEND_NORMAL, false, false) :
+					pickRowSpan(pickSpanFor(TEX_DIRECT, L.mod, BLEND_NORMAL, false, false), L.texture, L.mod, L.color, BLEND_NORMAL, false, false);
+			}
+
+			thread_local std::vector<int> edges;   // the row's columns where a layer starts or stops drawing
+			thread_local std::vector<int> spans[8]; // each layer's drawn columns in the row: [from, to) pairs
+			const uint32_t* rowsAt[8];              // each layer's pixel for the row's column x0
+			uint64_t drawn[4] = {};
+
+			for (int y = top; y < bottom; y++)
+			{
+				edges.clear();
+				for (int l = 0; l < k; l++)
+				{
+					const Layer& L = layers[l];
+					spans[l].clear();
+					if (L.kind == Layer::NOTHING || y < L.y0 || y >= L.y1)
+						continue;
+					rowsAt[l] = nullptr;
+					if (L.kind == Layer::SCALED)
+						rowsAt[l] = scaledRow(*L.scaled, L.texture, std::min(y - L.qy0, L.scaled->h), scratches[l]) + L.c0;
+					else if (L.kind == Layer::ROWS)
+					{
+						const int vy = (int)std::floor(L.v0 + (y - L.qy0) * L.dv);
+						rowsAt[l] = L.texture->pixels.data() + (size_t)vy * L.texture->width + L.ux;
+						if (!L.texture->clearAt.empty())
+						{
+							// between the row's clear runs (blending a clear texel leaves the pixel as it was)
+							const Texture* t = L.texture;
+							const int n = L.x1 - L.x0;
+							int at = 0;
+							for (uint32_t r = t->clearAt[vy]; r < t->clearAt[vy + 1]; r += 2)
+							{
+								const int c0 = (int)t->clear[r] - L.ux, c1 = (int)t->clear[r + 1] - L.ux;
+								if (c1 <= at)
+									continue;
+								if (c0 >= n)
+									break;
+								if (c0 > at)
+								{
+									spans[l].push_back(L.x0 + at);
+									spans[l].push_back(L.x0 + c0);
+								}
+								at = std::min(n, c1);
+							}
+							if (at < n)
+							{
+								spans[l].push_back(L.x0 + at);
+								spans[l].push_back(L.x1);
+							}
+						}
+					}
+					if (spans[l].empty() && !(L.kind == Layer::ROWS && !L.texture->clearAt.empty()))
+					{
+						spans[l].push_back(L.x0);
+						spans[l].push_back(L.x1);
+					}
+					edges.insert(edges.end(), spans[l].begin(), spans[l].end());
+				}
+				if (uncleared)
+				{
+					edges.push_back(uncleared->x0);
+					edges.push_back(uncleared->x1);
+				}
+				if (edges.empty())
+					continue;
+				std::sort(edges.begin(), edges.end());
+				edges.erase(std::unique(edges.begin(), edges.end()), edges.end());
+
+				// between two edges each layer draws all of it or none: those that do, in their order
+				uint32_t* const row = mPx + (size_t)y * mWidth;
+				size_t at[8] = {};
+				for (size_t e = 0; e + 1 < edges.size(); e++)
+				{
+					const int a = edges[e], b = edges[e + 1];
+					LayerRow active[8];
+					int m = 0;
+					for (int l = 0; l < k; l++)
+					{
+						const std::vector<int>& sp = spans[l];
+						while (at[l] < sp.size() && sp[at[l] + 1] <= a)
+							at[l] += 2;
+						if (at[l] >= sp.size() || sp[at[l]] > a)
+							continue;
+						const Layer& L = layers[l];
+						LayerRow& r = active[m++];
+						r.px = L.kind == Layer::COLOR ? nullptr : rowsAt[l] + (a - L.x0);
+						r.color = L.color;
+						r.mod = L.kind == Layer::COLOR ? MOD_CONST : L.mod;
+						r.opaque = L.kind == Layer::COLOR ? (L.color >> 24) == 255 :
+							(L.texture->opaque && (L.mod == MOD_NONE || (L.color >> 24) == 255));
+						r.fade = L.kind != Layer::COLOR && L.texture->opaque && L.mod == MOD_CONST && (L.color & 0x00FFFFFF) == 0x00FFFFFF;
+						r.fn = fns[l];
+						drawn[L.kind] += (uint64_t)(b - a);
+					}
+					if (m > 0)
+						layersSpan(row + a, b - a, active, m, uncleared != nullptr);
+					else if (uncleared && a >= uncleared->x0 && b <= uncleared->x1)
+						std::fill_n(row + a, b - a, 0u); // as the part's clearing
+				}
+			}
+
+			mStats.together += (uint32_t)drawing;
+			mStats.pixels += drawn[Layer::COLOR] + drawn[Layer::ROWS] + drawn[Layer::SCALED];
+			mStats.kinds[PX_COLOR] += drawn[Layer::COLOR];
+			mStats.kinds[PX_TEX_1TO1] += drawn[Layer::ROWS];
+			mStats.kinds[PX_TEX_LINEAR] += drawn[Layer::SCALED];
+			return k;
+		}
+
 		void Raster::resize(int width, int height)
 		{
 			mWidth = std::max(1, width);
@@ -1123,6 +1476,52 @@ namespace Renderer
 			const uint8_t* stencil = state.stencil != StencilTest::Off ? mSt : nullptr;
 			const int maskTest = state.stencil == StencilTest::Inside ? 1 : (state.stencil == StencilTest::Outside ? 2 : 0);
 
+			// As a layer of drawLayers: described, not drawn. A layer when what follows would draw it a row at a
+			// time from rows read as they are, blended normally: a colour (a fill, a shade), a picture 1:1 (copied,
+			// blended, between its clear runs), a big picture's scaled rows; not one sampled here, tinted by vertex,
+			// desaturated or tested against the stencil.
+			if (mLayer)
+			{
+				Layer& L = *mLayer;
+				L.ok = false;
+				L.x0 = px0; L.x1 = px1; L.y0 = py0; L.y1 = py1;
+				if (blend != BLEND_NORMAL || maskTest != 0 || s.saturation != 256 || mod == MOD_VARY)
+					return;
+				L.ok = true;
+				L.mod = mod;
+				L.color = s.color;
+				if (texMode == TEX_NONE)
+				{
+					L.kind = Layer::COLOR;
+					L.mod = MOD_CONST;
+				}
+				else if (scaled)
+				{
+					// as the scaled path below: its columns from c0, at most its width and one
+					const int columns = std::min(px1 - px0, scaled->w + 1 - skip);
+					if (columns <= 0)
+						return; // draws nothing
+					L.kind = Layer::SCALED;
+					L.scaled = scaled;
+					L.texture = state.texture;
+					L.c0 = skip;
+					L.qy0 = qy0;
+					L.x1 = px0 + columns;
+				}
+				else if (texMode == TEX_DIRECT)
+				{
+					L.kind = Layer::ROWS;
+					L.texture = state.texture;
+					L.v0 = texelV0;
+					L.dv = texelDv;
+					L.qy0 = qy0;
+					L.ux = uxStart;
+				}
+				else
+					L.ok = false; // sampled: drawn on its own
+				return;
+			}
+
 			// an opaque untextured rectangle: a fill
 			if (texMode == TEX_NONE && mod == MOD_CONST && (s.color >> 24) == 255 && blend == BLEND_NORMAL && maskTest == 0)
 			{
@@ -1180,7 +1579,7 @@ namespace Renderer
 				if (columns <= 0)
 					return;
 				const bool copy = state.texture->opaque && mod == MOD_NONE && blend == BLEND_NORMAL && s.saturation == 256 && maskTest == 0;
-				const SpanFn finish = pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest != 0, s.saturation != 256);
+				const SpanFn finish = pickRowSpan(pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest != 0, s.saturation != 256), state.texture, mod, s.color, blend, maskTest != 0, s.saturation != 256);
 				Tex row;
 				row.w = columns;
 				row.h = 1;
@@ -1266,7 +1665,7 @@ namespace Renderer
 				// texture row as the one above is the same as it
 				const bool covers = state.texture->opaque && blend == BLEND_NORMAL && maskTest == 0 &&
 					(mod == MOD_NONE || (mod == MOD_CONST && (s.color >> 24) == 255));
-				const SpanFn finish = pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest != 0, s.saturation != 256);
+				const SpanFn finish = pickRowSpan(pickSpanFor(TEX_DIRECT, rowMod, blend, maskTest != 0, s.saturation != 256), state.texture, mod, s.color, blend, maskTest != 0, s.saturation != 256);
 				Tex row;
 				row.w = n;
 				row.h = 1;
@@ -1403,7 +1802,9 @@ namespace Renderer
 				return;
 			}
 
-			const SpanFn fn = pickSpanFor(texMode, rowMod, blend, maskTest != 0, s.saturation != 256);
+			SpanFn fn = pickSpanFor(texMode, rowMod, blend, maskTest != 0, s.saturation != 256);
+			if (texMode == TEX_DIRECT)
+				fn = pickRowSpan(fn, state.texture, mod, s.color, blend, maskTest != 0, s.saturation != 256);
 
 			// a picture 1:1 with clear runs (an overlay that leaves much of the frame as it is): drawn
 			// between them (blending a clear texel leaves the pixel as it was)

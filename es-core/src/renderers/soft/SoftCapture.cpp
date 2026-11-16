@@ -189,17 +189,17 @@ namespace Renderer
 			// executePart: a stencil shape out of it only ends the last one)
 			void drawPart(const Capture& capture, const std::vector<Bounds>& bounds, bool oldStencil, Raster& raster, int x0, int y0, int x1, int y1)
 			{
-				raster.clearBox(x0, y0, x1, y1, 0);
 				const Bounds part = { x0, y0, x1, y1 };
-				for (size_t i = 0; i < capture.commands.size(); i++)
+				// cleared before the first command that reaches it is drawn (Renderer_Soft's executePart)
+				bool cleared = false;
+				auto clearPart = [&]
 				{
-					const CapturedCommand& c = capture.commands[i];
-					if (!bounds[i].meets(part) && !(c.stencil && oldStencil))
-					{
-						if (c.stencil)
-							raster.resetStencil();
-						continue;
-					}
+					if (!cleared)
+						raster.clearBox(x0, y0, x1, y1, 0);
+					cleared = true;
+				};
+				auto stateIn = [&](const CapturedCommand& c)
+				{
 					DrawState state = c.state;
 					if (state.scissor)
 					{
@@ -211,6 +211,54 @@ namespace Renderer
 						state.scissor = true;
 						state.sx0 = x0; state.sy0 = y0; state.sx1 = x1; state.sy1 = y1;
 					}
+					return state;
+				};
+				auto candidate = [&](size_t i)
+				{
+					const CapturedCommand& c = capture.commands[i];
+					return layerCandidate(c.stencil, c.state, c.topology, (int)c.vertices.size(), bounds[i], part);
+				};
+				const bool layers = layersOn() && !oldStencil;
+				const size_t total = capture.commands.size();
+				for (size_t i = 0; i < total; i++)
+				{
+					const CapturedCommand& c = capture.commands[i];
+					if (!bounds[i].meets(part) && !(c.stencil && oldStencil))
+					{
+						if (c.stencil)
+							raster.resetStencil();
+						continue;
+					}
+					// big rectangles one over the other drawn together (Renderer_Soft's executePart)
+					if (layers && candidate(i))
+					{
+						LayerDraw run[8];
+						size_t at[8];
+						int m = 0;
+						for (size_t j = i; j < total && m < 8; j++)
+						{
+							const CapturedCommand& d = capture.commands[j];
+							if (!bounds[j].meets(part) && !d.stencil)
+								continue;
+							if (!candidate(j))
+								break;
+							run[m].vertices = d.vertices.data();
+							run[m].count = (int)d.vertices.size();
+							run[m].topology = d.topology;
+							run[m].state = stateIn(d);
+							run[m].state.texture = d.texture >= 0 ? capture.textures[d.texture].get() : nullptr;
+							at[m++] = j;
+						}
+						const int done = m >= 2 ? raster.drawLayers(run, m, cleared ? nullptr : &part) : 0;
+						if (done >= 2)
+						{
+							cleared = true;
+							i = at[done - 1];
+							continue;
+						}
+					}
+					clearPart();
+					DrawState state = stateIn(c);
 					if (c.stencil)
 						raster.setStencil(c.vertices.data(), (int)c.vertices.size(), state);
 					else
@@ -219,6 +267,7 @@ namespace Renderer
 						raster.draw(c.vertices.data(), (int)c.vertices.size(), c.topology, state);
 					}
 				}
+				clearPart();
 			}
 
 			void drawBand(const Capture& capture, const std::vector<Bounds>& bounds, bool oldStencil, Raster& band, int strip)
@@ -251,6 +300,16 @@ namespace Renderer
 			// the bands marked the owner's stencil: cleared, for the next frame
 			for (auto& band : bands)
 				band.resetStencil();
+			owner.stats() = RasterStats();
+			for (auto& band : bands)
+			{
+				owner.stats().pixels += band.stats().pixels;
+				owner.stats().quads += band.stats().quads;
+				owner.stats().triangles += band.stats().triangles;
+				owner.stats().together += band.stats().together;
+				for (int k = 0; k < PX_KINDS; k++)
+					owner.stats().kinds[k] += band.stats().kinds[k];
+			}
 			scaledFrame();
 		}
 	}

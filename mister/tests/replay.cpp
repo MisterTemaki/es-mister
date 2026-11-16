@@ -177,8 +177,9 @@ int main(int argc, char** argv)
 		const double median = rest[rest.size() / 2];
 		total += median;
 		const uint64_t hash = hashPixels(owner.pixels(), (size_t)capture.width * capture.height);
-		printf("%-28s %4zu commands %dx%d  %8.2f %8.2f %8.2f  pixels %016llx\n", baseName(file).c_str(), capture.commands.size(),
-			capture.width, capture.height, first, median, rest[0], (unsigned long long)hash);
+		// together: draws drawn with others (Raster::drawLayers), in all the bands and strips
+		printf("%-28s %4zu commands %dx%d  %8.2f %8.2f %8.2f  together %4u  pixels %016llx\n", baseName(file).c_str(), capture.commands.size(),
+			capture.width, capture.height, first, median, rest[0], owner.stats().together, (unsigned long long)hash);
 		if (commands)
 			timeCommands(capture);
 		if (!ppm.empty() && !writePpm(ppm + "/" + baseName(file) + ".ppm", owner.pixels(), capture.width, capture.height))
