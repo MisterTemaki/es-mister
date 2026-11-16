@@ -200,7 +200,31 @@ bool InputConfig::getInputByName(const std::string& name, Input* result)
 	return false;
 }
 
+#ifdef MISTER
+// On the MiSTer a controller's Select opens ES's menu, and its Start does what Select did (the quick Quit
+// menu on the systems, a game list's options): ES's "start" is the button mapped as select, and the other
+// way round. es_input.cfg keeps each button under its own name; keyboards keep theirs (Space: the menu).
+// The help shows the same (buttonLabel).
+static const std::string& misterRole(const std::string& name, int deviceId)
+{
+	static const std::string start = "start", select = "select";
+	if (deviceId < 0)
+		return name;
+	const std::string lower = toLower(name);
+	return lower == start ? select : lower == select ? start : name;
+}
+#endif
+
 bool InputConfig::isMappedTo(const std::string& name, Input input, bool reversedAxis)
+{
+#ifdef MISTER
+	return isMappedAs(misterRole(name, mDeviceId), input, reversedAxis);
+#else
+	return isMappedAs(name, input, reversedAxis);
+#endif
+}
+
+bool InputConfig::isMappedAs(const std::string& name, Input input, bool reversedAxis)
 {
 	Input comp;
 	if (!getInputByName(name, &comp))
@@ -345,6 +369,13 @@ char* BUTTON_BACK = BBUTTON;
 
 std::string InputConfig::buttonLabel(const std::string& button)
 {
+#ifdef MISTER
+	// a controller's Select opens the menu, its Start what Select did (misterRole): their icons too
+	if (button == "start")
+		return "select";
+	if (button == "select")
+		return "start";
+#endif
 #ifdef INVERTEDINPUTCONFIG
 	if (!Settings::getInstance()->getBool("InvertButtons"))
 	{

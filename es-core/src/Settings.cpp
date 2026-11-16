@@ -212,7 +212,14 @@ void Settings::setDefaults()
 	mBoolMap["HideUniqueGroups"] = true;
 	mBoolMap["DrawGunCrosshair"] = true;
 	
+#ifdef MISTER
+	// "Ignore recently scraped games": no. A game is marked scraped even when no picture was found, or after
+	// its picture was deleted: with 15 days, scraping again for the missing covers found no game for two
+	// weeks. Libretro-thumbnails (the MiSTer's default) has no quota to spare.
+	mIntMap["RecentlyScrappedFilter"] = 0;
+#else
 	mIntMap["RecentlyScrappedFilter"] = 3;
+#endif
 	mIntMap["ScraperMediaFilter"] = 1;
 	mIntMap["IndexDirectoryDepth"] = 0; // 0 = unlimited
 	

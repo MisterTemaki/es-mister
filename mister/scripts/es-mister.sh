@@ -14,9 +14,10 @@ exec >>"$LOG" 2>&1
 uptime() { cut -d' ' -f1 /proc/uptime; }
 echo "== $(date '+%F %T') es-mister.sh (uptime $(uptime) s)"
 
-# settings (es-mister.ini): SIZE, FILL, FPS, GAMES_ROOTS
+# settings (es-mister.ini): SIZE, FILL, MENU_ASK, FPS, GAMES_ROOTS
 SIZE=auto
 FILL=1
+MENU_ASK=1
 FPS=60
 BENCH=0
 PROFILE=0
@@ -150,6 +151,9 @@ export ES_SOFT_MISTER_MODE=1
 # ES drawn at SIZE whatever the framebuffer's size, its frames enlarged to it (1280x720 on a 1080p screen:
 # 1.5 times, filling it, where the MiSTer's scaler enlarges only by whole times)
 case "$SCREEN" in fill:*) export ES_SOFT_DRAW_SIZE=$SIZE ;; esac
+# the MiSTer menu's button on a controller (the DualSense's PS) asks first while ES is shown
+export ES_MISTER_MENU_ASK=$MENU_ASK
+export ES_MISTER_HELPER=$ES/es-mister-helper
 export SDL_AUDIODRIVER=alsa
 export ES_SOFT_FPS=$FPS
 export ES_SOFT_STATS=600

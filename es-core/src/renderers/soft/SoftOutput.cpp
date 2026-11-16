@@ -1,5 +1,6 @@
 #include "SoftOutput.h"
 #include "SoftScale.h"
+#include "MisterPads.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -198,6 +199,8 @@ namespace Renderer
 						mKeyboardMode >= 0 ? ", its keys off" : "");
 					mPresenting = true;
 					mStop = false;
+					if (mMisterMode)
+						MisterPads::shown(true);
 					// the signals go to the thread below (it lets them through): not to this thread nor to those
 					// it makes from now on, whose waits they would cut short
 					sigset_t set;
@@ -211,6 +214,12 @@ namespace Renderer
 
 				void close()
 				{
+					// the controllers given back before anything else (a game is about to start, ES ends)
+					if (mMisterMode)
+					{
+						MisterPads::release();
+						MisterPads::shown(false);
+					}
 					if (mThread.joinable())
 					{
 						mStop = true;
@@ -316,7 +325,12 @@ namespace Renderer
 								acquire();
 						}
 						if (turn % 4 == 0)
+						{
 							keepHeld();
+							// the MiSTer menu's button ES's while it is shown (MisterPads), new controllers too
+							if (mMisterMode && mPresenting.load())
+								MisterPads::grab();
+						}
 						if (mMisterMode && mPresenting.load())
 							keepMisterMode();
 					}
@@ -327,6 +341,12 @@ namespace Renderer
 				void release()
 				{
 					mPresenting.store(false);
+					// the controllers Main_MiSTer's again, before it has the screen
+					if (mMisterMode)
+					{
+						MisterPads::shown(false);
+						MisterPads::release();
+					}
 					int wait = 0;
 					for (; wait < 200 && mCopying.load() > 0; wait++)
 						usleep(1000);
@@ -348,7 +368,11 @@ namespace Renderer
 					mRedraw.store(true);
 					mPresenting.store(true);
 					if (mMisterMode)
+					{
 						keepMisterMode();
+						MisterPads::shown(true);
+						MisterPads::grab();
+					}
 				}
 
 				// Every second: the console still in graphics mode, held, its keys off (whatever undid it: a

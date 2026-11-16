@@ -49,6 +49,10 @@ else
 	cat "$target"
 fi
 
+# the controllers all Main_MiSTer's for the game: ES gives back those it holds while it is shown (the MiSTer
+# menu's button asks first) when it lets go of the screen; again here, in case it could not
+ES_PID=$(pidof emulationstation)
+[ -n "$ES_PID" ] && "$ES/es-mister-helper" ungrab "$ES_PID"
 echo "load_core $target" >/dev/MiSTer_cmd
 
 # the core starts (Main_MiSTer starts again, and names it)

@@ -75,6 +75,10 @@ SIZE=__ES_SIZE__
 # whole times (1280x720 on 1080p stays in the middle, at two thirds of the screen).
 FILL=1
 
+# 1: on a controller, the button that opens the MiSTer menu (the DualSense's PS, as the MiSTer's own button
+# settings have it) asks first while EmulationStation is shown; 0: it opens the MiSTer menu at once
+MENU_ASK=1
+
 # The most frames a second ES draws (fewer leaves the ARM more time)
 FPS=60
 

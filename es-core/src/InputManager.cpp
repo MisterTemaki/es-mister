@@ -18,6 +18,10 @@
 #include "Paths.h"
 #include "GunManager.h"
 #include "renderers/Renderer.h"
+#ifdef MISTER
+#include "renderers/soft/MisterPads.h"
+#include "guis/GuiMsgBox.h"
+#endif
 #include <fstream>
 #include <set>
 
@@ -637,9 +641,43 @@ typedef struct SDL_JoyBatteryEventX
 } SDL_JoyBatteryEventX;
 #endif
 
+#ifdef MISTER
+// The MiSTer menu's button on a controller ES holds (MisterPads): asked first
+static void askMisterMenu(Window* window)
+{
+	static GuiComponent* asking = nullptr;
+	if (asking != nullptr && window->peekGui() == asking)
+		return;
+	asking = new GuiMsgBox(window, _("LEAVE EMULATIONSTATION FOR THE MISTER MENU?"),
+		_("YES"), [] { Renderer::Soft::MisterPads::openMisterMenu(); },
+		_("NO"), nullptr);
+	window->pushGui(asking);
+}
+#endif
+
 bool InputManager::parseEvent(const SDL_Event& ev, Window* window)
 {
 	bool causedEvent = false;
+
+#ifdef MISTER
+	// ES's console not on the screen (the MiSTer menu over it): what is pressed there is not for ES
+	if (Renderer::Soft::MisterPads::hidden())
+	{
+		switch (ev.type)
+		{
+		case SDL_JOYAXISMOTION:
+		case SDL_JOYBUTTONDOWN:
+		case SDL_JOYBUTTONUP:
+		case SDL_JOYHATMOTION:
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+		case SDL_TEXTINPUT:
+			return false;
+		default:
+			break;
+		}
+	}
+#endif
 
 	switch (ev.type)
 	{
@@ -743,8 +781,20 @@ bool InputManager::parseEvent(const SDL_Event& ev, Window* window)
 	}
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
+	{
+#ifdef MISTER
+		InputConfig* config = getInputConfigByDevice(ev.jbutton.which);
+		bool ask = false;
+		if (config != nullptr && Renderer::Soft::MisterPads::menuButton(config->getDevicePath(), ev.jbutton.button, ev.jbutton.state == SDL_PRESSED, ask))
+		{
+			if (ask)
+				askMisterMenu(window);
+			return true;
+		}
+#endif
 		window->input(getInputConfigByDevice(ev.jbutton.which), Input(ev.jbutton.which, TYPE_BUTTON, ev.jbutton.button, ev.jbutton.state == SDL_PRESSED, false));
 		return true;
+	}
 	
 	case SDL_MOUSEBUTTONDOWN:        
 	case SDL_MOUSEBUTTONUP:

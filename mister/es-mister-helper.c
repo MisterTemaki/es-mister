@@ -19,6 +19,8 @@
 //   es-mister-helper text                   the console back in text mode, after ES ended (see text_mode)
 //   es-mister-helper guard PID              while PID lives: no console switch waits more than a second
 //                                          (see guard)
+//   es-mister-helper osd                    the MiSTer menu opened (F12) over ES, which asked first (see osd)
+//   es-mister-helper ungrab PID             PID's hold on the controllers let go of (see ungrab)
 //   es-mister-helper reboot                 the MiSTer restarted cold, as its menu's Reboot held (see power)
 //   es-mister-helper halt                   the MiSTer shut down, its HDMI output off (see power)
 
@@ -38,6 +40,7 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/reboot.h>
+#include <sys/syscall.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -237,6 +240,102 @@ static int waiting_for_console(const char* pid)
 // a second for a switch away from a console held by ES (VT_PROCESS) that ES has not let go, the switch is
 // let go here (VT_RELDISP on that console, as ES would). ES answers such a switch itself at once; this is
 // the guard for when it does not, whatever the reason: the MiSTer's menu waited for ever then.
+// the first process of that name (/proc/N/comm), 0 when none
+static pid_t process_named(const char* wanted)
+{
+	DIR* dir = opendir("/proc");
+	if (!dir)
+		return 0;
+	pid_t pid = 0;
+	struct dirent* entry;
+	while (!pid && (entry = readdir(dir)) != NULL)
+	{
+		const pid_t n = (pid_t)atoi(entry->d_name);
+		if (n <= 1)
+			continue;
+		char path[64], name[64] = "";
+		snprintf(path, sizeof(path), "/proc/%d/comm", (int)n);
+		if (read_line(path, name, sizeof(name)) && !strcmp(name, wanted))
+			pid = n;
+	}
+	closedir(dir);
+	return pid;
+}
+
+// ES's hold on the controllers (EVIOCGRAB, MisterPads in ES: the MiSTer menu's button asks first while ES
+// is shown) let go of from outside: each of PID's input descriptors taken (pidfd_getfd: the same open
+// file, whose grab it is) and let go of. ES does it itself when its console is let go of and before a game;
+// this is for when it could not (stuck), so that the controllers never stay away from the MiSTer.
+#ifndef SYS_pidfd_open
+#define SYS_pidfd_open 434
+#endif
+#ifndef SYS_pidfd_getfd
+#define SYS_pidfd_getfd 438
+#endif
+static int ungrab(int pid)
+{
+	const int pidfd = (int)syscall(SYS_pidfd_open, pid, 0);
+	if (pidfd < 0)
+		return 0;
+	char dir_path[32];
+	snprintf(dir_path, sizeof(dir_path), "/proc/%d/fd", pid);
+	DIR* dir = opendir(dir_path);
+	int released = 0;
+	if (dir)
+	{
+		struct dirent* e;
+		while ((e = readdir(dir)) != NULL)
+		{
+			if (e->d_name[0] < '0' || e->d_name[0] > '9')
+				continue;
+			char link[64], target[128];
+			snprintf(link, sizeof(link), "%s/%s", dir_path, e->d_name);
+			const ssize_t n = readlink(link, target, sizeof(target) - 1);
+			if (n <= 0)
+				continue;
+			target[n] = 0;
+			if (strncmp(target, "/dev/input/event", 16) != 0)
+				continue;
+			const int fd = (int)syscall(SYS_pidfd_getfd, pidfd, atoi(e->d_name), 0);
+			if (fd < 0)
+				continue;
+			// 0 only where this open file held it
+			if (ioctl(fd, EVIOCGRAB, 0) == 0)
+				released++;
+			close(fd);
+		}
+		closedir(dir);
+	}
+	close(pidfd);
+	if (released)
+		fprintf(stderr, "es-mister-helper: %d controller(s) let go of by %d\n", released, pid);
+	return released;
+}
+
+// The MiSTer menu over ES (its controllers given back already): F12 until Main_MiSTer takes the screen
+// from ES's console (a sleeping menu may miss the first press), at most 3 presses
+static int osd(void)
+{
+	const int before = active_console();
+	int kbd = keyboard_open();
+	if (kbd < 0)
+		return 1;
+	int done = 0;
+	for (int tries = 0; tries < 3 && !done; tries++)
+	{
+		press(kbd, KEY_F12);
+		for (int wait = 0; wait < 30 && !done; wait++)
+		{
+			sleep_ms(50);
+			done = active_console() != before;
+		}
+	}
+	keyboard_close(kbd);
+	if (!done)
+		fprintf(stderr, "es-mister-helper: the MiSTer menu did not take the screen (F12)\n");
+	return done ? 0 : 1;
+}
+
 static int guard(int es)
 {
 	signal(SIGPIPE, SIG_IGN);
@@ -275,6 +374,10 @@ static int guard(int es)
 			const int ok = ioctl(tty, VT_RELDISP, 1) == 0;
 			fprintf(stderr, "es-mister-helper: a switch from tty%d to tty%d waited %d ms: %s\n", active, wanted,
 				waited * 250, ok ? "let go here" : strerror(errno));
+			// ES did not answer: the controllers it may hold given back too
+			const pid_t held = process_named("emulationstation");
+			if (held > 0)
+				ungrab(held);
 		}
 		close(tty);
 		waited = 0;
@@ -450,22 +553,7 @@ static int hdmi_off(void)
 // Main_MiSTer stopped (so that it does not turn the HDMI output on again), up to 2 s
 static void stop_main(void)
 {
-	DIR* dir = opendir("/proc");
-	if (!dir)
-		return;
-	pid_t pid = 0;
-	struct dirent* entry;
-	while (!pid && (entry = readdir(dir)) != NULL)
-	{
-		const pid_t n = (pid_t)atoi(entry->d_name);
-		if (n <= 1)
-			continue;
-		char path[64], name[64] = "";
-		snprintf(path, sizeof(path), "/proc/%d/comm", (int)n);
-		if (read_line(path, name, sizeof(name)) && !strcmp(name, "MiSTer"))
-			pid = n;
-	}
-	closedir(dir);
+	const pid_t pid = process_named("MiSTer");
 	if (!pid || kill(pid, SIGTERM) != 0)
 		return;
 	for (int i = 0; i < 20 && kill(pid, 0) == 0; i++)
@@ -547,9 +635,15 @@ int main(int argc, char** argv)
 	if (argc >= 3 && !strcmp(argv[1], "guard"))
 		return guard(atoi(argv[2]));
 
+	if (argc >= 2 && !strcmp(argv[1], "osd"))
+		return osd();
+
+	if (argc >= 3 && !strcmp(argv[1], "ungrab"))
+		return ungrab(atoi(argv[2])) >= 0 ? 0 : 1;
+
 	if (argc >= 2 && (!strcmp(argv[1], "reboot") || !strcmp(argv[1], "halt")))
 		return power(!strcmp(argv[1], "halt"));
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | key NAME | core | text | guard PID | reboot | halt\n", argv[0]);
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | key NAME | core | text | guard PID | osd | ungrab PID | reboot | halt\n", argv[0]);
 	return 2;
 }

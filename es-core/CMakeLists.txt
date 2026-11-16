@@ -302,6 +302,7 @@ if(SOFTWARE)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftRaster.h
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftOutput.h
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScale.h
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/MisterPads.h
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScript.h
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftCapture.h
 	)
@@ -310,6 +311,7 @@ if(SOFTWARE)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftRaster.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftOutput.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScale.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/MisterPads.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScript.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftCapture.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/stb_impl.cpp

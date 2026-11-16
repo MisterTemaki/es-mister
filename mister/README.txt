@@ -26,7 +26,8 @@ Using it
   EmulationStation shows up within a few seconds.
 - Keyboard: arrows, Enter (choose), Esc (back), Space (menu).
   Controllers: the common ones are recognised; otherwise EmulationStation asks
-  you to set the buttons up.
+  you to set the buttons up. On a controller, Select opens the menu, and Start
+  opens a game list's options (on the systems: the quick Quit menu).
 - The language is chosen in Menu > System settings > Language (English at first).
 - Drawing times go to logs/es-mister-stats.txt every 600 frames.
   EmulationStation's own frame counter (Show framerate) works too, but it
@@ -44,8 +45,8 @@ Using it
 - Menu > Quit > Shutdown operating system: the MiSTer shuts down and its HDMI
   output goes off (the TV shows no signal). The DE10-Nano cannot cut its own
   power: its LEDs stay on; unplug it, or plug it in again to turn it on.
-- F12 (or the controller's menu button) shows the MiSTer menu over it:
-  EmulationStation stays open, paused. To go back to it: F9, or
+- F12 (or the controller's menu button, after a question) shows the MiSTer
+  menu over it: EmulationStation stays open, paused. To go back to it: F9, or
   Scripts > __ES_DIR__ again. Meanwhile the menu's other scripts run as usual.
 
 Game covers
@@ -76,6 +77,8 @@ Settings
                  (1280x720 on a 1080p TV: 1.5 times); 0 = the MiSTer
                  enlarges them only by whole times (1280x720 stays in the
                  middle of a 1080p screen)
+  MENU_ASK=1     1 = the controller's button for the MiSTer menu (the
+                 DualSense's PS) asks first; 0 = it opens the menu at once
   FPS=60         the most frames a second
   BENCH=0        1 = the whole screen drawn again every frame, to measure what
                  drawing costs (see logs/es-mister-stats.txt)

@@ -130,6 +130,8 @@ public:
 
 	//Returns true if Input is mapped to this name, false otherwise.
 	bool isMappedTo(const std::string& name, Input input, bool reversedAxis = false); 
+	// the same, by the name the input is configured under (isMappedTo may play another's part: MiSTer)
+	bool isMappedAs(const std::string& name, Input input, bool reversedAxis = false);
 	bool isMappedLike(const std::string& name, Input input);
 
 	//Returns a list of names this input is mapped to.
