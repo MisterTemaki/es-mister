@@ -268,6 +268,62 @@ namespace Renderer
 				return false;
 			}
 
+			std::map<int, int> standardRenumbering(const std::string& devicePath, int& oldStart, int& newStart)
+			{
+				std::map<int, int> renumbering;
+				oldStart = newStart = -1;
+				if (devicePath.compare(0, 16, "/dev/input/event") != 0)
+					return renumbering;
+				const int fd = ::open(devicePath.c_str(), O_RDONLY | O_CLOEXEC | O_NONBLOCK);
+				if (fd < 0)
+					return renumbering;
+				unsigned long keys[(KEY_MAX + 1 + 8 * sizeof(unsigned long) - 1) / (8 * sizeof(unsigned long))] = {};
+				const bool read = ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keys)), keys) >= 0;
+				::close(fd);
+				if (!read || !testBit(keys, BTN_GAMEPAD) || !testBit(keys, BTN_START))
+					return renumbering;
+
+				// SDL's order (sdlIndex)
+				std::vector<int> codes;
+				for (int i = BTN_JOYSTICK; i < KEY_MAX; i++)
+					if (testBit(keys, i))
+						codes.push_back(i);
+				for (int i = 0; i < BTN_JOYSTICK; i++)
+					if (testBit(keys, i))
+						codes.push_back(i);
+
+				return renumberingOf(codes, oldStart, newStart);
+			}
+
+			std::map<int, int> renumberingOf(const std::vector<int>& codes, int& oldStart, int& newStart)
+			{
+				std::map<int, int> renumbering;
+				oldStart = newStart = -1;
+				auto extra = [](int code) { return code == BTN_C || code == BTN_Z; };
+				auto standard = [](int code) { return (code >= BTN_SOUTH && code <= BTN_THUMBR) || (code >= BTN_DPAD_UP && code <= BTN_DPAD_RIGHT); };
+				int old = 0;
+				for (int index = 0; index < (int)codes.size(); index++)
+				{
+					const int code = codes[index];
+					if (extra(code))
+						continue;
+					if (!standard(code))
+					{
+						oldStart = newStart = -1;
+						return std::map<int, int>();
+					}
+					if (old != index)
+						renumbering[old] = index;
+					if (code == BTN_START)
+					{
+						oldStart = old;
+						newStart = index;
+					}
+					old++;
+				}
+				return renumbering;
+			}
+
 			void giveBack(const char* why)
 			{
 				std::lock_guard<std::mutex> guard(lock);
@@ -293,6 +349,8 @@ namespace Renderer
 			void shown(bool) { }
 			bool hidden() { return false; }
 			bool menuButton(const std::string&, int, bool, bool& ask) { ask = false; return false; }
+			std::map<int, int> standardRenumbering(const std::string&, int& oldStart, int& newStart) { oldStart = newStart = -1; return std::map<int, int>(); }
+			std::map<int, int> renumberingOf(const std::vector<int>&, int& oldStart, int& newStart) { oldStart = newStart = -1; return std::map<int, int>(); }
 			void giveBack(const char*) { }
 		}
 	}

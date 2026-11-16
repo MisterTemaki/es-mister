@@ -18,7 +18,9 @@
 //
 //   ES_MISTER_MENU_ASK=1  on (es-mister.sh, MENU_ASK in es-mister.ini)
 
+#include <map>
 #include <string>
+#include <vector>
 
 namespace Renderer
 {
@@ -36,6 +38,16 @@ namespace Renderer
 			// a button of a controller (SDL's device path and index) pressed or let go: true when it is (part
 			// of) the MiSTer menu's, which ES keeps; ask true when the press asks for the MiSTer menu
 			bool menuButton(const std::string& devicePath, int button, bool pressed, bool& ask);
+			// The buttons of a controller (its device path) as SDL numbers them on this kernel, against the
+			// numbers a mapping made for the standard gamepad buttons alone gives them (SDL's database,
+			// Batocera's es_input.cfg): the MiSTer's hid-playstation also gives the DualSense BTN_Z, after
+			// its face buttons, and every button from L1 on came one number later (Create read as START,
+			// Options as nothing). Old number -> new, with START's; empty when they agree, or for a
+			// controller with other keys than a gamepad's (BTN_C and BTN_Z apart), left as it is.
+			std::map<int, int> standardRenumbering(const std::string& devicePath, int& oldStart, int& newStart);
+			// the same, from the controller's key codes in SDL's order
+			std::map<int, int> renumberingOf(const std::vector<int>& codes, int& oldStart, int& newStart);
+
 			// the controllers given back, not taken again until ES's console is back: yes to the question
 			// (ES closes), F12 on a keyboard (the MiSTer menu over ES)
 			void giveBack(const char* why);

@@ -617,6 +617,7 @@ if(MISTER)
     mister/tests/paths-test.cpp
     mister/tests/raster-clip-test.cpp
     mister/tests/scale-test.cpp
+    mister/tests/start-select-test.cpp
     mister/tests/libretro-test.cpp
     mister/tests/ApiSystemStub.cpp
     es-app/src/scrapers/LibretroArt.cpp

@@ -111,6 +111,8 @@ public:
 
 	void clear();
 	void mapInput(const std::string& name, Input input);
+	// the buttons numbered anew (old number -> new; the others as they are)
+	void renumberButtons(const std::map<int, int>& numbers);
 	void unmapInput(const std::string& name); // unmap all Inputs mapped to this name
 
 	inline int getDeviceId() const { return mDeviceId; };

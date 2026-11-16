@@ -613,6 +613,25 @@ void InputManager::rebuildAllJoysticks(bool deinit)
 		else
 			LOG(LogInfo) << "Added known joystick " << deviceName << " (GUID: " << guid << ", instance ID: " << joyId << ", device index: " << idx << ", device path : " << devicePath << ").";
 
+#ifdef MISTER
+		// a mapping made for other numbers of the same buttons (MisterPads::standardRenumbering): numbered
+		// as this kernel numbers them, and kept so
+		{
+			InputConfig* config = mInputConfigs[joyId];
+			int oldStart = -1, newStart = -1;
+			const std::map<int, int> renumbering = Renderer::Soft::MisterPads::standardRenumbering(devicePath, oldStart, newStart);
+			Input start;
+			if (!renumbering.empty() && config->isConfigured() && config->getInputByName("start", &start) && start.type == TYPE_BUTTON &&
+				start.id == oldStart && oldStart != newStart)
+			{
+				config->renumberButtons(renumbering);
+				fprintf(stderr, "InputManager: %s (%s): its buttons numbered as this kernel numbers them (START %d, was %d)\n",
+					deviceName.c_str(), devicePath.c_str(), newStart, oldStart);
+				writeDeviceConfig(config);
+			}
+		}
+#endif
+
 		// set up the prevAxisValues
 		int numAxes = SDL_JoystickNumAxes(joy);
 		if (numAxes < 0)
@@ -682,6 +701,11 @@ bool InputManager::parseEvent(const SDL_Event& ev, Window* window)
 		default:
 			break;
 		}
+	}
+	{
+		static const bool logInput = getenv("ES_MISTER_INPUT_LOG") != nullptr;
+		if (logInput && ev.type == SDL_KEYDOWN)
+			fprintf(stderr, "input: key %d (scancode %d)\n", (int)ev.key.keysym.sym, (int)ev.key.keysym.scancode);
 	}
 	// F12 on a keyboard: the MiSTer menu over ES, which the controllers must reach (MisterPads)
 	if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_F12)
@@ -793,6 +817,17 @@ bool InputManager::parseEvent(const SDL_Event& ev, Window* window)
 	{
 #ifdef MISTER
 		InputConfig* config = getInputConfigByDevice(ev.jbutton.which);
+		static const bool logInput = getenv("ES_MISTER_INPUT_LOG") != nullptr;
+		if (logInput && config != nullptr && ev.jbutton.state == SDL_PRESSED)
+		{
+			const Input pressed(ev.jbutton.which, TYPE_BUTTON, ev.jbutton.button, 1, false);
+			std::string names;
+			for (const std::string& name : config->getMappedTo(pressed))
+				names += name + " ";
+			fprintf(stderr, "input: joystick %d (%s, %s, device %d) button %d: configured as %s; plays start %d, select %d\n",
+				(int)ev.jbutton.which, config->getDeviceName().c_str(), config->getDevicePath().c_str(), config->getDeviceId(), (int)ev.jbutton.button,
+				names.c_str(), config->isMappedTo("start", pressed) ? 1 : 0, config->isMappedTo("select", pressed) ? 1 : 0);
+		}
 		bool ask = false;
 		if (config != nullptr && Renderer::Soft::MisterPads::menuButton(config->getDevicePath(), ev.jbutton.button, ev.jbutton.state == SDL_PRESSED, ask))
 		{

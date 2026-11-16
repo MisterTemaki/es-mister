@@ -181,6 +181,18 @@ void InputConfig::mapInput(const std::string& name, Input input)
 	mNameMap[toLower(name)] = input;
 }
 
+void InputConfig::renumberButtons(const std::map<int, int>& numbers)
+{
+	for (auto& it : mNameMap)
+	{
+		if (it.second.type != TYPE_BUTTON)
+			continue;
+		auto number = numbers.find(it.second.id);
+		if (number != numbers.cend())
+			it.second.id = number->second;
+	}
+}
+
 void InputConfig::unmapInput(const std::string& name)
 {
 	auto it = mNameMap.find(toLower(name));
