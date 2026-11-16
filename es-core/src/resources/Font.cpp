@@ -47,6 +47,15 @@ Font::FontFace::FontFace(ResourceData&& d, int size) : data(d)
 		face = nullptr;
 }
 
+Font::FontFace::FontFace(const std::string& file, int size) : data({ nullptr, 0 })
+{
+	int err = FT_New_Face(sLibrary, file.c_str(), 0, &face);
+	if (!err)
+		FT_Set_Pixel_Sizes(face, 0, size);
+	else
+		face = nullptr;
+}
+
 Font::FontFace::~FontFace()
 {
 	if(face)
@@ -337,6 +346,16 @@ FT_Face Font::getFaceForChar(unsigned int id)
 				continue;
 
 			mFaceCache[i] = std::unique_ptr<FontFace>(new FontFace(std::move(itCache->second), mSize));
+#elif defined(MISTER)
+			// The file mapped by FreeType, not read whole each time: a font's faces are dropped after its
+			// ASCII glyphs (clearFaceCache) and the fallback fonts (8 MB, CJK) taken again for each new size
+			// with a character the theme's font lacks. Entering a system read ~50 MB that way (0.5 s of its
+			// 0.7 s on the MiSTer), ES's start over 100 MB. The same file: the same glyphs.
+			const std::string file = ResourceManager::getInstance()->getResourcePath(path);
+			if (Utils::FileSystem::exists(file))
+				mFaceCache[i] = std::unique_ptr<FontFace>(new FontFace(file, mSize));
+			else
+				mFaceCache[i] = std::unique_ptr<FontFace>(new FontFace(ResourceData{ nullptr, 0 }, mSize));
 #else
 			ResourceData data = ResourceManager::getInstance()->getFileData(path);
 			mFaceCache[i] = std::unique_ptr<FontFace>(new FontFace(std::move(data), mSize));

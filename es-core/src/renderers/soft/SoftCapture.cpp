@@ -20,7 +20,7 @@ namespace Renderer
 			public:
 				explicit Writer(FILE* f) : mFile(f) { }
 				template<typename T> void put(const T& value) { mOk = mOk && fwrite(&value, sizeof(T), 1, mFile) == 1; }
-				template<typename T> void putVector(const std::vector<T>& values)
+				template<typename T, typename A> void putVector(const std::vector<T, A>& values)
 				{
 					put((uint32_t)values.size());
 					if (!values.empty())
@@ -42,7 +42,7 @@ namespace Renderer
 					mOk = mOk && fread(&value, sizeof(T), 1, mFile) == 1;
 					return value;
 				}
-				template<typename T> void getVector(std::vector<T>& values, size_t most)
+				template<typename T, typename A> void getVector(std::vector<T, A>& values, size_t most)
 				{
 					const uint32_t count = get<uint32_t>();
 					if (!mOk || count > most)

@@ -67,6 +67,8 @@ namespace FileSorts
 	const std::vector<SortType>& getSortTypes();
 
 	bool compareName(const FileData* file1, const FileData* file2);
+	// what compareName compares, for one file: compareName(a, b) == (nameKey(a).compare(nameKey(b)) < 0)
+	std::u32string nameKey(const FileData* file);
 	bool compareRating(const FileData* file1, const FileData* file2);
 	bool compareTimesPlayed(const FileData* file1, const FileData* fil2);
 	bool compareLastPlayed(const FileData* file1, const FileData* file2);

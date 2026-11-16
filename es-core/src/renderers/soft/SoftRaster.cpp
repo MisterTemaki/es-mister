@@ -2877,6 +2877,40 @@ namespace Renderer
 			return box.empty() ? Bounds() : box;
 		}
 
+		bool convertRgba(const uint8_t* from, uint32_t* to, unsigned int count)
+		{
+			unsigned int i = 0;
+			bool opaque = true;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+			// 16 texels: the bytes apart, put back in B, G, R, A order (0xAARRGGBB little-endian); the alphas'
+			// smallest kept
+			uint8x16_t least = vdupq_n_u8(255);
+			for (; i + 16 <= count; i += 16)
+			{
+				const uint8x16x4_t rgba = vld4q_u8(from + (size_t)i * 4);
+				uint8x16x4_t bgra;
+				bgra.val[0] = rgba.val[2];
+				bgra.val[1] = rgba.val[1];
+				bgra.val[2] = rgba.val[0];
+				bgra.val[3] = rgba.val[3];
+				vst4q_u8((uint8_t*)(to + i), bgra);
+				least = vminq_u8(least, rgba.val[3]);
+			}
+			uint8x8_t half = vmin_u8(vget_low_u8(least), vget_high_u8(least));
+			half = vpmin_u8(half, half);
+			half = vpmin_u8(half, half);
+			half = vpmin_u8(half, half);
+			opaque = vget_lane_u8(half, 0) == 255;
+#endif
+			for (; i < count; i++)
+			{
+				const uint8_t* p = from + (size_t)i * 4;
+				to[i] = ((uint32_t)p[3] << 24) | ((uint32_t)p[0] << 16) | ((uint32_t)p[1] << 8) | p[2];
+				opaque = opaque && p[3] == 255;
+			}
+			return opaque;
+		}
+
 		void findClearRuns(Texture& texture)
 		{
 			texture.clearAt.clear();

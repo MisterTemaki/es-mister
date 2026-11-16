@@ -457,25 +457,41 @@ const bool FileData::isVerticalArcadeGame()
 
 const bool FileData::isLightGunGame()
 {
-	return MameNames::getInstance()->isLightgun(Utils::FileSystem::getStem(getPath()), mSystem->getName(), mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE));
+	const bool arcade = mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE);
+	if (!MameNames::getInstance()->mayBeLightgun(mSystem->getName(), arcade))
+		return false;
+
+	return MameNames::getInstance()->isLightgun(Utils::FileSystem::getStem(getPath()), mSystem->getName(), arcade);
 	//return Genres::genreExists(&getMetadata(), GENRE_LIGHTGUN);
 }
 
 const bool FileData::isWheelGame()
 {
-	return MameNames::getInstance()->isWheel(Utils::FileSystem::getStem(getPath()), mSystem->getName(), mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE));
+	const bool arcade = mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE);
+	if (!MameNames::getInstance()->mayBeWheel(mSystem->getName(), arcade))
+		return false;
+
+	return MameNames::getInstance()->isWheel(Utils::FileSystem::getStem(getPath()), mSystem->getName(), arcade);
 	//return Genres::genreExists(&getMetadata(), GENRE_WHEEL);
 }
 
 const bool FileData::isTrackballGame()
 {
-	return MameNames::getInstance()->isTrackball(Utils::FileSystem::getStem(getPath()), mSystem->getName(), mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE));
+	const bool arcade = mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE);
+	if (!MameNames::getInstance()->mayBeTrackball(mSystem->getName(), arcade))
+		return false;
+
+	return MameNames::getInstance()->isTrackball(Utils::FileSystem::getStem(getPath()), mSystem->getName(), arcade);
 	//return Genres::genreExists(&getMetadata(), GENRE_TRACKBALL);
 }
 
 const bool FileData::isSpinnerGame()
 {
-	return MameNames::getInstance()->isSpinner(Utils::FileSystem::getStem(getPath()), mSystem->getName(), mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE));
+	const bool arcade = mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE);
+	if (!MameNames::getInstance()->mayBeSpinner(mSystem->getName(), arcade))
+		return false;
+
+	return MameNames::getInstance()->isSpinner(Utils::FileSystem::getStem(getPath()), mSystem->getName(), arcade);
 	//return Genres::genreExists(&getMetadata(), GENRE_SPINNER);
 }
 
@@ -1181,6 +1197,46 @@ const std::vector<FileData*> FolderData::getChildrenListToDisplay()
 		bool foldersFirst = Settings::ShowFoldersFirst();
 		bool favoritesFirst = getSystem()->getShowFavoritesFirst();
 
+		if (sort.comparisonFunction == &FileSorts::compareName)
+		{
+			// By name (the usual sort): what each comparison below reads of a file (its favourite flag, its
+			// type, its name as compareName compares it), read once a file. The comparisons gave each name
+			// as a new string, ~25 times a file: entering a system of 3800 games spent most of its 0.7 s
+			// there on the MiSTer. The same comparisons, on pointers as before, in the same sort: the same
+			// order.
+			struct Keyed
+			{
+				FileData* file;
+				bool favorite;
+				FileType type;
+				std::u32string name;
+			};
+			std::vector<Keyed> keyed;
+			keyed.reserve(ret.size());
+			for (FileData* file : ret)
+				keyed.push_back({ file, favoritesFirst && file->getFavorite(), file->getType(), FileSorts::nameKey(file) });
+
+			std::vector<const Keyed*> order;
+			order.reserve(keyed.size());
+			for (const Keyed& k : keyed)
+				order.push_back(&k);
+
+			const bool ascending = sort.ascending;
+			std::stable_sort(order.begin(), order.end(), [ascending, foldersFirst, favoritesFirst](const Keyed* k1, const Keyed* k2) -> bool
+				{
+					if (favoritesFirst && k1->favorite != k2->favorite)
+						return k1->favorite;
+
+					if (foldersFirst && k1->type != k2->type)
+						return (k1->type == FOLDER);
+
+					return (k1->name.compare(k2->name) < 0) == ascending;
+				});
+
+			for (size_t i = 0; i < order.size(); i++)
+				ret[i] = order[i]->file;
+		}
+		else
 		std::stable_sort(ret.begin(), ret.end(), [sort, foldersFirst, favoritesFirst](const FileData* file1, const FileData* file2) -> bool
 			{
 				if (favoritesFirst && file1->getFavorite() != file2->getFavorite())

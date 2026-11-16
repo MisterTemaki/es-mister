@@ -36,6 +36,10 @@ namespace Utils
 
 		std::string join(const std::vector<std::string>& items, std::string separator);
 		int			compareIgnoreCase(const std::string& name1, const std::string& name2);
+		// What compareIgnoreCase compares, a character a code point: compareIgnoreCase(a, b) has the sign of
+		// ignoreCaseKey(a).compare(ignoreCaseKey(b)). To sort many names: each converted once, not at each
+		// comparison.
+		std::u32string ignoreCaseKey(const std::string& name);
 		std::string proper(const std::string& _string);
 		std::string removeHtmlTags(const std::string& html);
 		bool        containsIgnoreCase(const std::string & _string, const std::string & _what);

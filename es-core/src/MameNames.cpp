@@ -366,7 +366,7 @@ const bool MameNames::isLightgun(const std::string& _nameName, const std::string
 		return true;
 
 	// name contains ?
-	for (auto gameId : it->second)
+	for (const auto& gameId : it->second)
 		if (indexedName.find(gameId) != std::string::npos)
 			return true;
 
@@ -395,7 +395,7 @@ const bool MameNames::isWheel(const std::string& _nameName, const std::string& s
 		return true;
 
 	// name contains ?
-	for (auto gameId : it->second)
+	for (const auto& gameId : it->second)
 		if (indexedName.find(gameId) != std::string::npos)
 			return true;
 
@@ -424,7 +424,7 @@ const bool MameNames::isTrackball(const std::string& _nameName, const std::strin
 		return true;
 
 	// name contains ?
-	for (auto gameId : it->second)
+	for (const auto& gameId : it->second)
 		if (indexedName.find(gameId) != std::string::npos)
 			return true;
 
@@ -453,7 +453,7 @@ const bool MameNames::isSpinner(const std::string& _nameName, const std::string&
 		return true;
 
 	// name contains ?
-	for (auto gameId : it->second)
+	for (const auto& gameId : it->second)
 		if (indexedName.find(gameId) != std::string::npos)
 			return true;
 

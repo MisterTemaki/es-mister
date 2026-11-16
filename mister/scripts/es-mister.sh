@@ -156,13 +156,14 @@ case "$SCREEN" in fill:*) export ES_SOFT_DRAW_SIZE=$SIZE ;; esac
 export ES_MISTER_MENU_ASK=$MENU_ASK
 export SDL_AUDIODRIVER=alsa
 export ES_SOFT_FPS=$FPS
-export ES_SOFT_STATS=600
-# the drawing times, a line every 600 frames (the previous start's kept beside it: ES adds to the file)
+# the drawing times, a line every 600 frames (the previous start's kept beside it: ES adds to the file);
+# ES_SOFT_STATS set before (a measurement: 0 for the lines a script asks for only) stays
+export ES_SOFT_STATS=${ES_SOFT_STATS:-600}
 [ -f "$LOGS/es-mister-stats.txt" ] && mv -f "$LOGS/es-mister-stats.txt" "$LOGS/es-mister-stats.prev.txt"
 export ES_SOFT_STATS_FILE=$LOGS/es-mister-stats.txt
 # how long each step of ES's start takes (the previous start's is kept beside it)
 [ -f "$LOGS/es-startup.log" ] && mv -f "$LOGS/es-startup.log" "$LOGS/es-startup.prev.log"
-export ES_STARTUP_TRACE=$LOGS/es-startup.log
+export ES_STARTUP_TRACE=${ES_STARTUP_TRACE:-$LOGS/es-startup.log}
 [ "$BENCH" = 1 ] && export ES_SOFT_BENCH=1
 # where ES spends the processor (logs/es-profile.txt), for the port's tuning
 [ "$PROFILE" = 1 ] && export ES_PROFILE=$LOGS/es-profile.txt

@@ -712,6 +712,37 @@ namespace Utils
 			}
 		}
 
+		std::u32string ignoreCaseKey(const std::string& name)
+		{
+			// compareIgnoreCase's steps for one name: the comparison of two keys is then the same as its
+			// (it stops at a 0, the string's end, where the key ends)
+			std::u32string key;
+			key.reserve(name.size());
+			size_t p = 0;
+			while (p <= name.size())
+			{
+				const char c = name[p];
+				int u;
+				if ((c & 0x80) == 0)
+				{
+					if (c >= 'a' && c <= 'z')
+						u = c - 0x20;
+					else
+						u = c;
+
+					p++;
+				}
+				else
+					u = toupperUnicode(chars2Unicode(name, p));
+
+				if (u == 0)
+					break;
+
+				key.push_back((char32_t)u);
+			}
+			return key;
+		}
+
 		bool containsIgnoreCase(const std::string & _string, const std::string & _what)
 		{
 			auto it = std::search(

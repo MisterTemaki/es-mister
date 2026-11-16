@@ -12,12 +12,25 @@
 #include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace Renderer
 {
 	namespace Soft
 	{
+		// An allocator that leaves the elements resize adds as they are (no zeros): a texture's texels, all
+		// written by the upload after (a picture of the size of the screen was written twice)
+		template <typename T> struct NoInitAllocator : std::allocator<T>
+		{
+			template <typename U> struct rebind { using other = NoInitAllocator<U>; };
+			NoInitAllocator() = default;
+			template <typename U> NoInitAllocator(const NoInitAllocator<U>&) {}
+			template <typename U> void construct(U* p) { ::new ((void*)p) U; }
+			template <typename U, typename... Args> void construct(U* p, Args&&... args) { ::new ((void*)p) U(std::forward<Args>(args)...); }
+		};
+		typedef std::vector<uint32_t, NoInitAllocator<uint32_t>> Texels;
+
 		struct Texture
 		{
 			unsigned int id = 0;
@@ -26,7 +39,7 @@ namespace Renderer
 			bool repeat = false;  // GL_REPEAT, else GL_CLAMP_TO_EDGE
 			bool opaque = false;  // every texel's alpha is 255: drawn 1:1 with no colour, its rows are copied
 			uint64_t generation = 0; // bumped at each change, for the frame's hash
-			std::vector<uint32_t> pixels; // 0xAARRGGBB; row 0 is v = 0, as uploaded
+			Texels pixels; // 0xAARRGGBB; row 0 is v = 0, as uploaded
 			// its rows' runs of clear texels (alpha 0, 32 or more), which a picture drawn 1:1 over the frame
 			// leaves as they are: row y's are clear[clearAt[y]] to clear[clearAt[y + 1]], first and last + 1
 			// texel by turns (none: no runs)
@@ -35,6 +48,9 @@ namespace Renderer
 
 		// A texture's clear runs (Texture::clear), after a whole upload
 		void findClearRuns(Texture& texture);
+
+		// count RGBA texels (bytes, as uploaded) to 0xAARRGGBB; whether every alpha was 255
+		bool convertRgba(const uint8_t* from, uint32_t* to, unsigned int count);
 
 		// A part of the frame, in pixels, half-open
 		struct Bounds

@@ -43,6 +43,12 @@ public:
   	const bool		  isWheel(const std::string& _nameName, const std::string& systemName, bool isArcade);
     	const bool		  isTrackball(const std::string& _nameName, const std::string& systemName, bool isArcade);
       	const bool		  isSpinner(const std::string& _nameName, const std::string& systemName, bool isArcade);
+	// Whether isLightgun (isWheel...) can be true for a game of the system: false when it is not arcade and
+	// has no list of such games, without the game's name (computed for nothing for each game of a list)
+	bool mayBeLightgun(const std::string& systemName, bool isArcade) const { return isArcade || mNonArcadeGunGames.find(systemName) != mNonArcadeGunGames.cend(); }
+	bool mayBeWheel(const std::string& systemName, bool isArcade) const { return isArcade || mNonArcadeWheelGames.find(systemName) != mNonArcadeWheelGames.cend(); }
+	bool mayBeTrackball(const std::string& systemName, bool isArcade) const { return isArcade || mNonArcadeTrackballGames.find(systemName) != mNonArcadeTrackballGames.cend(); }
+	bool mayBeSpinner(const std::string& systemName, bool isArcade) const { return isArcade || mNonArcadeSpinnerGames.find(systemName) != mNonArcadeSpinnerGames.cend(); }
 
 private:
 	 MameNames();

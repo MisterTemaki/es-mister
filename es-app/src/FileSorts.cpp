@@ -71,6 +71,13 @@ namespace FileSorts
 		mSortTypes.push_back(SortType(RELEASEDATE_SYSTEM_DESCENDING, &compareReleaseYearSystem, false, _("RELEASE YEAR, SYSTEM, DESCENDING"), _U("\uF161 ")));
 	}
 
+	// the articles names are sorted without (IgnoreLeadingArticles), read once
+	static const std::vector<std::string>& leadingArticles()
+	{
+		static auto articles = Utils::String::commaStringToVector(_("A,AN,THE"));
+		return articles;
+	}
+
 	//returns if file1 should come before file2
 	bool compareName(const FileData* file1, const FileData* file2)
 	{
@@ -80,14 +87,23 @@ namespace FileSorts
 
 		if (Settings::IgnoreLeadingArticles())
 		{
-			static auto articles = Utils::String::commaStringToVector(_("A,AN,THE"));
-			auto name1a = stripLeadingArticle(name1, articles);
-			auto name2a = stripLeadingArticle(name2, articles);
+			auto name1a = stripLeadingArticle(name1, leadingArticles());
+			auto name2a = stripLeadingArticle(name2, leadingArticles());
 
 			return Utils::String::compareIgnoreCase(name1a, name2a) < 0;
 		}
 
 		return Utils::String::compareIgnoreCase(name1, name2) < 0;
+	}
+
+	std::u32string nameKey(const FileData* file)
+	{
+		// compareName's name, as it compares it
+		const std::string name = file->getSortName();
+		if (Settings::IgnoreLeadingArticles())
+			return Utils::String::ignoreCaseKey(stripLeadingArticle(name, leadingArticles()));
+
+		return Utils::String::ignoreCaseKey(name);
 	}
 
 	std::string stripLeadingArticle(const std::string &string, const std::vector<std::string> &articles)

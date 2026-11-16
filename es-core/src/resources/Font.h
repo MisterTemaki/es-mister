@@ -113,6 +113,8 @@ private:
 		FT_Face face;
 
 		FontFace(ResourceData&& d, int size);
+		// the font file read by FreeType itself (mapped: only the parts used are read), no copy kept
+		FontFace(const std::string& file, int size);
 		virtual ~FontFace();
 	};
 

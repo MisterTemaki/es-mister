@@ -1443,7 +1443,16 @@ namespace Renderer
 			waitBands();
 		if (whole && texture.use_count() > owners)
 		{
-			std::shared_ptr<Soft::Texture> copy = std::make_shared<Soft::Texture>(*texture);
+			// a new one with the old one's settings: its texels and clear runs are all written below (the
+			// old ones were copied for nothing)
+			std::shared_ptr<Soft::Texture> copy = std::make_shared<Soft::Texture>();
+			copy->id = texture->id;
+			copy->width = texture->width;
+			copy->height = texture->height;
+			copy->linear = texture->linear;
+			copy->repeat = texture->repeat;
+			copy->opaque = texture->opaque;
+			copy->generation = texture->generation;
 			std::lock_guard<std::mutex> lock(s.textureLock);
 			s.textures[_texture] = copy;
 			if (s.bound == texture)
@@ -1456,7 +1465,11 @@ namespace Renderer
 		{
 			texture->width = (int)_width;
 			texture->height = (int)_height;
-			texture->pixels.assign((size_t)_width * _height, 0);
+			// a picture: each texel written below (no zeros first); none: zeros
+			if (_data != nullptr)
+				texture->pixels.resize((size_t)_width * _height);
+			else
+				texture->pixels.assign((size_t)_width * _height, 0);
 			x = 0;
 			y = 0;
 		}
@@ -1487,13 +1500,8 @@ namespace Renderer
 				}
 				else
 				{
-					const uint8_t* line = src + (size_t)row * _width * 4;
-					for (unsigned int i = 0; i < count; i++)
-					{
-						const uint8_t* p = line + i * 4;
-						dst[i] = ((uint32_t)p[3] << 24) | ((uint32_t)p[0] << 16) | ((uint32_t)p[1] << 8) | p[2];
-						opaque = opaque && p[3] == 255;
-					}
+					const bool rowOpaque = Soft::convertRgba(src + (size_t)row * _width * 4, dst, count);
+					opaque = opaque && rowOpaque;
 				}
 			}
 		}
