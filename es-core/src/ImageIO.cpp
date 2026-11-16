@@ -95,7 +95,10 @@ unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const s
 			LOG(LogDebug) << "ImageIO : rescaling image from " << width << "x" << height << " to " << sz.x() << "x" << sz.y();
 
 			unsigned char* scaled = new unsigned char[(size_t)sz.x() * sz.y() * 4];
-			if (stbir_resize(rgba, w, h, 0, scaled, sz.x(), sz.y(), 0, STBIR_RGBA, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_BOX) != nullptr)
+			// written bottom up (its last row first, a negative stride), as handed over below: the same
+			// bytes as turning it over after, without that copy
+			const int scaledStride = sz.x() * 4;
+			if (stbir_resize(rgba, w, h, 0, scaled + (size_t)(sz.y() - 1) * scaledStride, sz.x(), sz.y(), -scaledStride, STBIR_RGBA, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_BOX) != nullptr)
 			{
 				if (ownBuffer)
 					delete[] rgba;
@@ -108,6 +111,9 @@ unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const s
 
 				if (packedSize != nullptr)
 					*packedSize = Vector2i(width, height);
+
+				// already bottom up, and from new[] as the caller frees it
+				return scaled;
 			}
 			else
 				delete[] scaled;
