@@ -6,9 +6,11 @@
 // (each part cleared, every command that meets it clipped to it), and compared pixel by pixel. With the sanitizers it
 // also checks that no draw touches memory outside the frame or the textures, whatever the coordinates.
 #include "TestMain.h"
+#include "renderers/soft/SoftCapture.h"
 #include "renderers/soft/SoftRaster.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <memory>
 #include <random>
@@ -763,4 +765,360 @@ TEST(scaled_pictures_kept_leave_the_pixels_sampled)
 		printf("  %d of %d scenes kept a scaled picture the new way\n", kept, scenes);
 	CHECK_EQ(differing, 0);
 	CHECK(kept * 5 >= scenes); // many scenes used the cache
+}
+
+// Draws written over by later ones are left out there (findHidden, drawCapture's parts as the renderer's):
+// grid-like scenes (a background; tiles of a shadow, a stencil shape, a picture tested inside it or not, a
+// label; anything else between them; scissors) drawn whole, one draw after another, and as the renderer
+// draws them, in bands and strips, without what is written over. The pixels must be the same.
+TEST(draws_written_over_are_left_out)
+{
+	const int scenes = getenv("RASTER_SCENES") ? atoi(getenv("RASTER_SCENES")) : 3000;
+	int differing = 0, cut = 0;
+	for (int i = 0; i < scenes; i++)
+	{
+		Random r(0x0cc10000u + (uint32_t)i);
+		Capture capture;
+		capture.width = r.range(40, 300);
+		capture.height = r.range(30, 220);
+		const int W = capture.width, H = capture.height;
+		auto texture = [&](bool opaque)
+		{
+			std::unique_ptr<Texture> t = makeTexture(r);
+			if (opaque)
+			{
+				for (uint32_t& p : t->pixels)
+					p |= 0xFF000000u;
+				t->opaque = true;
+				findClearRuns(*t);
+			}
+			capture.textures.push_back(std::shared_ptr<Texture>(t.release()));
+			return (int)capture.textures.size() - 1;
+		};
+		auto quad = [](float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, uint32_t c)
+		{
+			return std::vector<SVertex>{ { x0, y0, u0, v0, c }, { x0, y1, u0, v1, c }, { x1, y0, u1, v0, c }, { x1, y1, u1, v1, c } };
+		};
+		auto coord = [&](float a, float b) { return r.chance(60) ? std::floor(r.real(a, b)) : r.real(a, b); };
+		auto scissor = [&](CapturedCommand& c)
+		{
+			if (!r.chance(20))
+				return;
+			c.state.scissor = true;
+			c.state.sx0 = r.range(-10, W / 2); c.state.sy0 = r.range(-10, H / 2);
+			c.state.sx1 = r.range(W / 2, W + 10); c.state.sy1 = r.range(H / 2, H + 10);
+		};
+		auto colour = [&]()
+		{
+			switch (r.range(0, 4))
+			{
+			case 0: return 0xFFFFFFFFu;
+			case 1: return 0xFF000000u | (uint32_t)r.range(0, 0xFFFFFF);
+			case 2: return ((uint32_t)r.range(200, 254) << 24) | (uint32_t)r.range(0, 0xFFFFFF); // almost opaque
+			default: return r.chance(50) ? 0xFFB0B0B0u : r.color();
+			}
+		};
+
+		// a background
+		{
+			CapturedCommand c;
+			if (r.chance(70))
+			{
+				c.texture = texture(r.chance(80));
+				capture.textures[c.texture]->linear = r.chance(30);
+			}
+			c.vertices = quad(0, 0, (float)W, (float)H, 0, 0, 1, 1, r.chance(70) ? (0xFF000000u | (uint32_t)r.range(0, 0xFFFFFF)) : colour());
+			scissor(c);
+			capture.commands.push_back(c);
+		}
+		const int tiles = r.range(1, 8);
+		for (int k = 0; k < tiles; k++)
+		{
+			const float w = r.real(10, W * 0.6f), h = r.real(10, H * 0.6f);
+			const float x0 = coord(-w / 3, W - w / 2), y0 = coord(-h / 3, H - h / 2);
+			// a shadow, bigger, any texture
+			{
+				CapturedCommand c;
+				c.texture = texture(false);
+				const float m = r.real(0, 12);
+				c.vertices = quad(x0 - m, y0 - m, x0 + w + m, y0 + h + m, 0, 0, 1, 1, r.chance(60) ? 0xB0000000u : r.color());
+				scissor(c);
+				capture.commands.push_back(c);
+			}
+			// a stencil shape: a rounded rectangle (or any fan)
+			const int stencil = r.range(0, 9);
+			if (stencil < 7)
+			{
+				CapturedCommand c;
+				c.stencil = true;
+				c.topology = Topology::Fan;
+				if (stencil < 5)
+				{
+					const float rad = r.real(0, std::min(w, h) / 2);
+					const float cx = x0 + w / 2, cy = y0 + h / 2;
+					c.vertices.push_back({ cx, cy, 0, 0, 0xFFFFFFFF });
+					const int steps = r.range(1, 5);
+					const float corners[4][2] = { { x0 + w - rad, y0 + rad }, { x0 + w - rad, y0 + h - rad }, { x0 + rad, y0 + h - rad }, { x0 + rad, y0 + rad } };
+					for (int q = 0; q < 4; q++)
+						for (int st = 0; st <= steps; st++)
+						{
+							const float a = 1.5707963f * (q - 1 + (float)st / steps);
+							c.vertices.push_back({ corners[q][0] + rad * std::cos(a), corners[q][1] + rad * std::sin(a), 0, 0, 0xFFFFFFFF });
+						}
+					c.vertices.push_back(c.vertices[1]);
+				}
+				else
+				{
+					const int n = r.range(3, 9);
+					for (int q = 0; q < n; q++)
+						c.vertices.push_back({ r.coord(x0 - 10, x0 + w + 10), r.coord(y0 - 10, y0 + h + 10), 0, 0, 0xFFFFFFFF });
+				}
+				if (r.chance(15))
+					scissor(c);
+				capture.commands.push_back(c);
+			}
+			// something between them now and then
+			if (r.chance(20))
+			{
+				CapturedCommand c;
+				c.texture = r.chance(50) ? texture(r.chance(50)) : -1;
+				const float bx = r.coord(x0 - 20, x0 + w), by = r.coord(y0 - 20, y0 + h);
+				c.vertices = quad(bx, by, bx + r.real(2, 40), by + r.real(2, 30), 0, 0, 1, 1, colour());
+				capture.commands.push_back(c);
+			}
+			// the tile's picture: opaque or not, tested inside the shape or not
+			{
+				CapturedCommand c;
+				c.texture = r.chance(85) ? texture(r.chance(85)) : -1;
+				if (c.texture >= 0)
+					capture.textures[c.texture]->linear = r.chance(25);
+				const float tw = c.texture >= 0 && r.chance(30) ? (float)capture.textures[c.texture]->width : w;
+				c.vertices = quad(x0, y0, x0 + tw, y0 + h, 0, 0, 1, 1, colour());
+				if (r.chance(15))
+					c.vertices[1].color = c.vertices[3].color = r.color() | 0xFF000000u; // a gradient, still opaque
+				if (stencil < 7 && r.chance(85))
+					c.state.stencil = r.chance(90) ? StencilTest::Inside : StencilTest::Outside;
+				if (r.chance(10))
+					c.state.saturation = r.real(0, 1);
+				if (r.chance(5))
+				{
+					c.state.srcBlend = 1; c.state.dstBlend = 1; // added: reads what is under it
+				}
+				scissor(c);
+				capture.commands.push_back(c);
+			}
+			// a label
+			if (r.chance(50))
+			{
+				CapturedCommand c;
+				c.texture = texture(false);
+				const float lx = r.coord(x0, x0 + w), ly = r.coord(y0 + h - 10, y0 + h + 10);
+				c.vertices = quad(lx, ly, lx + r.real(5, 60), ly + r.real(3, 15), 0, 0, 1, 1, colour());
+				capture.commands.push_back(c);
+			}
+		}
+		// over it all now and then: a bar, a shade
+		if (r.chance(30))
+		{
+			CapturedCommand c;
+			c.vertices = quad(0, coord(0, (float)H), (float)W, coord(0, (float)H) + r.real(1, 40), 0, 0, 0, 0, colour());
+			capture.commands.push_back(c);
+		}
+
+		// one draw after another over the whole frame
+		Raster whole;
+		whole.resize(W, H);
+		whole.clear(0);
+		for (const CapturedCommand& c : capture.commands)
+		{
+			DrawState state = c.state;
+			if (c.stencil)
+				whole.setStencil(c.vertices.data(), (int)c.vertices.size(), state);
+			else
+			{
+				state.texture = c.texture >= 0 ? capture.textures[c.texture].get() : nullptr;
+				whole.draw(c.vertices.data(), (int)c.vertices.size(), c.topology, state);
+			}
+		}
+		whole.resetStencil();
+		scaledFrame();
+
+		// what is written over
+		{
+			std::vector<FrameDraw> draws(capture.commands.size());
+			for (size_t k = 0; k < draws.size(); k++)
+			{
+				const CapturedCommand& c = capture.commands[k];
+				draws[k].vertices = c.vertices.data();
+				draws[k].count = (int)c.vertices.size();
+				draws[k].topology = c.topology;
+				draws[k].state = c.state;
+				draws[k].state.texture = c.texture >= 0 ? capture.textures[c.texture].get() : nullptr;
+				draws[k].stencil = c.stencil;
+				draws[k].box = drawBounds(c.vertices.data(), (int)c.vertices.size(), c.topology, c.state, W, H);
+			}
+			Hidden hidden;
+			findHidden(draws.data(), draws.size(), W, H, hidden);
+			if (!hidden.rects.empty())
+				cut++;
+		}
+
+		const int threads = r.range(1, 3), strip = r.chance(50) ? 0 : r.range(1, 40);
+		Raster owner;
+		drawCapture(capture, owner, threads, strip);
+		const uint32_t* a = whole.pixels();
+		const uint32_t* b = owner.pixels();
+		for (int p = 0; p < W * H; p++)
+			if (a[p] != b[p])
+			{
+				if (differing < 5)
+					fprintf(stderr, "  scene %d (%dx%d, %zu commands, %d threads, strips %d): pixel %d,%d is %08x whole, %08x left out\n", i, W, H,
+						capture.commands.size(), threads, strip, p % W, p / W, a[p], b[p]);
+				differing++;
+				break;
+			}
+	}
+	if (getenv("RASTER_HASH") != nullptr)
+		printf("  %d of %d scenes had draws written over\n", cut, scenes);
+	CHECK_EQ(differing, 0);
+	CHECK(cut * 2 >= scenes);
+}
+
+// What findHidden takes a picture tested inside a stencil shape to write: every pixel of it, by the shape's
+// marks. Convex fans (rounded rectangles, polygons; from any of their vertices; on whole pixels, pixel middles
+// and a hair off them, very flat and very steep edges), an opaque rectangle over them tested inside: the
+// rectangles written over that a draw before them is given are all written by it.
+TEST(stencil_shapes_written_over_are_marked)
+{
+	const int shapes = getenv("RASTER_SCENES") ? atoi(getenv("RASTER_SCENES")) * 8 : 24000;
+	int wrong = 0, found = 0;
+	for (int i = 0; i < shapes; i++)
+	{
+		Random r(0x57e40000u + (uint32_t)i);
+		// now and then a wide frame, the shape far right (bigger coordinates: coarser floats)
+		const bool wide = r.chance(30);
+		const int W = wide ? r.range(1000, 2000) : r.range(20, 400), H = wide ? r.range(20, 160) : r.range(20, 300);
+		// a coordinate: anywhere, on a whole pixel, a pixel's middle, or a hair off one
+		auto at = [&](float a, float b)
+		{
+			const float f = r.real(a, b);
+			switch (r.range(0, 5))
+			{
+			case 0: return std::floor(f);
+			case 1: return std::floor(f) + 0.5f;
+			case 2: return std::nextafter(std::floor(f) + 0.5f, r.chance(50) ? 1e9f : -1e9f);
+			case 3: return std::floor(f) + 0.5f + (r.chance(50) ? 1 : -1) * r.real(0, 0.002f);
+			default: return f;
+			}
+		};
+		std::vector<SVertex> fan;
+		const float x0 = wide ? at(W * 0.5f, W * 0.8f) : at(-30, W * 0.7f), y0 = at(-30, H * 0.7f);
+		float w = wide ? r.real(2, W * 0.2f) : r.real(2, W * 0.8f);
+		const float h = r.real(2, H * 0.8f);
+		int start = -1; // the rounded rectangle's first vertex as ES has it: its left side's top
+		if (r.chance(60))
+		{
+			// a rounded rectangle, as ES draws one: its corners' ends on its straight sides exactly (the sides'
+			// ends as high, or as far left, as each other)
+			const float rad = r.real(0, std::min(w, h) / 2);
+			if (r.chance(40) && h - 2 * rad > 4)
+			{
+				// as wide as puts the line from the left side's top to the right side's bottom through a pixel's
+				// middle (two triangles work it out differently: the pixel may be left out by both)
+				const float cy = std::floor(r.real(y0 + rad + 2, y0 + h - rad)) + 0.5f;
+				const float cx = std::floor(r.real(x0 + 2, x0 + w)) + 0.5f;
+				w = (cx - x0) * (h - 2 * rad) / (cy - y0 - rad);
+			}
+			const int steps = r.range(1, 6);
+			const float corners[4][2] = { { x0 + w - rad, y0 + rad }, { x0 + w - rad, y0 + h - rad }, { x0 + rad, y0 + h - rad }, { x0 + rad, y0 + rad } };
+			for (int q = 0; q < 4; q++)
+				for (int st = 0; st <= steps; st++)
+				{
+					const float a = 1.5707963f * (q - 1 + (float)st / steps);
+					float cs = std::cos(a), sn = std::sin(a);
+					if (st == 0 || st == steps)
+					{
+						cs = std::round(cs);
+						sn = std::round(sn);
+					}
+					fan.push_back({ corners[q][0] + rad * cs, corners[q][1] + rad * sn, 0, 0, 0xFFFFFFFF });
+				}
+			if (r.chance(60))
+				start = 3 * (steps + 1);
+		}
+		else
+		{
+			// a convex polygon: points on an ellipse, some moved to pixel middles
+			const int n = r.range(3, 14);
+			std::vector<float> angles;
+			for (int k = 0; k < n; k++)
+				angles.push_back(r.real(0, 6.2831853f));
+			std::sort(angles.begin(), angles.end());
+			for (float a : angles)
+				fan.push_back({ x0 + w / 2 + w / 2 * std::cos(a), y0 + h / 2 + h / 2 * std::sin(a), 0, 0, 0xFFFFFFFF });
+			for (SVertex& p : fan)
+				if (r.chance(30))
+				{
+					p.x = std::floor(p.x) + 0.5f;
+					p.y = std::floor(p.y) + 0.5f;
+				}
+		}
+		// from any vertex (or ES's first); now and then the centre first, as a fan around it
+		std::rotate(fan.begin(), fan.begin() + (start >= 0 ? start : r.range(0, (int)fan.size() - 1)), fan.end());
+		if (r.chance(20))
+		{
+			fan.insert(fan.begin(), SVertex{ x0 + w / 2, y0 + h / 2, 0, 0, 0xFFFFFFFF });
+			fan.push_back(fan[1]);
+		}
+
+		std::vector<SVertex> under = { { -1, -1, 0, 0, 0xFF000000u }, { -1, (float)H + 1, 0, 0, 0xFF000000u }, { (float)W + 1, -1, 0, 0, 0xFF000000u }, { (float)W + 1, (float)H + 1, 0, 0, 0xFF000000u } };
+		const float qx0 = at(x0 - 10, x0 + w / 2), qy0 = at(y0 - 10, y0 + h / 2);
+		const float qx1 = at(x0 + w / 2, x0 + w + 10), qy1 = at(y0 + h / 2, y0 + h + 10);
+		std::vector<SVertex> cover = { { qx0, qy0, 0, 0, 0xFFFFFFFFu }, { qx0, qy1, 0, 0, 0xFFFFFFFFu }, { qx1, qy0, 0, 0, 0xFFFFFFFFu }, { qx1, qy1, 0, 0, 0xFFFFFFFFu } };
+		DrawState shapeState, coverState, underState;
+		coverState.stencil = StencilTest::Inside;
+		if (r.chance(20))
+		{
+			shapeState.scissor = true;
+			shapeState.sx0 = r.range(-5, W / 2); shapeState.sy0 = r.range(-5, H / 2);
+			shapeState.sx1 = r.range(W / 2, W + 5); shapeState.sy1 = r.range(H / 2, H + 5);
+		}
+
+		FrameDraw draws[3];
+		draws[0].vertices = under.data(); draws[0].count = 4; draws[0].state = underState;
+		draws[1].vertices = fan.data(); draws[1].count = (int)fan.size(); draws[1].topology = Topology::Fan; draws[1].state = shapeState; draws[1].stencil = true;
+		draws[2].vertices = cover.data(); draws[2].count = 4; draws[2].state = coverState;
+		for (FrameDraw& d : draws)
+			d.box = drawBounds(d.vertices, d.count, d.topology, d.state, W, H);
+		Hidden hidden;
+		findHidden(draws, 3, W, H, hidden);
+
+		Raster raster;
+		raster.resize(W, H);
+		raster.clear(0);
+		raster.setStencil(fan.data(), (int)fan.size(), shapeState);
+		raster.draw(cover.data(), 4, Topology::Strip, coverState);
+		raster.resetStencil();
+		const uint32_t* px = raster.pixels();
+		bool bad = false;
+		for (int h0 = 0; h0 < hidden.count(0) && !bad; h0++)
+		{
+			const Bounds& b = hidden.of(0)[h0];
+			found++;
+			for (int y = b.y0; y < b.y1 && !bad; y++)
+				for (int x = b.x0; x < b.x1; x++)
+					if (x < 0 || y < 0 || x >= W || y >= H || px[(size_t)y * W + x] != 0xFFFFFFFFu)
+					{
+						if (wrong < 5)
+							fprintf(stderr, "  shape %d (%zu vertices, %dx%d): pixel %d,%d in %d,%d-%d,%d not written by the picture\n", i, fan.size(), W, H, x, y, b.x0, b.y0, b.x1, b.y1);
+						wrong++;
+						bad = true;
+						break;
+					}
+		}
+	}
+	if (getenv("RASTER_HASH") != nullptr)
+		printf("  %d rectangles written over in %d shapes\n", found, shapes);
+	CHECK_EQ(wrong, 0);
+	CHECK(found >= shapes / 2);
 }

@@ -178,6 +178,38 @@ namespace Renderer
 		// part's clearing before it would be written over: left out (the grids' background).
 		bool coversOpaque(const SVertex* vertices, int count, Topology topology, const DrawState& state, const Bounds& part);
 
+		// A draw of a frame, as findHidden reads it
+		struct FrameDraw
+		{
+			const SVertex* vertices = nullptr;
+			int count = 0;
+			Topology topology = Topology::Strip;
+			DrawState state;      // with its texture
+			bool stencil = false; // a stencil shape
+			Bounds box;           // drawBounds
+		};
+
+		// Where a frame's draws are drawn over by later ones, whatever they leave: rectangles a later draw
+		// writes every pixel of with alpha 255 (an opaque rectangle blended normally: a grid tile's picture,
+		// tested inside its rounded stencil shape or not) with no draw between them leaving pixels there that
+		// it reads. A draw need not be drawn there (a tile's shadow, the background under the tiles): its
+		// pixels there are written over. Draw i's: rects[first[i]] to rects[first[i + 1]], those that meet its
+		// box. ES_SOFT_HIDDEN=0: none (to compare).
+		struct Hidden
+		{
+			std::vector<Bounds> rects;
+			std::vector<uint32_t> first;
+			void clear() { rects.clear(); first.clear(); }
+			int count(size_t i) const { return i + 1 < first.size() ? (int)(first[i + 1] - first[i]) : 0; }
+			const Bounds* of(size_t i) const { return rects.data() + first[i]; }
+		};
+		// (areas: only there, the parts of the frame drawn; none: all of it)
+		bool hiddenOn();
+		void findHidden(const FrameDraw* draws, size_t count, int width, int height, Hidden& out, const Bounds* areas = nullptr, int areaCount = 0);
+
+		// The rest of area once the holes are taken out, as rectangles (at most max; -1: more, or too many holes)
+		int visiblePieces(const Bounds& area, const Bounds* holes, int holeCount, Bounds* out, int max);
+
 		// Draws worth drawing together (Raster::drawLayers), in a part of the frame: a rectangle alone, not a
 		// stencil shape nor tested against one, whose box (b) covers half of the part or more. ES_SOFT_LAYERS=0:
 		// none, each drawn on its own (to compare).

@@ -187,7 +187,7 @@ namespace Renderer
 		{
 			// one part of a band: cleared, then the commands that reach it clipped to it (Renderer_Soft's
 			// executePart: a stencil shape out of it only ends the last one)
-			void drawPart(const Capture& capture, const std::vector<Bounds>& bounds, bool oldStencil, Raster& raster, int x0, int y0, int x1, int y1)
+			void drawPart(const Capture& capture, const std::vector<Bounds>& bounds, const Hidden& hidden, bool oldStencil, Raster& raster, int x0, int y0, int x1, int y1)
 			{
 				const Bounds part = { x0, y0, x1, y1 };
 				// cleared before the first command that reaches it is drawn (Renderer_Soft's executePart)
@@ -213,10 +213,24 @@ namespace Renderer
 					}
 					return state;
 				};
+				// command i here without what later draws write over (Renderer_Soft's executePart)
+				Bounds pieces[16];
+				auto areaOf = [&](size_t i)
+				{
+					return Bounds{ std::max(x0, bounds[i].x0), std::max(y0, bounds[i].y0), std::min(x1, bounds[i].x1), std::min(y1, bounds[i].y1) };
+				};
+				auto hiddenHere = [&](size_t i)
+				{
+					const Bounds area = areaOf(i);
+					for (int h = 0; h < hidden.count(i); h++)
+						if (hidden.of(i)[h].meets(area))
+							return true;
+					return false;
+				};
 				auto candidate = [&](size_t i)
 				{
 					const CapturedCommand& c = capture.commands[i];
-					return layerCandidate(c.stencil, c.state, c.topology, (int)c.vertices.size(), bounds[i], part);
+					return layerCandidate(c.stencil, c.state, c.topology, (int)c.vertices.size(), bounds[i], part) && !hiddenHere(i);
 				};
 				const bool layers = layersOn() && !oldStencil;
 				const size_t total = capture.commands.size();
@@ -271,18 +285,29 @@ namespace Renderer
 					else
 					{
 						state.texture = c.texture >= 0 ? capture.textures[c.texture].get() : nullptr;
-						raster.draw(c.vertices.data(), (int)c.vertices.size(), c.topology, state);
+						const int n = hiddenHere(i) ? visiblePieces(areaOf(i), hidden.of(i), hidden.count(i), pieces, 16) : -1;
+						if (n < 0)
+							raster.draw(c.vertices.data(), (int)c.vertices.size(), c.topology, state);
+						else
+							for (int k = 0; k < n; k++)
+							{
+								DrawState piece = state;
+								piece.sx0 = std::max(state.sx0, pieces[k].x0); piece.sy0 = std::max(state.sy0, pieces[k].y0);
+								piece.sx1 = std::min(state.sx1, pieces[k].x1); piece.sy1 = std::min(state.sy1, pieces[k].y1);
+								if (piece.sx0 < piece.sx1 && piece.sy0 < piece.sy1)
+									raster.draw(c.vertices.data(), (int)c.vertices.size(), c.topology, piece);
+							}
 					}
 				}
 				clearPart();
 			}
 
-			void drawBand(const Capture& capture, const std::vector<Bounds>& bounds, bool oldStencil, Raster& band, int strip)
+			void drawBand(const Capture& capture, const std::vector<Bounds>& bounds, const Hidden& hidden, bool oldStencil, Raster& band, int strip)
 			{
 				const int top = band.bandTop(), bottom = band.bandBottom();
 				const int step = strip > 0 ? strip : std::max(1, bottom - top);
 				for (int y = top; y < bottom; y += step)
-					drawPart(capture, bounds, oldStencil, band, 0, y, capture.width, std::min(bottom, y + step));
+					drawPart(capture, bounds, hidden, oldStencil, band, 0, y, capture.width, std::min(bottom, y + step));
 			}
 		}
 
@@ -295,13 +320,31 @@ namespace Renderer
 			bounds.reserve(capture.commands.size());
 			for (const CapturedCommand& c : capture.commands)
 				bounds.push_back(drawBounds(c.vertices.data(), (int)c.vertices.size(), c.topology, c.state, capture.width, capture.height));
+			// where the draws are written over by later ones (Renderer_Soft's findFrameHidden)
+			Hidden hidden;
+			if (hiddenOn() && !oldStencil)
+			{
+				std::vector<FrameDraw> draws(capture.commands.size());
+				for (size_t i = 0; i < draws.size(); i++)
+				{
+					const CapturedCommand& c = capture.commands[i];
+					draws[i].vertices = c.vertices.data();
+					draws[i].count = (int)c.vertices.size();
+					draws[i].topology = c.topology;
+					draws[i].state = c.state;
+					draws[i].state.texture = c.texture >= 0 ? capture.textures[c.texture].get() : nullptr;
+					draws[i].stencil = c.stencil;
+					draws[i].box = bounds[i];
+				}
+				findHidden(draws.data(), draws.size(), capture.width, capture.height, hidden);
+			}
 			std::vector<Raster> bands(threads);
 			for (int i = 0; i < threads; i++)
 				bands[i].attach(owner, capture.height * i / threads, capture.height * (i + 1) / threads);
 			std::vector<std::thread> workers;
 			for (int i = 1; i < threads; i++)
-				workers.emplace_back([&, i] { drawBand(capture, bounds, oldStencil, bands[i], strip); });
-			drawBand(capture, bounds, oldStencil, bands[0], strip);
+				workers.emplace_back([&, i] { drawBand(capture, bounds, hidden, oldStencil, bands[i], strip); });
+			drawBand(capture, bounds, hidden, oldStencil, bands[0], strip);
 			for (auto& worker : workers)
 				worker.join();
 			// the bands marked the owner's stencil: cleared, for the next frame

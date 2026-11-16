@@ -177,9 +177,33 @@ int main(int argc, char** argv)
 		const double median = rest[rest.size() / 2];
 		total += median;
 		const uint64_t hash = hashPixels(owner.pixels(), (size_t)capture.width * capture.height);
+		// finding what later draws write over (done before drawing, on the thread that swaps)
+		double hiddenMs = 0;
+		size_t hiddenRects = 0;
+		{
+			std::vector<FrameDraw> draws(capture.commands.size());
+			for (size_t i = 0; i < draws.size(); i++)
+			{
+				const CapturedCommand& c = capture.commands[i];
+				draws[i].vertices = c.vertices.data();
+				draws[i].count = (int)c.vertices.size();
+				draws[i].topology = c.topology;
+				draws[i].state = c.state;
+				draws[i].state.texture = c.texture >= 0 ? capture.textures[c.texture].get() : nullptr;
+				draws[i].stencil = c.stencil;
+				draws[i].box = drawBounds(c.vertices.data(), (int)c.vertices.size(), c.topology, c.state, capture.width, capture.height);
+			}
+			Hidden hidden;
+			const int times = 20;
+			const auto start = std::chrono::steady_clock::now();
+			for (int k = 0; k < times; k++)
+				findHidden(draws.data(), draws.size(), capture.width, capture.height, hidden);
+			hiddenMs = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count() / times;
+			hiddenRects = hidden.rects.size();
+		}
 		// together: draws drawn with others (Raster::drawLayers), in all the bands and strips
-		printf("%-28s %4zu commands %dx%d  %8.2f %8.2f %8.2f  together %4u  pixels %016llx\n", baseName(file).c_str(), capture.commands.size(),
-			capture.width, capture.height, first, median, rest[0], owner.stats().together, (unsigned long long)hash);
+		printf("%-28s %4zu commands %dx%d  %8.2f %8.2f %8.2f  together %4u  hidden %4zu in %.3f ms  pixels %016llx\n", baseName(file).c_str(), capture.commands.size(),
+			capture.width, capture.height, first, median, rest[0], owner.stats().together, hiddenRects, hiddenMs, (unsigned long long)hash);
 		if (commands)
 			timeCommands(capture);
 		if (!ppm.empty() && !writePpm(ppm + "/" + baseName(file) + ".ppm", owner.pixels(), capture.width, capture.height))

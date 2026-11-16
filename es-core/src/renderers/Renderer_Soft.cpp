@@ -25,6 +25,9 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#include <arm_neon.h>
+#endif
 
 namespace Renderer
 {
@@ -47,10 +50,44 @@ namespace Renderer
 		// FNV-1a over 32-bit words, four words at a time in four lanes of their own, then the lanes together:
 		// each step waits for the one before in its lane only (on the A9 a 64-bit step is several cycles of
 		// latency; one lane made hashing a frame's vertices 4% of the processor scrolling a grid)
+		//
+		// With NEON (the DE10-Nano), eight words or more: four words at a time into two sets of four 32-bit lanes
+		// (each word into both, with multipliers of their own: a change slips by only if both lanes it is in
+		// come out the same, about once in 2^64), then the eight lanes into the hash as above. A 64-bit step a
+		// word took 10 cycles of the A9; this, about one: hashing the vertices was 5% of ES's thread.
 		inline uint64_t hashWords(uint64_t hash, const void* data, size_t bytes)
 		{
 			const uint32_t* words = (const uint32_t*)data;
 			const size_t n = bytes / 4;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+			if (n >= 8)
+			{
+				static const uint32_t seedsA[4] = { 0x811C9DC5u, 0x050C5D1Fu, 0x2BBA3E5Bu, 0x9E3779B9u };
+				static const uint32_t seedsB[4] = { 0x3C6EF372u, 0xA54FF53Au, 0x510E527Fu, 0x1F83D9ABu };
+				static const uint32_t primesA[4] = { 0x01000193u, 0x9E3779B1u, 0x85EBCA77u, 0xC2B2AE3Du };
+				static const uint32_t primesB[4] = { 0x27D4EB2Fu, 0x165667B1u, 0xD3A2646Du, 0xFD7046C5u };
+				uint32x4_t a = vld1q_u32(seedsA), b = vld1q_u32(seedsB);
+				const uint32x4_t pa = vld1q_u32(primesA), pb = vld1q_u32(primesB);
+				size_t i = 0;
+				for (; i + 4 <= n; i += 4)
+				{
+					const uint32x4_t w = vld1q_u32(words + i);
+					a = vmulq_u32(veorq_u32(a, w), pa);
+					b = vmulq_u32(veorq_u32(b, w), pb);
+				}
+				uint32_t la[4], lb[4];
+				vst1q_u32(la, a);
+				vst1q_u32(lb, b);
+				for (int k = 0; k < 4; k++)
+				{
+					hash = (hash ^ la[k]) * kHashPrime;
+					hash = (hash ^ lb[k]) * kHashPrime;
+				}
+				for (; i < n; i++)
+					hash = (hash ^ words[i]) * kHashPrime;
+				return hash;
+			}
+#endif
 			uint64_t h0 = hash, h1 = kHashSeed ^ 1, h2 = kHashSeed ^ 2, h3 = kHashSeed ^ 3;
 			size_t i = 0;
 			for (; i + 4 <= n; i += 4)
@@ -188,6 +225,9 @@ namespace Renderer
 			// 81 ms against 70); the thread that swaps draws a band and waits, as before.
 			std::vector<Command> frameCommands;
 			std::vector<SVertex> frameVertices;
+			// where its draws are written over by later ones (Soft::findHidden): not drawn there
+			Soft::Hidden frameHidden;
+			std::vector<Soft::FrameDraw> frameDraws;
 			bool async = false;
 			bool inFlight = false;            // the bands draw frameCommands; reap() waits for them
 			double flightEsMs = 0;            // that frame's time in ES before it was swapped
@@ -366,8 +406,38 @@ namespace Renderer
 			s.commands.push_back(std::move(command));
 		}
 
+		// where the frame's draws are written over by later ones (Soft::findHidden), before the bands draw it
+		void findFrameHidden()
+		{
+			SoftState& s = S();
+			s.frameHidden.clear();
+			if (!Soft::hiddenOn())
+				return;
+			const size_t n = s.frameCommands.size();
+			s.frameDraws.resize(n);
+			for (size_t i = 0; i < n; i++)
+			{
+				const Command& c = s.frameCommands[i];
+				Soft::FrameDraw& d = s.frameDraws[i];
+				d.vertices = s.frameVertices.data() + c.first;
+				d.count = (int)c.count;
+				d.topology = c.topology;
+				d.state = c.state;
+				d.state.texture = c.texture.get();
+				d.stencil = c.stencil;
+				d.box = { c.box.x0, c.box.y0, c.box.x1, c.box.y1 };
+			}
+			// drawn in part: only there
+			thread_local std::vector<Soft::Bounds> areas;
+			areas.clear();
+			if (s.partial)
+				for (const Box& r : s.rects)
+					areas.push_back({ r.x0, r.y0, r.x1, r.y1 });
+			Soft::findHidden(s.frameDraws.data(), n, s.width, s.height, s.frameHidden, s.partial ? areas.data() : nullptr, (int)areas.size());
+		}
+
 		// one part of a band, cleared, then drawn by the commands that reach it, clipped to it (a pixel is the
-		// same however its draw is clipped)
+		// same however its draw is clipped); not where later draws write over it (findFrameHidden)
 		void executePart(Raster& raster, const Box& part)
 		{
 			SoftState& s = S();
@@ -397,9 +467,37 @@ namespace Renderer
 				return state;
 			};
 			const Soft::Bounds partBounds = { part.x0, part.y0, part.x1, part.y1 };
-			auto candidate = [&partBounds](const Command& c)
+			// draw i's part here, without what later draws write over (Soft::Hidden): the pieces left, or -1
+			// when none of it is written over here (or too much is cut: drawn whole)
+			Soft::Bounds pieces[16];
+			auto piecesOf = [&](size_t i, const Command& c) -> int
 			{
-				return Soft::layerCandidate(c.stencil, c.state, c.topology, (int)c.count, Soft::Bounds{ c.box.x0, c.box.y0, c.box.x1, c.box.y1 }, partBounds);
+				const int holes = s.frameHidden.count(i);
+				if (holes == 0)
+					return -1;
+				const Soft::Bounds area = { std::max(part.x0, c.box.x0), std::max(part.y0, c.box.y0), std::min(part.x1, c.box.x1), std::min(part.y1, c.box.y1) };
+				const Soft::Bounds* hole = s.frameHidden.of(i);
+				bool meets = false;
+				for (int h = 0; h < holes && !meets; h++)
+					meets = hole[h].meets(area);
+				if (!meets)
+					return -1;
+				return Soft::visiblePieces(area, hole, holes, pieces, 16);
+			};
+			auto hiddenHere = [&](size_t i, const Command& c)
+			{
+				const int holes = s.frameHidden.count(i);
+				const Soft::Bounds* hole = holes > 0 ? s.frameHidden.of(i) : nullptr;
+				const Soft::Bounds area = { std::max(part.x0, c.box.x0), std::max(part.y0, c.box.y0), std::min(part.x1, c.box.x1), std::min(part.y1, c.box.y1) };
+				for (int h = 0; h < holes; h++)
+					if (hole[h].meets(area))
+						return true;
+				return false;
+			};
+			auto candidate = [&](size_t i, const Command& c)
+			{
+				return Soft::layerCandidate(c.stencil, c.state, c.topology, (int)c.count, Soft::Bounds{ c.box.x0, c.box.y0, c.box.x1, c.box.y1 }, partBounds) &&
+					!hiddenHere(i, c);
 			};
 			const bool layers = Soft::layersOn();
 			const size_t total = s.frameCommands.size();
@@ -418,7 +516,7 @@ namespace Renderer
 				// big rectangles one over the other (a carousel's backgrounds, the frame over them): drawn
 				// together, each pixel read and written once (Raster::drawLayers); those that do not reach the
 				// part between them draw nothing here
-				if (layers && candidate(command))
+				if (layers && candidate(i, command))
 				{
 					Soft::LayerDraw run[8];
 					size_t at[8];
@@ -428,7 +526,7 @@ namespace Renderer
 						const Command& c = s.frameCommands[j];
 						if (!c.box.meets(part) && !c.stencil)
 							continue;
-						if (!candidate(c))
+						if (!candidate(j, c))
 							break;
 						run[m].vertices = s.frameVertices.data() + c.first;
 						run[m].count = (int)c.count;
@@ -461,7 +559,19 @@ namespace Renderer
 				else
 				{
 					state.texture = command.texture.get();
-					raster.draw(vertices, (int)command.count, command.topology, state);
+					const int n = piecesOf(i, command);
+					if (n < 0)
+						raster.draw(vertices, (int)command.count, command.topology, state);
+					else
+						for (int k = 0; k < n; k++)
+						{
+							// clipped to a piece: the same pixels there as drawn whole
+							DrawState piece = state;
+							piece.sx0 = std::max(state.sx0, pieces[k].x0); piece.sy0 = std::max(state.sy0, pieces[k].y0);
+							piece.sx1 = std::min(state.sx1, pieces[k].x1); piece.sy1 = std::min(state.sy1, pieces[k].y1);
+							if (piece.sx0 < piece.sx1 && piece.sy0 < piece.sy1)
+								raster.draw(vertices, (int)command.count, command.topology, piece);
+						}
 				}
 			}
 			clearPart();
@@ -795,6 +905,8 @@ namespace Renderer
 			return true;
 		}
 
+		void captureFrame(const std::string& path);
+
 		// ES_SOFT_DIRTY_CHECK: the frame drawn in part against the same drawn whole, on this thread
 		void checkParts()
 		{
@@ -833,6 +945,13 @@ namespace Renderer
 			s.stats.wrong++;
 			LOG(LogError) << "SoftRenderer: drawn in parts or strips, " << count << " pixels differ from the frame drawn whole, in "
 				<< at.x0 << "," << at.y0 << " " << (at.x1 - at.x0) << "x" << (at.y1 - at.y0) << " (" << s.rects.size() << " parts)";
+			// ES_SOFT_DIRTY_CAPTURE=DIR: the frame kept there, to draw it again (es-mister-replay)
+			if (getenv("ES_SOFT_DIRTY_CAPTURE") != nullptr)
+			{
+				static int kept = 0;
+				if (kept < 10)
+					captureFrame(std::string(getenv("ES_SOFT_DIRTY_CAPTURE")) + "/wrong-" + std::to_string(kept++) + ".escf");
+			}
 			// the next frames checked on their own
 			memcpy(s.raster.pixels(), right, (size_t)w * h * 4);
 		}
@@ -1541,6 +1660,7 @@ namespace Renderer
 			// slowest band's); the buffers it was recorded in take the next frame
 			s.commands.swap(s.frameCommands);
 			s.vertices.swap(s.frameVertices);
+			findFrameHidden();
 			s.flightEsMs = esMs;
 			s.flightRedrawn = redrawn;
 			// a press ES took while recording it: answered when the bands have it on the screen

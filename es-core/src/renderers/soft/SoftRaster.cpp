@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <climits>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -1162,28 +1163,34 @@ namespace Renderer
 				return { a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, a.a + (b.a - a.a) * t };
 			}
 
-			// The pixels a triangle covers, a span per row: f(y, x0, x1), x1 excluded
-			template<typename F>
-			void coverTriangle(const SVertex& a, const SVertex& b, const SVertex& c, int cx0, int cy0, int cx1, int cy1, F&& f)
+			// A triangle's rows: its vertices top to bottom, and in each row (its centre in the triangle) the
+			// pixels whose centres it covers. coverTriangle draws them; findHidden reads a row of a stencil
+			// shape's triangles the same way.
+			struct TriangleRows
 			{
-				const SVertex* v0 = &a;
-				const SVertex* v1 = &b;
-				const SVertex* v2 = &c;
-				if (v1->y < v0->y) std::swap(v0, v1);
-				if (v2->y < v1->y) std::swap(v1, v2);
-				if (v1->y < v0->y) std::swap(v0, v1);
+				const SVertex* v0;
+				const SVertex* v1;
+				const SVertex* v2;
+				float longSlope = 0;
+				int yStart = 0, yEnd = 0; // rows, before the clip
 
-				const int yStart = std::max(cy0, ceilInt(v0->y - 0.5f));
-				const int yEnd = std::min(cy1, ceilInt(v2->y - 0.5f));
-				if (yStart >= yEnd)
-					return;
+				TriangleRows(const SVertex& a, const SVertex& b, const SVertex& c)
+				{
+					v0 = &a; v1 = &b; v2 = &c;
+					if (v1->y < v0->y) std::swap(v0, v1);
+					if (v2->y < v1->y) std::swap(v1, v2);
+					if (v1->y < v0->y) std::swap(v0, v1);
+					yStart = ceilInt(v0->y - 0.5f);
+					yEnd = ceilInt(v2->y - 0.5f);
+					const float longDy = v2->y - v0->y;
+					if (longDy <= 0)
+						yEnd = yStart; // no row
+					else
+						longSlope = (v2->x - v0->x) / longDy;
+				}
 
-				const float longDy = v2->y - v0->y;
-				if (longDy <= 0)
-					return;
-				const float longSlope = (v2->x - v0->x) / longDy;
-
-				for (int y = yStart; y < yEnd; y++)
+				// row y's pixels, [first, last), before the clip
+				inline void row(int y, int& first, int& last) const
 				{
 					const float yc = y + 0.5f;
 					const float xl = v0->x + (yc - v0->y) * longSlope;
@@ -1198,11 +1205,25 @@ namespace Renderer
 						const float dy = v2->y - v1->y;
 						xs = dy > 0 ? v1->x + (yc - v1->y) * (v2->x - v1->x) / dy : v1->x;
 					}
-
 					const float left = std::min(xl, xs), right = std::max(xl, xs);
-					const int first = ceilInt(left - 0.5f); // the row's first column, before the clip
+					first = ceilInt(left - 0.5f);
+					last = ceilInt(right - 0.5f);
+				}
+			};
+
+			// The pixels a triangle covers, a span per row: f(y, x0, x1), x1 excluded
+			template<typename F>
+			void coverTriangle(const SVertex& a, const SVertex& b, const SVertex& c, int cx0, int cy0, int cx1, int cy1, F&& f)
+			{
+				const TriangleRows t(a, b, c);
+				const int yStart = std::max(cy0, t.yStart);
+				const int yEnd = std::min(cy1, t.yEnd);
+				for (int y = yStart; y < yEnd; y++)
+				{
+					int first, last;
+					t.row(y, first, last); // the row's first column, before the clip
 					const int x0 = std::max(cx0, first);
-					const int x1 = std::min(cx1, ceilInt(right - 0.5f));
+					const int x1 = std::min(cx1, last);
 					if (x0 < x1)
 						f(y, x0, x1, first);
 				}
@@ -1239,6 +1260,498 @@ namespace Renderer
 				return false;
 			return ceilInt(x0 - 0.5f) <= part.x0 && ceilInt(x1 - 0.5f) >= part.x1 &&
 				ceilInt(y0 - 0.5f) <= part.y0 && ceilInt(y1 - 0.5f) >= part.y1;
+		}
+
+		namespace
+		{
+			// The pixels a draw writes with alpha 255 whatever was there, as coversOpaque sees them, without a
+			// part: a rectangle with alpha 255 at every vertex, opaque texels (1:1, or made bigger and not
+			// smoothed), blended normally; its pixels (drawQuad's, whose centres it covers) in its scissor and the
+			// frame. Not one tested outside a stencil shape.
+			bool opaquePixels(const SVertex* v, int count, Topology topology, const DrawState& state, int width, int height, Bounds& pixels)
+			{
+				if (topology != Topology::Strip || count != 4 || state.stencil == StencilTest::Outside || blendModeOf(state) != BLEND_NORMAL)
+					return false;
+				const Texture* t = state.texture != nullptr && !state.texture->pixels.empty() ? state.texture : nullptr;
+				if (!(v[0].x == v[1].x && v[2].x == v[3].x && v[0].y == v[2].y && v[1].y == v[3].y &&
+					(state.texture == nullptr || (v[0].u == v[1].u && v[2].u == v[3].u && v[0].v == v[2].v && v[1].v == v[3].v))))
+					return false;
+				for (int i = 0; i < 4; i++)
+					if ((v[i].color >> 24) != 255)
+						return false;
+				if (t != nullptr && !t->opaque)
+					return false;
+				const float x0 = std::min(v[0].x, v[2].x), x1 = std::max(v[0].x, v[2].x);
+				const float y0 = std::min(v[0].y, v[1].y), y1 = std::max(v[0].y, v[1].y);
+				if (!(x1 - x0 > 0 && y1 - y0 > 0 && x0 > -100000 && x1 < 100000 && y0 > -100000 && y1 < 100000))
+					return false;
+				if (t != nullptr)
+				{
+					const float su = std::fabs((v[2].u - v[0].u) * t->width / (x1 - x0)), sv = std::fabs((v[1].v - v[0].v) * t->height / (y1 - y0));
+					const bool oneToOne = std::fabs(su - 1.0f) < 0.002f && std::fabs(sv - 1.0f) < 0.002f;
+					if (!oneToOne && !(su <= 1.0f && sv <= 1.0f && !t->linear))
+						return false;
+				}
+				pixels = { ceilInt(x0 - 0.5f), ceilInt(y0 - 0.5f), ceilInt(x1 - 0.5f), ceilInt(y1 - 0.5f) };
+				pixels.x0 = std::max(pixels.x0, 0); pixels.y0 = std::max(pixels.y0, 0);
+				pixels.x1 = std::min(pixels.x1, width); pixels.y1 = std::min(pixels.y1, height);
+				if (state.scissor)
+				{
+					pixels.x0 = std::max(pixels.x0, state.sx0); pixels.y0 = std::max(pixels.y0, state.sy0);
+					pixels.x1 = std::min(pixels.x1, state.sx1); pixels.y1 = std::min(pixels.y1, state.sy1);
+				}
+				return !pixels.empty();
+			}
+
+			// Rectangles of b a stencil shape marks every pixel of (setStencil's triangles, a fan): its middle
+			// rows where the run of marked pixels is widest, and the rows above and below them with the columns
+			// all of theirs mark. At most 3; none when the shape is not a convex polygon fanned from its first
+			// vertex (ES's rounded rectangles are).
+			//
+			// Each row's run is found without rasterizing the triangles: the polygon's edges where the row's
+			// centre crosses them, in double precision, a margin in from each (more than setStencil's float
+			// arithmetic can be off); a pixel whose centre is that far inside is in a triangle's span. Two
+			// triangles side by side work out their common edge the same way (the same float operations: no
+			// pixel between them), unless one takes it as its long edge and the other as a short one; there, and
+			// where the row's centre is about a vertex's height, the row is worked out as setStencil does
+			// (TriangleRows), which is rare.
+			int markedRects(const FrameDraw& shape, int width, int height, const Bounds& b, Bounds* out)
+			{
+				Bounds clip = { std::max(0, b.x0), std::max(0, b.y0), std::min(width, b.x1), std::min(height, b.y1) };
+				if (shape.state.scissor)
+				{
+					clip.x0 = std::max(clip.x0, shape.state.sx0); clip.y0 = std::max(clip.y0, shape.state.sy0);
+					clip.x1 = std::min(clip.x1, shape.state.sx1); clip.y1 = std::min(clip.y1, shape.state.sy1);
+				}
+				const int n = shape.count;
+				const SVertex* v = shape.vertices;
+				if (clip.empty() || n < 3 || n > 256 || shape.topology != Topology::Fan)
+					return 0;
+				for (int i = 0; i < n; i++)
+					if (!(std::fabs(v[i].x) < 4096.0f && std::fabs(v[i].y) < 4096.0f))
+						return 0;
+				// convex, its triangles not flat
+				auto cross = [](const SVertex& o, const SVertex& a, const SVertex& c)
+				{
+					return ((double)a.x - o.x) * ((double)c.y - o.y) - ((double)a.y - o.y) * ((double)c.x - o.x);
+				};
+				int sign = 0;
+				for (int i = 1; i + 1 < n; i++)
+				{
+					const double c = cross(v[0], v[i], v[i + 1]);
+					if (std::fabs(c) < 1e-3)
+						return 0;
+					const int s = c > 0 ? 1 : -1;
+					if (sign != 0 && s != sign)
+						return 0;
+					sign = s;
+				}
+				for (int i = 0; i < n; i++)
+				{
+					const double c = cross(v[i], v[(i + 1) % n], v[(i + 2) % n]);
+					if (c * sign < 0)
+						return 0;
+				}
+
+				const int rows = clip.y1 - clip.y0;
+				// x in fixed point, 32 bits of fraction (a row at a time: a step of the slope, off by at most
+				// 2^-32 a row, 1e-6 over 4096 rows)
+				// (|x| below 2^30; its fraction cut to 32 bits, a part in 2^32 under, without the library's conversion)
+				auto fixed = [](double x) -> int64_t
+				{
+					int whole = (int)x;
+					if ((double)whole > x)
+						whole--;
+					return (int64_t)whole * 4294967296LL + (int64_t)(uint32_t)((x - whole) * 4294967296.0);
+				};
+				// an edge so near level that it crosses a row's centre or none (its slope past 2^16): its rows
+				// worked out exactly
+				// each row's: its run's two edges (with the margins), how many edges cross it, whether it is worked
+				// out exactly, its run (in arrays of this thread's, through plain pointers: the loops below then keep
+				// them in registers)
+				thread_local std::vector<int64_t> loRows, hiRows;
+				thread_local std::vector<uint8_t> crossingRows, exactRows;
+				thread_local std::vector<int> runRows;
+				loRows.assign(rows, 0);
+				hiRows.assign(rows, 0);
+				crossingRows.assign(rows, 0);
+				exactRows.assign(rows, 0);
+				runRows.assign(rows * 2, 0);
+				int64_t* const lo = loRows.data();
+				int64_t* const hi = hiRows.data();
+				uint8_t* const crossings = crossingRows.data();
+				uint8_t* const exact = exactRows.data();
+				int* const runX0 = runRows.data();
+				int* const runX1 = runRows.data() + rows;
+				// floor and ceil of a coordinate (within 8192 of 0), without the library's
+				auto floorOf = [](double x) { return (int)(x + 8192.0) - 8192; };
+				auto ceilOf = [](double x) { return 8192 - (int)(8192.0 - x); };
+				// rows whose centres are in [y0, y1] (clip rows)
+				auto rowsOf = [&](double y0, double y1, int& r0, int& r1)
+				{
+					r0 = std::max(clip.y0, ceilOf(y0 - 0.5));
+					r1 = std::min(clip.y1, floorOf(y1 - 0.5) + 1);
+				};
+				// how far setStencil's float arithmetic may put an edge's x at a row's centre, its x and y within 4096
+				// of 0: each operation off by a part in 2^24 of its result, the x along the edge (at most the edge's
+				// width, dx) off by about 6 of them, and the last addition by one of the x (2.4e-4); four times that,
+				// and the fixed point's
+				auto margin = [](double dx) { return 1e-3 + 1e-6 * std::fabs(dx) + 1e-5; };
+
+				// the polygon's edges: two at each row's centre (a vertex's height: worked out exactly)
+				for (int i = 0; i < n; i++)
+				{
+					const SVertex& a = v[i];
+					const SVertex& c = v[(i + 1) % n];
+					if (a.y == c.y)
+						continue;
+					const double slope = ((double)c.x - a.x) / ((double)c.y - a.y);
+					const int64_t m = fixed(margin((double)c.x - a.x));
+					int r0, r1;
+					rowsOf(std::min(a.y, c.y), std::max(a.y, c.y), r0, r1);
+					if (r0 >= r1)
+						continue;
+					if (std::fabs(slope) > 65536.0)
+					{
+						for (int y = r0; y < r1; y++)
+							exact[y - clip.y0] = 1;
+						continue;
+					}
+					int64_t x = fixed(a.x + (r0 + 0.5 - a.y) * slope);
+					const int64_t step = fixed(slope);
+					for (int r = r0 - clip.y0; r < r1 - clip.y0; r++, x += step)
+					{
+						if (crossings[r] == 0)
+						{
+							lo[r] = x + m;
+							hi[r] = x - m;
+						}
+						else
+						{
+							lo[r] = std::min(lo[r], x + m);
+							hi[r] = std::max(hi[r], x - m);
+						}
+						crossings[r]++;
+					}
+				}
+				for (int i = 0; i < n; i++)
+				{
+					int r0, r1;
+					rowsOf(v[i].y - 1e-2, v[i].y + 1e-2, r0, r1);
+					for (int y = r0; y < r1; y++)
+						exact[y - clip.y0] = 1;
+				}
+				// the edges between two triangles that work them out differently: rows where the edge is about
+				// the middle between two pixels
+				for (int i = 2; i + 1 < n; i++)
+				{
+					const SVertex& a = v[0];
+					const SVertex& c = v[i];
+					if (a.y == c.y)
+						continue;
+					// the triangle's long edge joins its top and bottom vertices, as TriangleRows sorts them (a third
+					// vertex as high as one of the edge's may come between them)
+					auto isLong = [&](const TriangleRows& t) { return (t.v0 == &a && t.v2 == &c) || (t.v0 == &c && t.v2 == &a); };
+					if (isLong(TriangleRows(v[0], v[i - 1], v[i])) == isLong(TriangleRows(v[0], v[i], v[i + 1])))
+						continue; // worked out the same way by both: no pixel between them
+					const double slope = ((double)c.x - a.x) / ((double)c.y - a.y);
+					const uint32_t m = (uint32_t)fixed(margin((double)c.x - a.x));
+					int r0, r1;
+					rowsOf(std::min(a.y, c.y), std::max(a.y, c.y), r0, r1);
+					if (r0 >= r1)
+						continue;
+					if (std::fabs(slope) > 65536.0)
+					{
+						for (int y = r0; y < r1; y++)
+							exact[y - clip.y0] = 1;
+						continue;
+					}
+					// x - 0.5's fraction (32 bits, wrapping), a row at a time: near 0 or 1, the edge is near a
+					// pixel's middle
+					uint32_t f = (uint32_t)(uint64_t)fixed(a.x + (r0 + 0.5 - a.y) * slope - 0.5);
+					const uint32_t step = (uint32_t)(uint64_t)fixed(slope);
+					for (int r = r0 - clip.y0; r < r1 - clip.y0; r++, f += step)
+						if (f <= m || f >= 0u - m)
+							exact[r] = 1;
+				}
+
+				const int cx = (clip.x0 + clip.x1) / 2;
+				thread_local std::vector<TriangleRows> triangles;
+				triangles.clear();
+				for (int r = 0; r < rows; r++)
+				{
+					const int y = clip.y0 + r;
+					if (exact[r])
+					{
+						// setStencil's spans in this row, joined: the run through the middle column
+						if (triangles.empty())
+							for (int i = 1; i + 1 < n; i++)
+								triangles.emplace_back(v[0], v[i], v[i + 1]);
+						int a[256], z[256];
+						int c = 0;
+						for (const TriangleRows& t : triangles)
+						{
+							if (y < t.yStart || y >= t.yEnd)
+								continue;
+							int first, last;
+							t.row(y, first, last);
+							first = std::max(first, clip.x0);
+							last = std::min(last, clip.x1);
+							if (first < last)
+							{
+								a[c] = first;
+								z[c] = last;
+								c++;
+							}
+						}
+						for (int i = 1; i < c; i++)
+							for (int j = i; j > 0 && a[j] < a[j - 1]; j--)
+							{
+								std::swap(a[j], a[j - 1]);
+								std::swap(z[j], z[j - 1]);
+							}
+						int from = c > 0 ? a[0] : 0, to = c > 0 ? z[0] : 0;
+						for (int i = 1; i <= c; i++)
+						{
+							if (i < c && a[i] <= to)
+							{
+								to = std::max(to, z[i]);
+								continue;
+							}
+							if (from <= cx && cx < to)
+							{
+								runX0[r] = from;
+								runX1[r] = to;
+								break;
+							}
+							if (i < c)
+							{
+								from = a[i];
+								to = z[i];
+							}
+						}
+						continue;
+					}
+					if (crossings[r] != 2 || !(lo[r] < hi[r]))
+						continue;
+					// pixels whose centres are in (lo, hi): floor(lo - 0.5) + 1 to ceil(hi - 0.5)
+					const int64_t half = (int64_t)1 << 31;
+					const int x0 = std::max(clip.x0, (int)((lo[r] - half) >> 32) + 1);
+					const int x1 = std::min(clip.x1, (int)-((half - hi[r]) >> 32));
+					if (x0 < x1)
+					{
+						runX0[r] = x0;
+						runX1[r] = x1;
+					}
+				}
+
+				// the middle rows: the longest run of rows with the same widest span
+				int bestStart = -1, bestLength = 0;
+				for (int r = 0; r < rows;)
+				{
+					int e = r + 1;
+					while (e < rows && runX0[e] == runX0[r] && runX1[e] == runX1[r])
+						e++;
+					if (runX1[r] > runX0[r] && (int64_t)(e - r) * (runX1[r] - runX0[r]) > (int64_t)bestLength * (bestStart >= 0 ? runX1[bestStart] - runX0[bestStart] : 0))
+					{
+						bestStart = r;
+						bestLength = e - r;
+					}
+					r = e;
+				}
+				if (bestStart < 0)
+					return 0;
+				int found = 0;
+				out[found++] = { runX0[bestStart], clip.y0 + bestStart, runX1[bestStart], clip.y0 + bestStart + bestLength };
+				// the rows above and below, as far as they are marked, with the columns all of them mark
+				auto side = [&](int from, int to, int step)
+				{
+					int x0 = INT_MIN, x1 = INT_MAX, last = from;
+					for (int r = from; r != to; r += step)
+					{
+						if (runX1[r] <= runX0[r])
+							break;
+						const int nx0 = std::max(x0, runX0[r]), nx1 = std::min(x1, runX1[r]);
+						if (nx1 <= nx0)
+							break;
+						x0 = nx0; x1 = nx1; last = r + step;
+					}
+					if (last == from)
+						return;
+					const int ra = std::min(from, last - step), rb = std::max(from, last - step);
+					out[found++] = { x0, clip.y0 + ra, x1, clip.y0 + rb + 1 };
+				};
+				side(bestStart - 1, -1, -1);
+				side(bestStart + bestLength, rows, 1);
+				return found;
+			}
+		}
+
+		bool hiddenOn()
+		{
+			static const bool on = getenv("ES_SOFT_HIDDEN") == nullptr || strcmp(getenv("ES_SOFT_HIDDEN"), "0") != 0;
+			return on;
+		}
+
+		void findHidden(const FrameDraw* draws, size_t count, int width, int height, Hidden& out, const Bounds* areas, int areaCount)
+		{
+			out.clear();
+			out.first.assign(count + 1, 0);
+			if (count == 0)
+				return;
+			// each draw's stencil shape: the last one set before it
+			thread_local std::vector<int> shapeOf;
+			shapeOf.assign(count, -1);
+			for (size_t i = 0, shape = (size_t)-1; i < count; i++)
+			{
+				if (draws[i].stencil)
+					shape = i;
+				shapeOf[i] = (int)shape;
+			}
+
+			// from the last draw back: the rectangles written over after each, each draw's those meeting its
+			// box (kept in reverse, put in order at the end)
+			static const size_t kMost = 64;
+			thread_local std::vector<Bounds> over;
+			thread_local std::vector<Bounds> rects;
+			thread_local std::vector<uint32_t> counts;
+			over.clear();
+			rects.clear();
+			counts.assign(count, 0);
+			for (size_t k = count; k-- > 0;)
+			{
+				const FrameDraw& d = draws[k];
+				if (d.stencil || d.box.empty())
+					continue;
+				for (const Bounds& r : over)
+					if (r.meets(d.box))
+					{
+						rects.push_back(r);
+						counts[k]++;
+					}
+				Bounds pixels;
+				if (over.size() >= kMost || !opaquePixels(d.vertices, d.count, d.topology, d.state, width, height, pixels))
+					continue;
+				// only where the frame is drawn (its parts' box, those it meets)
+				if (areas != nullptr)
+				{
+					Bounds reach = { INT_MAX, INT_MAX, INT_MIN, INT_MIN };
+					for (int a = 0; a < areaCount; a++)
+						if (areas[a].meets(pixels))
+						{
+							reach.x0 = std::min(reach.x0, areas[a].x0); reach.y0 = std::min(reach.y0, areas[a].y0);
+							reach.x1 = std::max(reach.x1, areas[a].x1); reach.y1 = std::max(reach.y1, areas[a].y1);
+						}
+					pixels = { std::max(pixels.x0, reach.x0), std::max(pixels.y0, reach.y0), std::min(pixels.x1, reach.x1), std::min(pixels.y1, reach.y1) };
+					if (pixels.empty())
+						continue;
+				}
+				if (d.state.stencil == StencilTest::Off)
+				{
+					over.push_back(pixels);
+					continue;
+				}
+				// tested inside a stencil shape: the rows of the shape's marks in its pixels
+				if (shapeOf[k] < 0)
+					continue; // nothing marked: draws nothing
+				Bounds marked[3];
+				const int n = markedRects(draws[shapeOf[k]], width, height, pixels, marked);
+				for (int m = 0; m < n && over.size() < kMost; m++)
+					if (!marked[m].empty())
+						over.push_back(marked[m]);
+			}
+			// in the draws' order (rects has the last draw's first: each draw's start there, from the last back)
+			out.rects.resize(rects.size());
+			thread_local std::vector<uint32_t> start;
+			start.assign(count, 0);
+			uint32_t pos = 0;
+			for (size_t k = count; k-- > 0;)
+			{
+				start[k] = pos;
+				pos += counts[k];
+			}
+			uint32_t o = 0;
+			for (size_t k = 0; k < count; k++)
+			{
+				out.first[k] = o;
+				for (uint32_t j = 0; j < counts[k]; j++)
+					out.rects[o++] = rects[start[k] + j];
+			}
+			out.first[count] = o;
+		}
+
+		int visiblePieces(const Bounds& area, const Bounds* holes, int holeCount, Bounds* out, int max)
+		{
+			if (area.empty())
+				return 0;
+			thread_local std::vector<Bounds> cut;
+			cut.clear();
+			for (int i = 0; i < holeCount; i++)
+			{
+				const Bounds& h = holes[i];
+				Bounds c = { std::max(h.x0, area.x0), std::max(h.y0, area.y0), std::min(h.x1, area.x1), std::min(h.y1, area.y1) };
+				if (!c.empty())
+					cut.push_back(c);
+			}
+			if (cut.empty())
+			{
+				if (max < 1)
+					return -1;
+				out[0] = area;
+				return 1;
+			}
+			if (cut.size() > 32)
+				return -1;
+			// the rows where a hole starts or ends: bands, each one's columns not in a hole
+			int ys[2 + 64];
+			int ny = 0;
+			ys[ny++] = area.y0;
+			ys[ny++] = area.y1;
+			for (const Bounds& c : cut)
+			{
+				ys[ny++] = c.y0;
+				ys[ny++] = c.y1;
+			}
+			std::sort(ys, ys + ny);
+			ny = (int)(std::unique(ys, ys + ny) - ys);
+			int n = 0, previousFrom = 0, previousTo = 0;
+			std::pair<int, int> xs[32];
+			for (int b = 0; b + 1 < ny; b++)
+			{
+				const int ya = ys[b], yb = ys[b + 1];
+				int nx = 0;
+				for (const Bounds& c : cut)
+					if (c.y0 <= ya && c.y1 >= yb)
+						xs[nx++] = { c.x0, c.x1 };
+				std::sort(xs, xs + nx);
+				int x = area.x0;
+				auto emit = [&](int x0, int x1)
+				{
+					// joined to the band above's piece with the same columns
+					for (int p = previousFrom; p < previousTo; p++)
+						if (out[p].x0 == x0 && out[p].x1 == x1 && out[p].y1 == ya)
+						{
+							out[p].y1 = yb;
+							return true;
+						}
+					if (n >= max)
+						return false;
+					out[n++] = { x0, ya, x1, yb };
+					return true;
+				};
+				for (int i = 0; i < nx; i++)
+				{
+					if (xs[i].first > x && !emit(x, xs[i].first))
+						return -1;
+					x = std::max(x, xs[i].second);
+				}
+				if (x < area.x1 && !emit(x, area.x1))
+					return -1;
+				// the next band joins to the pieces ending where it starts
+				previousFrom = 0;
+				previousTo = n;
+			}
+			return n;
 		}
 
 		bool layersOn()
@@ -2337,7 +2850,11 @@ namespace Renderer
 			bool finite = true;
 			for (int i = 0; i < count; i++)
 			{
-				finite = finite && std::isfinite(v[i].x) && std::isfinite(v[i].y);
+				// finite: an exponent short of all ones (std::isfinite, without the call it is on the A9)
+				uint32_t bx, by;
+				memcpy(&bx, &v[i].x, 4);
+				memcpy(&by, &v[i].y, 4);
+				finite = finite && (bx & 0x7F800000u) != 0x7F800000u && (by & 0x7F800000u) != 0x7F800000u;
 				x0 = std::min(x0, v[i].x); x1 = std::max(x1, v[i].x);
 				y0 = std::min(y0, v[i].y); y1 = std::max(y1, v[i].y);
 			}
