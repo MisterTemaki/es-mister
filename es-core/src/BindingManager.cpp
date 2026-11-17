@@ -103,8 +103,13 @@ static SettingsBinding settingsBinding;
 void BindingManager::bindValues(IBindable* current, std::string& xp, bool showDefaultText, std::string& evaluableExpression)
 {
 	std::string typeName = current->getBindableTypeName();
+	const std::string prefix = "{" + typeName + ":";
 
-	for (auto name : Utils::String::extractStrings(xp, "{" + typeName + ":", "}"))
+	// most bindables of a chain have nothing in the expression: no list of names to make for them
+	if (xp.find(prefix) == std::string::npos)
+		return;
+
+	for (const auto& name : Utils::String::extractStrings(xp, prefix, "}"))
 	{
 		std::string dataAsString;
 		std::string dataAsEvaluable;
@@ -149,8 +154,9 @@ void BindingManager::bindValues(IBindable* current, std::string& xp, bool showDe
 		if (showDefaultText && value.type != BindablePropertyType::Path)
 			dataAsString = dataAsString.empty() ? _("Unknown") : dataAsString == "0" ? _("None") : dataAsString;
 
-		xp = Utils::String::replace(xp, "{" + typeName + ":" + name + "}", dataAsString);
-		evaluableExpression = Utils::String::replace(evaluableExpression, "{" + typeName + ":" + name + "}", dataAsEvaluable);
+		const std::string placeholder = prefix + name + "}";
+		xp = Utils::String::replace(xp, placeholder, dataAsString);
+		evaluableExpression = Utils::String::replace(evaluableExpression, placeholder, dataAsEvaluable);
 	}
 }
 
@@ -166,8 +172,11 @@ std::string BindingManager::updateBoundExpression(std::string& xp, IBindable* bi
 	}
 	else
 	{
-		xp = Utils::String::replace(xp, "{binding:", "{system:"); // Retrocompatibility for old {binding: which is {system
-		xp = Utils::String::replace(xp, "{collection:", "{game:collection:"); // Retrocompatibility for old {binding: which is {system
+		// (only when there is one: replace makes a new string even when it finds nothing)
+		if (xp.find("{binding:") != std::string::npos)
+			xp = Utils::String::replace(xp, "{binding:", "{system:"); // Retrocompatibility for old {binding: which is {system
+		if (xp.find("{collection:") != std::string::npos)
+			xp = Utils::String::replace(xp, "{collection:", "{game:collection:"); // Retrocompatibility for old {binding: which is {system
 		evaluableExpression = xp;
 
 		IBindable* current = bindable;
@@ -208,8 +217,9 @@ void BindingManager::updateBindings(GuiComponent* comp, IBindable* bindable, boo
 	TextComponent* text = dynamic_cast<TextComponent*>(comp);	
 	bool showDefaultText = text != nullptr && text->getBindingDefaults();
 
-	auto expressions = comp->getBindingExpressions();
-	for (auto expression : expressions)
+	// by reference: setProperty below changes the component's properties, never its binding expressions
+	const auto& expressions = comp->getBindingExpressions();
+	for (const auto& expression : expressions)
 	{
 		std::string xp = expression.second;
 		if (xp.empty())

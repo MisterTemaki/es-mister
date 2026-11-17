@@ -190,7 +190,8 @@ public:
 	void			setClickAction(const std::string& action) { mClickAction = action; }
 
 	// Bindings
-	std::map<std::string, std::string> getBindingExpressions() { return mBindingExpressions; }
+	// by reference: asked for every child at every binding (and every frame by enumerateExtraChildrens)
+	const std::map<std::string, std::string>& getBindingExpressions() const { return mBindingExpressions; }
 
 	// Events
 	virtual void	onPositionChanged();
