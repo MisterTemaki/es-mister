@@ -1601,9 +1601,13 @@ void ImageGridComponent<T>::topWindow(bool isTop)
 {
 	GuiComponent::topWindow(isTop);
 
-	for (auto entry : mEntries)
-		if (entry.data.tile != nullptr)
-			entry.data.tile->topWindow(isTop);
+	for (auto& entry : mEntries)
+	{
+		// the tile alone held while it is called (as the copy of the whole entry did), not its strings
+		auto tile = entry.data.tile;
+		if (tile != nullptr)
+			tile->topWindow(isTop);
+	}
 }
 
 template<typename T>
@@ -1611,9 +1615,13 @@ void ImageGridComponent<T>::setOpacity(unsigned char opacity)
 {
 	GuiComponent::setOpacity(opacity);
 
-	for (auto entry : mEntries)
-		if (entry.data.tile != nullptr)
-			entry.data.tile->setOpacity(opacity);
+	for (auto& entry : mEntries)
+	{
+		// the tile alone held while it is called (as the copy of the whole entry did), not its strings
+		auto tile = entry.data.tile;
+		if (tile != nullptr)
+			tile->setOpacity(opacity);
+	}
 }
 
 template<typename T>
@@ -1621,9 +1629,13 @@ void ImageGridComponent<T>::onShow()
 {
 	GuiComponent::onShow();
 
-	for (auto entry : mEntries)
-		if (entry.data.tile != nullptr)
-			entry.data.tile->onShow();
+	for (auto& entry : mEntries)
+	{
+		// the tile alone held while it is called (as the copy of the whole entry did), not its strings
+		auto tile = entry.data.tile;
+		if (tile != nullptr)
+			tile->onShow();
+	}
 }
 
 template<typename T>
@@ -1631,9 +1643,13 @@ void ImageGridComponent<T>::onHide()
 {
 	GuiComponent::onHide();
 
-	for (auto entry : mEntries)
-		if (entry.data.tile != nullptr)
-			entry.data.tile->onHide();
+	for (auto& entry : mEntries)
+	{
+		// the tile alone held while it is called (as the copy of the whole entry did), not its strings
+		auto tile = entry.data.tile;
+		if (tile != nullptr)
+			tile->onHide();
+	}
 
 	ensureVisibleTileExist();
 	mEntriesDirty = false;
@@ -1644,9 +1660,13 @@ void ImageGridComponent<T>::onScreenSaverActivate()
 {
 	GuiComponent::onScreenSaverActivate();
 
-	for (auto entry : mEntries)
-		if (entry.data.tile != nullptr)
-			entry.data.tile->onScreenSaverActivate();
+	for (auto& entry : mEntries)
+	{
+		// the tile alone held while it is called (as the copy of the whole entry did), not its strings
+		auto tile = entry.data.tile;
+		if (tile != nullptr)
+			tile->onScreenSaverActivate();
+	}
 }
 
 template<typename T>
@@ -1654,9 +1674,13 @@ void ImageGridComponent<T>::onScreenSaverDeactivate()
 {
 	GuiComponent::onScreenSaverDeactivate();
 
-	for (auto entry : mEntries)
-		if (entry.data.tile != nullptr)
-			entry.data.tile->onScreenSaverDeactivate();
+	for (auto& entry : mEntries)
+	{
+		// the tile alone held while it is called (as the copy of the whole entry did), not its strings
+		auto tile = entry.data.tile;
+		if (tile != nullptr)
+			tile->onScreenSaverDeactivate();
+	}
 }
 
 
