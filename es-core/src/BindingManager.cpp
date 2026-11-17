@@ -117,19 +117,28 @@ void BindingManager::bindValues(IBindable* current, std::string& xp, bool showDe
 		IBindable* root = current;
 		std::string propertyName = name;
 
-		for (auto propName : Utils::String::split(name, ':', true))
+		// the value the walk stopped at (not a bindable) is the one asked again after it before: kept, not asked
+		// twice (FileData::getProperty, at every name of every binding of every tile)
+		BindableProperty value;
+		bool have = false;
+
+		for (const auto& propName : Utils::String::split(name, ':', true))
 		{
 			propertyName = propName;
 
-			auto value = root->getProperty(propName);
+			value = root->getProperty(propName);
 			if (value.type != BindablePropertyType::Bindable || value.bindable == nullptr)
+			{
+				have = true;
 				break;
+			}
 
 			propertyName = "name"; // use default "name" property for IBinding if not property specified later
 			root = value.bindable;
 		}
 
-		auto value = root->getProperty(propertyName);
+		if (!have)
+			value = root->getProperty(propertyName);
 		switch (value.type)
 		{
 		case BindablePropertyType::String:
