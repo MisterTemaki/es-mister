@@ -984,7 +984,7 @@ void ImageComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, const s
 			setImage("");
 	}
 
-	for (auto child : elem->children)
+	for (const auto& child : elem->children)
 	{
 		if (child.second.type != "shader")
 			continue;
@@ -992,7 +992,7 @@ void ImageComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, const s
 		if (child.second.has("enabled"))
 			mCustomShaderEnabled = child.second.get<bool>("enabled");
 
-		for (auto prop : child.second.properties)
+		for (const auto& prop : child.second.properties)
 		{
 			if (prop.second.type == ThemeData::ThemeElement::Property::PropertyType::String && Utils::String::endsWith(prop.first, "_binding"))
 				mBindingExpressions["shader." + Utils::String::replace(prop.first, "_binding", "")] = prop.second.s;				

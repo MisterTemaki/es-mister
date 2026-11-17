@@ -731,7 +731,7 @@ void CarouselComponent::ensureLogo(IList<CarouselComponentData, IBindable*>::Ent
 	const ThemeData::ThemeElement* carouselElem = mTheme->getElement(mThemeViewName, mThemeElementName, mThemeClass);
 	if (carouselElem)
 	{
-		auto itemTemplate = std::find_if(carouselElem->children.cbegin(), carouselElem->children.cend(), [](const std::pair<std::string, ThemeData::ThemeElement> ss) { return ss.first == "itemTemplate"; });
+		auto itemTemplate = std::find_if(carouselElem->children.cbegin(), carouselElem->children.cend(), [](const std::pair<std::string, ThemeData::ThemeElement>& ss) { return ss.first == "itemTemplate"; });
 		if (itemTemplate != carouselElem->children.cend())
 		{
 			CarouselItemTemplate* templ = new CarouselItemTemplate(entry.name, mWindow);

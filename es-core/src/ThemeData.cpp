@@ -2872,7 +2872,7 @@ bool ThemeData::parseCustomShader(const ThemeData::ThemeElement* elem, Renderer:
 	pShader->path = "";
 	pShader->parameters.clear();
 
-	for (auto child : elem->children)
+	for (const auto& child : elem->children)
 	{
 		if (child.second.type == type && child.second.has("path"))
 		{
@@ -2881,7 +2881,7 @@ bool ThemeData::parseCustomShader(const ThemeData::ThemeElement* elem, Renderer:
 			{
 				pShader->path = path;
 
-				for (auto prop : child.second.properties)
+				for (const auto& prop : child.second.properties)
 				{
 					if (prop.first == "pos" || prop.first == "path" || prop.first == "size" || prop.first == "zIndex")
 						continue;
@@ -2906,7 +2906,8 @@ void ThemeData::applySelfTheme(GuiComponent* comp, const ThemeElement& elem)
 	auto theme = std::make_shared<ThemeData>(true);	
 	
 	ThemeView& view = theme->mViews.insert("default", std::move(ThemeView())).first->second;
-	auto element = view.elements.insert(std::pair<std::string, ThemeElement>("default", elem));
+	// built in place from elem: one copy of it and its children, not a pair copied again into the map
+	auto element = view.elements.emplace(std::piecewise_construct, std::forward_as_tuple("default"), std::forward_as_tuple(elem));
 
 	comp->applyTheme(theme, "default", "default", ThemeFlags::ALL);
 
