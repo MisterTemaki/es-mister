@@ -85,15 +85,11 @@ std::shared_ptr<TextureData> TextureDataManager::get(const TextureResource* key,
 		if (enableLoading == TextureLoadMode::NOLOAD)
 			return tex;
 
+		// Put it at the top: its list node moved there (splice), the same order as taking it out and putting a new
+		// one at the top, without freeing and making a node at every bind (every texture drawn, every frame) or
+		// looking the key up again; the lookup's iterator stays valid
 		if (mTextures.cbegin() != (*it).second)
-		{
-			// Remove the list entry
-			mTextures.erase((*it).second);
-			// Put it at the top
-			mTextures.push_front(tex);
-			// Store it back in the lookup
-			mTextureLookup[key] = mTextures.cbegin();
-		}
+			mTextures.splice(mTextures.cbegin(), mTextures, (*it).second);
 
 		// Make sure it's loaded or queued for loading
 		if (enableLoading != TextureLoadMode::MOVETOTOPONLY && !tex->isLoaded())
