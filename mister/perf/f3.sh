@@ -1,17 +1,26 @@
 #!/bin/bash
-# Phase 3 batch: binaries compared in the same session, interleaved, each run from a clean state.
+# Phase 3 batch: binaries and scripts compared in the same session, interleaved, each run from a clean state.
 #   f3.sh PLAN_FILE
-# Each PLAN_FILE line: KIND BIN COUNT [VAR=VALUE...]
+# Each PLAN_FILE line: KIND BIN COUNT [sh=NAME] [helper=NAME] [launch=NAME] [cache=cold|warm] [VAR=VALUE...]
 #   KIND: grid | list (nav.script in that view), ggrid | glist (golden frames, fixed clock), boot (cold boot,
-#         page cache emptied, abrir.script)
-#   BIN:  a binary in $T/bins (es-NAME); its es-mister.sh from $T/bins/sh-NAME if there is one (scripts tested
-#         the same way), else the test copy's own
+#         page cache emptied, abrir.script), launch (a SNES game started as ES starts it, the menu core loaded
+#         again 5 s later; ES not running)
+#   BIN:  a binary in $B/bins (es-NAME)
+#   sh=, helper=, launch=: es-mister.sh, es-mister-helper, mister-launch.sh from $B/bins (sh-NAME, ...);
+#         without them the test copy's own (as saved in $B/bins/*-orig at the first batch)
+#   cache=cold: an empty picture cache for this run; cache=warm: the batch's shared one ($B/pc/warm)
 # Lines are taken round-robin: one run of each line, then the next round, until each line has its COUNT.
-# At the end the test copy as it was (es-p6 and its es-mister.sh) and the user's ES started and checked.
+# At the end the test copy as it was and the user's ES started and checked.
 T=/media/fat/teste-claude/f1; B=/media/fat/teste-claude/f3; E=/media/fat/emulationstation-claude720p; H=$E/home/.emulationstation
-RES=$B/res; mkdir -p $RES
+RES=$B/res; mkdir -p $RES $B/pc
 log() { echo "$(date +%T) $*" >> $RES/batch.log; }
 menu_wait() { for i in $(seq 60); do [ "$(cat /tmp/CORENAME 2>/dev/null)" = MENU ] && return 0; sleep 1; done; return 1; }
+up() { cut -d' ' -f1 /proc/uptime; }
+
+# the test copy's own files, once
+[ -f $B/bins/sh-orig ] || cp $T/es-mister.sh $B/bins/sh-orig
+[ -f $B/bins/helper-orig ] || cp $E/es-mister-helper $B/bins/helper-orig
+[ -f $B/bins/launch-orig ] || cp $E/mister-launch.sh $B/bins/launch-orig
 
 clean() {
 	killall emulationstation 2>/dev/null
@@ -26,30 +35,73 @@ clean() {
 	menu_wait
 }
 
+# the files a run uses: es-NAME and the scripts asked for (or the test copy's own)
+setup() {
+	local bin=$1 sh=$2 helper=$3 launch=$4
+	cp $B/bins/es-$bin $E/emulationstation
+	cp $B/bins/sh-${sh:-orig} $E/es-mister.sh
+	cp $B/bins/helper-${helper:-orig} $E/es-mister-helper
+	cp $B/bins/launch-${launch:-orig} $E/mister-launch.sh
+	chmod +x $E/emulationstation $E/es-mister-helper
+}
+
 run_one() {
 	local kind=$1 bin=$2 n=$3; shift 3
-	local name=$kind-$bin-$n R=$RES/$kind-$bin-$n view=grid script=nav extra=()
+	local sh="" helper="" launch="" cache="" env=()
+	for a in "$@"; do
+		case $a in
+			sh=*) sh=${a#sh=} ;;
+			helper=*) helper=${a#helper=} ;;
+			launch=*) launch=${a#launch=} ;;
+			cache=*) cache=${a#cache=} ;;
+			*) env+=("$a") ;;
+		esac
+	done
+	local tag=$bin; [ -n "$sh" ] && tag=$tag-s$sh; [ -n "$helper" ] && tag=$tag-h$helper; [ -n "$launch" ] && tag=$tag-l$launch; [ -n "$cache" ] && tag=$tag-$cache
+	local name=$kind-$tag-$n R=$RES/$kind-$tag-$n view=grid script=nav
 	case $kind in
 		list) view=detailed ;;
-		ggrid) script=golden2; extra=(ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$R) ;;
-		glist) view=detailed; script=golden2; extra=(ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$R) ;;
+		ggrid) script=golden2; env+=(ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$R) ;;
+		glist) view=detailed; script=golden2; env+=(ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$R) ;;
 		boot) script=abrir ;;
+	esac
+	case $cache in
+		cold) env+=(ES_PICTURE_CACHE=$B/pc/cold-$kind-$n) ;; # a new, empty one (nothing deleted)
+		warm) env+=(ES_PICTURE_CACHE=$B/pc/warm) ;;
 	esac
 	rm -rf $R; mkdir -p $R
 	clean
-	cp $B/bins/es-$bin $E/emulationstation
-	if [ -f $B/bins/sh-$bin ]; then cp $B/bins/sh-$bin $E/es-mister.sh; else cp $T/es-mister.sh $E/es-mister.sh; fi
+	setup $bin "$sh" "$helper" "$launch"
+
+	if [ $kind = launch ]; then
+		local game="/media/fat/games/SNES/Aero the Acro-Bat 2 (EU).sfc"
+		sleep 2
+		local s=$(up)
+		bash $E/mister-launch.sh snes "$game" </dev/null >/dev/null 2>&1 &
+		local lp=$! c="" b=""
+		for i in $(seq 1500); do x=$(cat /tmp/CORENAME 2>/dev/null); [ -n "$x" ] && [ "$x" != MENU ] && { c=$(up); break; }; sleep 0.02; done
+		sleep 5
+		local m=$(up); echo "load_core /media/fat/menu.rbf" > /dev/MiSTer_cmd
+		for i in $(seq 1500); do [ "$(cat /tmp/CORENAME 2>/dev/null)" = MENU ] && { b=$(up); break; }; sleep 0.02; done
+		wait $lp; local d=$(up)
+		echo "launch $n start $s core $c menu-asked $m menu $b script-done $d" > $R/launch.txt
+		tail -12 $E/logs/es-mister.log | grep -v "MisterPads\|ERROR" > $R/script.txt
+		log "$name done"
+		return
+	fi
+
 	cp $T/es_settings.cfg.orig $H/es_settings.cfg
 	sed -i -e 's/name="LastSystem" value="[^"]*"/name="LastSystem" value="snes"/' $H/es_settings.cfg
 	sed -i "s|</config>|	<string name=\"snes.defaultView\" value=\"$view\" />\n</config>|" $H/es_settings.cfg
 	[ $kind = boot ] && { sync; echo 3 > /proc/sys/vm/drop_caches; }
 	sleep 2
 	local before=$(wc -l < $E/logs/es-mister.log)
-	( while :; do p=$(pidof emulationstation); [ -n "$p" ] && awk -v t=$(cut -d' ' -f1 /proc/uptime) '/VmRSS|VmHWM/{printf "%s %s %s\n", t, $1, $2}' /proc/$p/status 2>/dev/null; sleep 1; done > $R/mem.txt ) &
+	( while :; do p=$(pidof emulationstation); [ -n "$p" ] && awk -v t=$(up) '/VmRSS|VmHWM/{printf "%s %s %s\n", t, $1, $2}' /proc/$p/status 2>/dev/null; sleep 1; done > $R/mem.txt ) &
 	local sampler=$!
-	env "${extra[@]}" "$@" ES_SOFT_STATS=0 ES_PERF_FRAMES=$R/perf.csv ES_STARTUP_TRACE=$R/trace.txt ES_SOFT_SCRIPT=$T/$script.script bash $E/es-mister.sh </dev/null >/dev/null 2>&1
+	env "${env[@]}" ES_SOFT_STATS=0 ES_PERF_FRAMES=$R/perf.csv ES_STARTUP_TRACE=$R/trace.txt ES_SOFT_SCRIPT=$T/$script.script bash $E/es-mister.sh </dev/null >/dev/null 2>&1
 	kill $sampler 2>/dev/null
 	tail -n +$((before + 1)) $E/logs/es-mister.log | grep -v "MisterPads\|ERROR" > $R/script.txt
+	[ $kind = boot ] && cp $H/es_systems.cfg $R/es_systems.cfg
 	log "$name done ($(grep -c '^M' $R/perf.csv 2>/dev/null) marks)"
 }
 
@@ -70,7 +122,9 @@ while :; do
 done
 
 cp $T/es-p6 $E/emulationstation
-cp $T/es-mister.sh $E/es-mister.sh
+cp $B/bins/sh-orig $E/es-mister.sh
+cp $B/bins/helper-orig $E/es-mister-helper
+cp $B/bins/launch-orig $E/mister-launch.sh
 cp $T/es_settings.cfg.orig $H/es_settings.cfg
 clean; sleep 2
 for try in 1 2; do
