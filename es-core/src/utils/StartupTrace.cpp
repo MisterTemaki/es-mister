@@ -1,6 +1,9 @@
 #include "utils/StartupTrace.h"
 
 #include <atomic>
+#include <condition_variable>
+#include <string>
+#include <vector>
 #include <cstdarg>
 #include <chrono>
 #include <cstdio>
@@ -32,6 +35,12 @@ namespace StartupTrace
 		{
 			FILE* file = nullptr;
 			std::mutex lock;
+			// the lines not yet written, and the thread that writes them: on the MiSTer's SD card (mounted
+			// sync) a line written and flushed where it happens held its thread (and, under the lock, every
+			// other thread marking a step) ~4 ms; ~250 lines during the start
+			std::string pending;
+			std::condition_variable written;
+			bool exiting = false, allWritten = false;
 			long mainThread = 0;
 			std::map<long, Step> steps;	// the step each thread is in, by thread id
 			std::atomic<double> lastFrame{ 0 };
@@ -59,14 +68,76 @@ namespace StartupTrace
 #endif
 			;
 
+		// a line for the writer thread (with s.lock held, or before any other thread runs)
 		void line(State& s, const char* format, ...)
 		{
+			char buffer[1024];
 			va_list args;
 			va_start(args, format);
-			vfprintf(s.file, format, args);
+			const int n = vsnprintf(buffer, sizeof(buffer), format, args);
 			va_end(args);
-			fputc('\n', s.file);
-			fflush(s.file);
+			if (n < 0)
+				return;
+			if ((size_t)n < sizeof(buffer))
+				s.pending.append(buffer, (size_t)n);
+			else
+			{
+				// longer than the buffer: formatted again at its length
+				std::vector<char> big((size_t)n + 1);
+				va_start(args, format);
+				vsnprintf(big.data(), big.size(), format, args);
+				va_end(args);
+				s.pending.append(big.data(), (size_t)n);
+			}
+			s.pending += '\n';
+			s.written.notify_one();
+		}
+
+		// the lines as they come, written and flushed by this thread, outside the lock (the only one that
+		// writes the file, so the lines keep their order); at the process' end what is left, then done
+		void writeLines(State* s)
+		{
+			std::string lines;
+			while (true)
+			{
+				bool last;
+				{
+					std::unique_lock<std::mutex> guard(s->lock);
+					s->written.wait(guard, [s] { return !s->pending.empty() || s->exiting; });
+					lines.swap(s->pending);
+					last = s->exiting;
+				}
+				if (!lines.empty())
+				{
+					fwrite(lines.data(), 1, lines.size(), s->file);
+					fflush(s->file);
+					lines.clear();
+				}
+				if (last)
+				{
+					std::lock_guard<std::mutex> guard(s->lock);
+					if (s->pending.empty())
+					{
+						s->allWritten = true;
+						s->written.notify_all();
+						return;
+					}
+				}
+			}
+		}
+
+		State* get();
+
+		// the process ends: the writer thread writes what is left (a second at most)
+		void writeLeft()
+		{
+			State* s = get();
+			if (s == nullptr || s->file == nullptr)
+				return;
+			std::unique_lock<std::mutex> guard(s->lock);
+			s->exiting = true;
+			s->written.notify_all();
+			s->written.wait_for(guard, std::chrono::seconds(1), [s] { return s->allWritten; });
 		}
 
 #if defined(__linux__)
@@ -205,7 +276,9 @@ namespace StartupTrace
 					}
 					line(*s, "%9.3f [%ld] trace started (uptime %s s)", now(), s->mainThread, uptime);
 					s->lastFrame = now();
+					std::thread(writeLines, s).detach();
 					std::thread(watch, s).detach();
+					atexit(writeLeft);
 				}
 				return s;
 			}();
