@@ -1009,10 +1009,38 @@ bool SystemData::loadConfig(Window* window)
 
 	int processedSystem = 0;
 
+#ifdef MISTER
+	// The systems outside a games folder (the SD card's _Arcade, with its subfolders) take by far the longest
+	// to read on a cold start (~2 s): queued first, they are read while the others are, instead of alone at
+	// the end with the other threads done. The systems keep their order: each is stored at its own index.
+	std::unordered_set<int> queuedFirst;
+	if (pThreadPool != NULL)
+	{
+		int index = 0;
+		for (pugi::xml_node system = systemList.child("system"); system; system = system.next_sibling("system"), index++)
+		{
+			const std::string path = system.child("path").text().get();
+			if (path.find("/games/") != std::string::npos)
+				continue;
+
+			queuedFirst.insert(index);
+			pThreadPool->queueWorkItem([system, index, systems, &processedSystem]
+			{
+				StartupTrace::Scope trace("load system", system.child("name").text().get());
+				systems[index] = loadSystem(system);
+				processedSystem++;
+			});
+		}
+	}
+#endif
+
 	for (pugi::xml_node system = systemList.child("system"); system; system = system.next_sibling("system"))
 	{
 		if (pThreadPool != NULL)
 		{
+#ifdef MISTER
+			if (queuedFirst.count(currentSystem) == 0)
+#endif
 			pThreadPool->queueWorkItem([system, currentSystem, systems, &processedSystem]
 			{
 				StartupTrace::Scope trace("load system", system.child("name").text().get());
