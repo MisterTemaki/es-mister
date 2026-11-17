@@ -85,6 +85,19 @@ namespace Renderer
 		{
 			const uint32_t now = scriptNowMs();
 
+			mFrames++;
+			if (mHashes != nullptr)
+			{
+				// FNV-1a of the pixels, the clock's corner (bottom right, 100x80 at 1280x720, scaled) left out
+				const uint32_t* p = pixels();
+				const int cx = width - width * 100 / 1280, cy = height - height * 80 / 720;
+				uint64_t h = 1469598103934665603ULL;
+				for (int y = 0; y < height; y++)
+					for (int x = 0; x < (y >= cy ? cx : width); x++)
+						h = (h ^ p[(size_t)y * width + x]) * 1099511628211ULL;
+				fprintf(mHashes, "%llu %016llx\n", (unsigned long long)mFrames, (unsigned long long)h);
+			}
+
 			// keys let go of
 			for (auto it = mReleases.begin(); it != mReleases.end(); )
 			{
@@ -172,6 +185,14 @@ namespace Renderer
 				}
 				else if (command == "stats")
 					mStats = true;
+				else if (command == "hashes")
+				{
+					std::string arg;
+					line >> arg;
+					if (mHashes != nullptr)
+						fclose(mHashes);
+					mHashes = arg == "off" ? nullptr : fopen(((mShots.empty() ? std::string(".") : mShots) + "/hashes.txt").c_str(), "a");
+				}
 				else if (command == "log")
 				{
 					std::string text;

@@ -19,6 +19,7 @@
 //   quit            ES closes
 
 #include <cstdint>
+#include <cstdio>
 #include <functional>
 #include <string>
 #include <vector>
@@ -58,6 +59,10 @@ namespace Renderer
 			std::string mDump;
 			std::string mCapture;
 			bool mStats = false;
+			// "hashes": a hash of every frame from then on (the theme's clock left out), one line each, to compare
+			// the frames in motion of two builds; "hashes off" stops
+			FILE* mHashes = nullptr;
+			uint64_t mFrames = 0;
 		};
 	}
 }
