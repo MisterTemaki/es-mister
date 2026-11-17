@@ -55,11 +55,18 @@ ES_PID=$(pidof emulationstation)
 [ -n "$ES_PID" ] && "$ES/es-mister-helper" ungrab "$ES_PID"
 echo "load_core $target" >/dev/MiSTer_cmd
 
+# the core loaded now, in $core, read by bash itself (no cat), and a wait of SECONDS without a sleep process
+# (read's timeout on a pipe nothing writes to; sleep if that read ends any other way): both cost nothing,
+# so the core's change is seen within 0.1 s
+corename() { core=""; read -r core </tmp/CORENAME 2>/dev/null; }
+exec {nap}<> <(:)
+wait_s() { read -r -t "$1" -u "$nap" _; [ $? -gt 128 ] || sleep "$1"; }
+
 # the core starts (Main_MiSTer starts again, and names it)
 started=0
-for i in $(seq 30); do
-	sleep 1
-	core=$(cat /tmp/CORENAME 2>/dev/null)
+for i in $(seq 300); do
+	wait_s 0.1
+	corename
 	if [ -n "$core" ] && [ "$core" != "MENU" ]; then
 		started=1
 		break
@@ -69,8 +76,10 @@ done
 if [ $started = 1 ]; then
 	echo "core $core started"
 	# the game runs until the menu core is loaded again (the OSD's Reset or Exit)
-	while [ "$(cat /tmp/CORENAME 2>/dev/null)" != "MENU" ]; do
-		sleep 1
+	corename
+	while [ "$core" != "MENU" ]; do
+		wait_s 0.1
+		corename
 	done
 	echo "back in the menu"
 	sleep 2 # Main_MiSTer starting again
