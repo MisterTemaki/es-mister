@@ -220,6 +220,7 @@ public:
 
 	virtual void	updateBindings(IBindable* bindable);
 	std::vector<GuiComponent*> enumerateExtraChildrens();
+	void enumerateExtraChildrens(std::vector<GuiComponent*>& recursiveExtraChildrens);
 
 	Vector4f		getClientRect();
 

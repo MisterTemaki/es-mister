@@ -320,9 +320,15 @@ void GridTileComponent::update(int deltaTime)
 	if (hasStoryBoard() && !isStoryBoardRunning())
 		deselectStoryboard(false);
 
-	for (auto comp : enumerateExtraChildrens())
+	// the extra children into a vector kept from frame to frame (taken while in use: a call within this one gets its own)
+	static std::vector<GuiComponent*> kept;
+	std::vector<GuiComponent*> extras;
+	extras.swap(kept);
+	enumerateExtraChildrens(extras);
+	for (auto comp : extras)
 		if (comp->hasStoryBoard() && !comp->isStoryBoardRunning())
 			comp->deselectStoryboard(false);
+	kept.swap(extras);
 			
 	if (mVideo != nullptr && mVideo->isPlaying() && (mVideo->isFading() || !ALLOWANIMATIONS))
 		resize();

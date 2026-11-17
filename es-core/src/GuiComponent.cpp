@@ -1435,21 +1435,31 @@ bool GuiComponent::onMouseClick(int button, bool pressed, int x, int y)
 std::vector<GuiComponent*> GuiComponent::enumerateExtraChildrens()
 {
 	std::vector<GuiComponent*> recursiveExtraChildrens;
+	enumerateExtraChildrens(recursiveExtraChildrens);
+	return recursiveExtraChildrens;
+}
 
-	std::stack<GuiComponent*> stack;
-	stack.push(this);
+// The same list, in the same order, into the vector given (emptied first) and with a stack kept from call to call:
+// a grid's tile asks for it at every frame
+void GuiComponent::enumerateExtraChildrens(std::vector<GuiComponent*>& recursiveExtraChildrens)
+{
+	recursiveExtraChildrens.clear();
+
+	thread_local std::vector<GuiComponent*> stack;
+	stack.clear();
+	stack.push_back(this);
 
 	while (stack.size())
 	{
-		GuiComponent* current = stack.top();
-		stack.pop();
+		GuiComponent* current = stack.back();
+		stack.pop_back();
 
 		for (auto it : current->mChildren)
 		{
 			if (!it->mVisible)
 				continue;
 
-			stack.push(it);
+			stack.push_back(it);
 
 			if (it->mExtraType == ExtraType::EXTRACHILDREN)
 				recursiveExtraChildrens.push_back(it);
@@ -1457,8 +1467,6 @@ std::vector<GuiComponent*> GuiComponent::enumerateExtraChildrens()
 				recursiveExtraChildrens.push_back(it);
 		}
 	}
-
-	return recursiveExtraChildrens;
 }
 
 /// <summary>
