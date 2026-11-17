@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "ImageIO.h"
+#include "resources/PictureCache.h"
 #include "TextureDataManager.h"
 
 class TextureResource;
@@ -98,6 +99,13 @@ public:
 	void setScalable(bool value) { mScalable = value; };
 
 private:
+	// the size a raster picture is decoded at (at most the screen's, or the size asked with OptimizeVRAM)
+	MaxSizeInfo pictureMaxSize();
+	// initImageFromMemory at that size; with a cache key, the decoded picture also goes to the PictureCache
+	bool initImageFromMemory(const unsigned char* fileData, size_t length, int subImageIndex, const MaxSizeInfo& maxSize, const PictureCache::Key* cacheKey);
+	// load()'s raster picture from the PictureCache, when it is there
+	bool loadFromPictureCache(const std::string& file, PictureCache::Key& key, int subImageIndex);
+
 	bool			mRequired;
 
 	std::mutex		mMutex;

@@ -116,6 +116,7 @@ set(CORE_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureResource.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureData.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureDataManager.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/PictureCache.h
 
 	# Utils
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/FileSystemUtil.h
@@ -251,6 +252,7 @@ set(CORE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureResource.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureData.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureDataManager.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/PictureCache.cpp
 
 	# Utils
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/FileSystemUtil.cpp

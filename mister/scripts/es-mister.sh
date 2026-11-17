@@ -25,6 +25,7 @@ SLOW_DUMPS=4
 STRIP=auto
 PLD=256
 CAPTURE=0
+PICTURE_CACHE=1
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
@@ -210,6 +211,9 @@ if [ "$SLOW_DUMPS" -gt 0 ] 2>/dev/null; then
 	# and the frames themselves, to draw again with es-mister-replay
 	[ "$CAPTURE" = 1 ] && export ES_SOFT_SLOW_CAPTURE=1
 fi
+# pictures kept decoded and at their size, without loss (cache/pictures; ~70 KB a cover), so that a cover
+# seen once comes back ~20 times faster; PICTURE_CACHE=0: none
+[ "$PICTURE_CACHE" = 1 ] && export ES_PICTURE_CACHE=${ES_PICTURE_CACHE:-$ES/cache/pictures}
 # keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
 echo "starting ES: framebuffer $DRAWN (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"

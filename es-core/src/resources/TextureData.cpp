@@ -247,6 +247,15 @@ bool TextureData::initSVGFromMemory(const unsigned char* fileData, size_t length
 	return true;
 }
 
+MaxSizeInfo TextureData::pictureMaxSize()
+{
+	// Don't load images greater than screen resolution
+	MaxSizeInfo maxSize(Renderer::getScreenWidth(), Renderer::getScreenHeight(), false);
+	if (OPTIMIZEVRAM && !mMaxSize.empty() && mMaxSize.x() < maxSize.x() && mMaxSize.y() < maxSize.y())
+		maxSize = mMaxSize;
+	return maxSize;
+}
+
 bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t length, int subImageIndex)
 {
 	if (length == 0)
@@ -256,12 +265,19 @@ bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t leng
 	if (isLoaded())
 		return true;
 
-	// Don't load images greater than screen resolution
-	MaxSizeInfo maxSize(Renderer::getScreenWidth(), Renderer::getScreenHeight(), false);
-	if (OPTIMIZEVRAM && !mMaxSize.empty() && mMaxSize.x() < maxSize.x() && mMaxSize.y() < maxSize.y())
-		maxSize = mMaxSize;
-		
-	auto oldSize = mSize;
+	return initImageFromMemory(fileData, length, subImageIndex, pictureMaxSize(), nullptr);
+}
+
+bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t length, int subImageIndex, const MaxSizeInfo& askedSize, const PictureCache::Key* cacheKey)
+{
+	if (length == 0)
+		return false;
+
+	// If already initialised then don't read again
+	if (isLoaded())
+		return true;
+
+	MaxSizeInfo maxSize = askedSize;
 
 	size_t width, height;
 	Vector2i size;
@@ -278,7 +294,51 @@ bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t leng
 		return false;
 	}
 
+	// a copy for the cache, taken before the pixels are handed over (the main thread may free them)
+	if (cacheKey != nullptr)
+	{
+		PictureCache::Picture picture;
+		picture.rgba = imageRGBA;
+		picture.width = width;
+		picture.height = height;
+		picture.baseSize = physicalSize;
+		picture.packedSize = size;
+		PictureCache::store(*cacheKey, picture);
+	}
+
 	return initFromRGBA(imageRGBA, width, height, false);
+}
+
+bool TextureData::loadFromPictureCache(const std::string& file, PictureCache::Key& key, int subImageIndex)
+{
+	// If already initialised then don't read again
+	if (isLoaded())
+		return true;
+
+	// the size asked, taken once: the key and the picture decoded on a miss both have it
+	const MaxSizeInfo maxSize = pictureMaxSize();
+	key.maxX = maxSize.x();
+	key.maxY = maxSize.y();
+	key.externalZoom = maxSize.externalZoom();
+	key.screenWidth = Renderer::getScreenWidth();
+	key.screenHeight = Renderer::getScreenHeight();
+	key.subImageIndex = subImageIndex;
+
+	PictureCache::Picture picture;
+	if (PictureCache::load(key, picture))
+	{
+		// what initImageFromMemory sets, from what ImageIO gave when the picture was cached
+		mPhysicalSize = Vector2f(picture.baseSize.x(), picture.baseSize.y());
+		mSize = picture.packedSize.empty() ? picture.baseSize : picture.packedSize;
+		mScalable = false;
+		return initFromRGBA(picture.rgba, picture.width, picture.height, false);
+	}
+
+	const ResourceData& data = ResourceManager::getInstance()->getFileData(file);
+	if (data.length == 0)
+		return false;
+
+	return initImageFromMemory((const unsigned char*)data.ptr.get(), data.length, subImageIndex, maxSize, &key);
 }
 
 bool TextureData::initFromRGBA(unsigned char* dataRGBA, size_t width, size_t height, bool copyData)
@@ -554,6 +614,15 @@ bool TextureData::load()
 		auto idx = path.rfind(',');
 		subImageIndex = Utils::String::toInteger(mPath.substr(idx + 1));
 		path = mPath.substr(0, idx);
+	}
+
+	// a raster picture from the PictureCache, or decoded and cached (when ES_PICTURE_CACHE is set)
+	if (ext != ".svg" && PictureCache::enabled())
+	{
+		const std::string file = ResourceManager::getInstance()->getResourcePath(path);
+		PictureCache::Key key;
+		if (PictureCache::makeKey(file, key))
+			return loadFromPictureCache(file, key, subImageIndex);
 	}
 
 	const ResourceData& data = ResourceManager::getInstance()->getFileData(path);

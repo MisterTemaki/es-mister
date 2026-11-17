@@ -92,6 +92,10 @@ Settings
   PLD=256        bytes asked of the memory ahead of time (0 = off, to compare)
   CAPTURE=0      1 = slow frames also saved whole (logs/es-slow-frame-N.escf),
                  to measure with es-mister-replay
+  PICTURE_CACHE=1  1 = pictures kept decoded at the size shown, without loss,
+                 in cache/pictures (~70 KB a cover; not written while less
+                 than 1 GB is free): a cover seen before comes back ~20 times
+                 faster; 0 = none. The folder can be deleted at any time.
 
 Measuring the drawing on your MiSTer
 ------------------------------------
