@@ -7,6 +7,7 @@
 #include "utils/Platform.h"
 #include "utils/StartupTrace.h"
 #include <algorithm>
+#include <cstdlib>
 #include <SDL.h>
 
 TextureDataManager::TextureDataManager()
@@ -152,8 +153,11 @@ void TextureDataManager::cleanupVRAM()
 	size_t size = TextureResource::getTotalMemoryUsage(MemoryUsageType::Allocated);
 
 #ifdef MISTER_PERF
-	// the running sums against the walk they replace, every frame; a difference that stays (more than a few
-	// frames: a change being made as it is checked can show for one) is written to the startup trace
+	// ES_CHECK_TEXTURE_SUMS=1: the running sums against the walk they replace, every frame; a difference that
+	// stays (more than a few frames: a change being made as it is checked can show for one) is written to the
+	// startup trace. Off by default: the walk costs what the sums save, and would hide it in the measurements.
+	static const bool checkSums = getenv("ES_CHECK_TEXTURE_SUMS") != nullptr;
+	if (checkSums)
 	{
 		static int differing = 0, written = 0;
 		size_t walked = 0;
