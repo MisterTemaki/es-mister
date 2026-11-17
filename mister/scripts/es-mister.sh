@@ -97,9 +97,12 @@ xml() {
 }
 SYSTEM_PATHS=()
 if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
+	# made in memory and written at once: the SD card is mounted sync, so each line written on its own was a
+	# write to the card (~4 ms each, ~350 lines: ~1.5 s)
+	cfg=""
 	{
-		echo '<?xml version="1.0"?>'
-		echo '<systemList>'
+		cfg+='<?xml version="1.0"?>'$'\n'
+		cfg+='<systemList>'$'\n'
 		while IFS=$'\t' read -r name full folder exts rbf setname method delay index; do
 			case "$name" in '' | '#'*) continue ;; esac
 			path=""
@@ -115,20 +118,23 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 				[ -n "$path" ] || path=/media/fat/games/$folder
 			fi
 			SYSTEM_PATHS+=("$path")
-			echo "	<system>"
-			echo "		<name>$name</name>"
+			cfg+="	<system>"$'\n'
+			cfg+="		<name>$name</name>"$'\n'
 			xml "$full"
-			echo "		<fullname>$REPLY</fullname>"
+			cfg+="		<fullname>$REPLY</fullname>"$'\n'
 			xml "$path"
-			echo "		<path>$REPLY</path>"
-			echo "		<extension>$exts ${exts^^}</extension>"
-			echo "		<command>bash $ES/mister-launch.sh %SYSTEM% %ROM%</command>"
-			echo "		<platform>$name</platform>"
-			echo "		<theme>$name</theme>"
-			echo "	</system>"
+			cfg+="		<path>$REPLY</path>"$'\n'
+			cfg+="		<extension>$exts ${exts^^}</extension>"$'\n'
+			cfg+="		<command>bash $ES/mister-launch.sh %SYSTEM% %ROM%</command>"$'\n'
+			cfg+="		<platform>$name</platform>"$'\n'
+			cfg+="		<theme>$name</theme>"$'\n'
+			cfg+="	</system>"$'\n'
 		done <"$ES/systems.tsv"
-		echo '</systemList>'
-	} >"$CONFIG/es_systems.cfg"
+		cfg+='</systemList>'$'\n'
+	}
+	# one write (dd gathers what printf hands it a line at a time); without dd, printf to the file
+	printf '%s' "$cfg" | dd of="$CONFIG/es_systems.cfg" bs=1M iflag=fullblock status=none 2>/dev/null ||
+		printf '%s' "$cfg" >"$CONFIG/es_systems.cfg"
 fi
 echo "es_systems.cfg ready (uptime $(uptime) s)"
 
