@@ -11,7 +11,7 @@ mkdir -p "$CONFIG" "$LOGS"
 LOG=$LOGS/es-mister.log
 exec >>"$LOG" 2>&1
 # times since the machine started (as ES's startup trace has them): from here to ES on the screen
-uptime() { cut -d' ' -f1 /proc/uptime; }
+uptime() { local u rest; read -r u rest </proc/uptime; echo "$u"; }
 echo "== $(date '+%F %T') es-mister.sh (uptime $(uptime) s)"
 
 # settings (es-mister.ini): SIZE, FILL, MENU_ASK, FPS, GAMES_ROOTS
@@ -83,7 +83,16 @@ done
 
 # the systems, from systems.tsv, each with the first games folder of its that exists (an
 # es_systems.cfg of your own: create es_systems.cfg.keep beside it and it is left as it is)
-xml() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'; }
+# $1 with XML's special characters escaped, in REPLY: bash's own expansions, no sed or subshell (a fork and
+# an exec cost ~10-20 ms each on the MiSTer's ARM: with three a system, this file took ~3.9 s)
+xml() {
+	local s=$1
+	s=${s//&/\&amp;}
+	s=${s//</\&lt;}
+	s=${s//>/\&gt;}
+	s=${s//\"/\&quot;}
+	REPLY=$s
+}
 if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 	{
 		echo '<?xml version="1.0"?>'
@@ -104,9 +113,11 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 			fi
 			echo "	<system>"
 			echo "		<name>$name</name>"
-			echo "		<fullname>$(echo "$full" | xml)</fullname>"
-			echo "		<path>$(echo "$path" | xml)</path>"
-			echo "		<extension>$exts $(echo "$exts" | tr '[:lower:]' '[:upper:]')</extension>"
+			xml "$full"
+			echo "		<fullname>$REPLY</fullname>"
+			xml "$path"
+			echo "		<path>$REPLY</path>"
+			echo "		<extension>$exts ${exts^^}</extension>"
 			echo "		<command>bash $ES/mister-launch.sh %SYSTEM% %ROM%</command>"
 			echo "		<platform>$name</platform>"
 			echo "		<theme>$name</theme>"
