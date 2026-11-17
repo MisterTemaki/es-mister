@@ -141,13 +141,29 @@ done
 echo "the menu core is loaded (uptime $(uptime) s)"
 sleep 2
 echo "asking for the framebuffer (uptime $(uptime) s)"
-DRAWN=""
-for attempt in 1 2 3 4 5 6 7; do
-	DRAWN=$("$ES/es-mister-helper" console "$SCREEN" 8) && break
+framebuffer_on() {
 	DRAWN=""
-	echo "the framebuffer is not on yet (try $attempt)"
-	sleep 1
-done
+	for attempt in 1 2 3 4 5 6 7; do
+		DRAWN=$("$ES/es-mister-helper" console "$SCREEN" 8) && return 0
+		DRAWN=""
+		echo "the framebuffer is not on yet (try $attempt)"
+		sleep 1
+	done
+	return 1
+}
+if ! framebuffer_on; then
+	# Main_MiSTer did not take F9 (seen with its framebuffer left on without ES): the menu core loaded again,
+	# so Main_MiSTer starts afresh (as after any game), and the same tries once more
+	echo "the menu core loaded again, then the same tries"
+	echo "load_core /media/fat/menu.rbf" >/dev/MiSTer_cmd
+	sleep 3
+	for i in $(seq 30); do
+		[ "$(cat /tmp/CORENAME 2>/dev/null)" = "MENU" ] && break
+		sleep 1
+	done
+	sleep 2
+	framebuffer_on
+fi
 if [ -z "$DRAWN" ]; then
 	echo "no Linux framebuffer: ES does not start"
 	rm -f /tmp/es-mister.pid
