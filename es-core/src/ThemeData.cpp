@@ -2906,13 +2906,43 @@ void ThemeData::applySelfTheme(GuiComponent* comp, const ThemeElement& elem)
 	auto theme = std::make_shared<ThemeData>(true);	
 	
 	ThemeView& view = theme->mViews.insert("default", std::move(ThemeView())).first->second;
-	// built in place from elem: one copy of it and its children, not a pair copied again into the map
-	auto element = view.elements.emplace(std::piecewise_construct, std::forward_as_tuple("default"), std::forward_as_tuple(elem));
 
-	comp->applyTheme(theme, "default", "default", ThemeFlags::ALL);
+	// The element the component is themed from: elem's type and storyboards (copies: the component takes them),
+	// and elem's own properties and children lent to it for the call (swapped in, swapped back), not copied: a
+	// copy took them all, and their children's children, again at every level of a template, for every tile.
+	// While lent, elem has none: nothing reads it then (the theme is read on this thread; theme loading's threads
+	// are done before). What the call writes in them is written in elem, as at a template's first level before:
+	// the default pos and size loadThemedChildren gives a child without them, the same at every tile.
+	ThemeElement& element = view.elements["default"];
+	element.extra = elem.extra;
+	element.type = elem.type;
+	for (const auto& storyboard : elem.mStoryBoards)
+		element.mStoryBoards[storyboard.first] = new ThemeStoryboard(*storyboard.second);
+
+	ThemeElement& source = const_cast<ThemeElement&>(elem);
+	struct Lent
+	{
+		ThemeElement& a;
+		ThemeElement& b;
+		Lent(ThemeElement& x, ThemeElement& y) : a(x), b(y) { swap(); }
+		~Lent() { swap(); }
+		void swap() { std::swap(a.properties, b.properties); std::swap(a.children, b.children); }
+	};
+
+	{
+		Lent lent(element, source);
+		comp->applyTheme(theme, "default", "default", ThemeFlags::ALL);
+	}
+
+	// a component that keeps the theme (a carousel) reads it again later: there, copies, as before
+	if (theme.use_count() > 1)
+	{
+		element.properties = elem.properties;
+		element.children = elem.children;
+	}
 
 	// The copy's storyboards are the component's from now on (its storyboard map points to them), freed with it:
 	// left to no one before, they were lost with every component made from a template, as a grid's tiles are
 	// made and freed while it scrolls. (Taken out of the copy, which would free them with this temporary theme.)
-	comp->takeStoryboards(element.first->second.mStoryBoards);
+	comp->takeStoryboards(element.mStoryBoards);
 }
