@@ -1,0 +1,9 @@
+# A long fast scroll in the SNES list (grid or detailed, as the harness sets it), for a profile of that alone
+# (f3.sh ... script=rola profile=20: sampled from 20 s after ES starts, within the scroll)
+settle 30000
+key Return
+wait 4000
+log rola
+hold Down 40000
+log fim
+quit
