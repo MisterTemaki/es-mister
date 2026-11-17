@@ -66,6 +66,10 @@ public:
 class IBindable
 {
 public:
+	// virtual: the grid's tiles and the carousel delete their ComponentBindings as IBindables, at every tile
+	// loaded, which freed only the IBindable part of them (their name, a string, lost every time)
+	virtual ~IBindable() = default;
+
 	virtual BindableProperty getProperty(const std::string& name) = 0;
 	virtual std::string getBindableTypeName() = 0;
 	virtual IBindable* getBindableParent() { return nullptr; };
