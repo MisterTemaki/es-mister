@@ -1,0 +1,7 @@
+settle 30000
+key Return
+wait 5000
+log ocioso-lista
+wait 15000
+log fim
+quit

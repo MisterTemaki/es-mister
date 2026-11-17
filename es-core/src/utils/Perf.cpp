@@ -25,6 +25,7 @@ namespace
 	char* sBuffer = nullptr;
 	size_t sUsed = 0;
 	bool sOverflow = false;
+	bool sClosed = false; // written once (the main loop ended): what comes after (pictures still loading) left out
 	std::mutex sLock;
 
 	int64_t sStartNs = 0;
@@ -72,7 +73,7 @@ namespace
 	void add(const char* format, ...) __attribute__((format(printf, 1, 2)));
 	void add(const char* format, ...)
 	{
-		if (sBuffer == nullptr || sOverflow)
+		if (sBuffer == nullptr || sOverflow || sClosed)
 			return;
 		va_list args;
 		va_start(args, format);
@@ -227,7 +228,7 @@ namespace Perf
 	{
 		std::lock_guard<std::mutex> lock(sLock);
 		const char* path = framesPath();
-		if (path == nullptr || sBuffer == nullptr || sUsed == 0)
+		if (path == nullptr || sBuffer == nullptr || sUsed == 0 || sClosed)
 			return;
 		if (sOverflow)
 			add("# lines left out: the buffer was full\n");
@@ -239,7 +240,7 @@ namespace Perf
 				fputs("# lines left out: the buffer was full\n", f);
 			fclose(f);
 		}
-		sUsed = 0;
+		sClosed = true;
 	}
 }
 

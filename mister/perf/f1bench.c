@@ -42,6 +42,8 @@ static double pct(double* v, int n, double p)
 	return v[i < 0 ? 0 : i >= n ? n - 1 : i];
 }
 
+static volatile unsigned sink;
+
 static void copyBench(const char* name, size_t bytes, int reps)
 {
 	uint8_t* a = aligned_alloc(64, bytes);
@@ -53,7 +55,10 @@ static void copyBench(const char* name, size_t bytes, int reps)
 	{
 		const double s = nowMs();
 		memcpy(b, a, bytes);
+		// the copy kept: the compiler may not drop a memcpy whose result looks unused
+		__asm__ volatile("" : : "r"(b), "r"(a) : "memory");
 		t[r] = nowMs() - s;
+		sink += b[(size_t)r * 4093 % bytes];
 	}
 	qsort(t, reps, sizeof(double), cmpd);
 	printf("memcpy %s (%zu KB): p50 %.0f MB/s, best %.0f MB/s\n", name, bytes / 1024, bytes / 1e6 / (pct(t, reps, 0.5) / 1e3),
@@ -90,9 +95,11 @@ int main(int argc, char** argv)
 				{
 					double s = nowMs();
 					memcpy(ram, map, bytes);
+					__asm__ volatile("" : : "r"(ram), "r"(map) : "memory");
 					rt[r] = nowMs() - s;
 					s = nowMs();
 					memcpy(map, ram, bytes); // the same pixels back
+					__asm__ volatile("" : : "r"(ram), "r"(map) : "memory");
 					wt[r] = nowMs() - s;
 				}
 				qsort(rt, 10, sizeof(double), cmpd);

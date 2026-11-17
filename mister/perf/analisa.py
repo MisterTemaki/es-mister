@@ -7,14 +7,14 @@ Definitions (all from the measurement build's lines, es-core/src/utils/Perf.h):
  - dropped frames: in a moving phase, the 60 Hz slots that ended without a new frame: round(interval/16.67) - 1
  - input to frame: a press to the first frame drawn after it (F answer), ms
  - covers after a page: a press to the last picture loaded before the next press (T lines), ms
- - framebuffer bytes: pixels copied (drawing size) x 2.25 (1280x720 enlarged 1.5x to 1920x1080) x 4 B
+ - framebuffer bytes: pixels copied to the framebuffer (counted at its size, 1920x1080) x 4 B
 """
 import json, os, re, sys, glob, statistics
 
 RES = sys.argv[1]
 SLOT = 1000.0 / 60.0
 SCREEN = 1280 * 720
-FB_PER_PX = 2.25 * 4
+FB_PER_PX = 4  # the copied pixels are counted at the framebuffer's size (1920x1080)
 
 
 def pct(values, p):
