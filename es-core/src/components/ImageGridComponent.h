@@ -1355,8 +1355,13 @@ void ImageGridComponent<T>::ensureVisibleTileExist()
 				mVisibleTiles.erase(it);
 
 			if (!mShowing)
-			{				
-				entry.data.tile->resetImages();
+			{
+				// Reset first only when something else still holds the tile (it lives on, so it must look
+				// empty): a tile only the grid holds is destroyed right here with its pictures, and resetting
+				// it first (bindings, label, layout, pictures) was work for nothing, done when a list is left
+				// for every tile its scrolling made
+				if (entry.data.tile.use_count() > 1)
+					entry.data.tile->resetImages();
 				entry.data.tile = nullptr;
 			}
 			else if (entry.data.tile->isShowing())
