@@ -49,7 +49,7 @@ void CarouselGameListView::updateInfoPanel()
 	updateThemeExtrasBindings();
 
 	FileData* file = (mList.size() == 0 || mList.isScrolling()) ? NULL : getCursor();
-	bool isClearing = mList.getObjects().size() == 0 && mList.getCursorIndex() == 0 && mList.getScrollingVelocity() == 0;
+	bool isClearing = mList.size() == 0 && mList.getCursorIndex() == 0 && mList.getScrollingVelocity() == 0;
 	mDetails.updateControls(file, isClearing, mList.getCursorIndex() - mList.getLastCursor());
 }
 
