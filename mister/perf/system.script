@@ -1,0 +1,40 @@
+# One system's game list as the user has it (f3.sh ... system=NAME view=own): entering it, steps, pages, a
+# fast scroll down and back, leaving it; the phases are named as nav.script's, for compare.py
+settle 30000
+wait 2000
+log enter-list
+key Return
+wait 4000
+log idle-list
+wait 3000
+log list-steps
+key Down
+wait 600
+key Down
+wait 600
+key Down
+wait 600
+key Down
+wait 600
+key Down
+wait 600
+key Down
+wait 600
+log list-pages
+key "
+wait 1500
+key "
+wait 1500
+key "
+wait 1500
+log list-fast-scroll
+hold Down 8000
+wait 3000
+log list-fast-back
+hold Up 5000
+wait 3000
+log leave-list
+key Escape
+wait 3000
+log end
+quit

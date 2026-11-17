@@ -2,7 +2,9 @@
 # Phase 3 batch: binaries and scripts compared in the same session, interleaved, each run from a clean state.
 #   f3.sh PLAN_FILE
 # Each PLAN_FILE line: KIND BIN COUNT [sh=NAME] [helper=NAME] [launch=NAME] [cache=cold|warm] [profile=SECONDS]
-#   [script=NAME (one of $T/*.script, in place of the kind's)] [label=WORD (added to the run's name)] [VAR=VALUE...]
+#   [script=NAME (one of $T/*.script, in place of the kind's)] [label=WORD (added to the run's name)]
+#   [system=NAME (the system ES starts on, snes by default)] [view=own (that system's own view, not the kind's)]
+#   [VAR=VALUE...]
 #   KIND: grid | list (nav.script in that view), ggrid | glist (golden frames, fixed clock), boot (cold boot,
 #         page cache emptied, start.script), launch (a SNES game started as ES starts it, the menu core loaded
 #         again 5 s later; ES not running)
@@ -12,14 +14,16 @@
 #   cache=cold: an empty picture cache for this run; cache=warm: the batch's shared one ($B/pc/warm)
 # Lines are taken round-robin: one run of each line, then the next round, until each line has its COUNT.
 # At the end the test copy as it was and the user's ES started and checked.
-T=/media/fat/teste-claude/f1; B=/media/fat/teste-claude/f3; E=/media/fat/emulationstation-claude720p; H=$E/home/.emulationstation
+T=/media/fat/teste-claude/f1; B=/media/fat/teste-claude/f3; E=${E:-/media/fat/es-mister-teste}; H=$E/home/.emulationstation
 RES=$B/res; mkdir -p $RES $B/pc
 log() { echo "$(date +%T) $*" >> $RES/batch.log; }
 menu_wait() { for i in $(seq 60); do [ "$(cat /tmp/CORENAME 2>/dev/null)" = MENU ] && return 0; sleep 1; done; return 1; }
 up() { cut -d' ' -f1 /proc/uptime; }
 
 # the test copy's own files, once
-[ -f $B/bins/sh-orig ] || cp $T/es-mister.sh $B/bins/sh-orig
+[ -f $B/bins/es-orig ] || cp $E/emulationstation $B/bins/es-orig
+[ -f $B/bins/sh-orig ] || cp $E/es-mister.sh $B/bins/sh-orig
+[ -f $T/es_settings.cfg.orig ] || cp $H/es_settings.cfg $T/es_settings.cfg.orig
 [ -f $B/bins/helper-orig ] || cp $E/es-mister-helper $B/bins/helper-orig
 [ -f $B/bins/launch-orig ] || cp $E/mister-launch.sh $B/bins/launch-orig
 
@@ -48,7 +52,7 @@ setup() {
 
 run_one() {
 	local kind=$1 bin=$2 n=$3; shift 3
-	local sh="" helper="" launch="" cache="" profile="" scriptname="" label="" env=()
+	local sh="" helper="" launch="" cache="" profile="" scriptname="" label="" system=snes ownview="" env=()
 	for a in "$@"; do
 		case $a in
 			sh=*) sh=${a#sh=} ;;
@@ -58,10 +62,12 @@ run_one() {
 			profile=*) profile=${a#profile=} ;;
 			script=*) scriptname=${a#script=} ;;
 			label=*) label=${a#label=} ;;
+			system=*) system=${a#system=} ;;
+			view=own) ownview=1 ;;
 			*) env+=("$a") ;;
 		esac
 	done
-	local tag=$bin; [ -n "$sh" ] && tag=$tag-s$sh; [ -n "$helper" ] && tag=$tag-h$helper; [ -n "$launch" ] && tag=$tag-l$launch; [ -n "$cache" ] && tag=$tag-$cache; [ -n "$profile" ] && tag=$tag-prof; [ -n "$scriptname" ] && tag=$tag-$scriptname; [ -n "$label" ] && tag=$tag-$label
+	local tag=$bin; [ "$system" != snes ] && tag=$tag-$system; [ -n "$sh" ] && tag=$tag-s$sh; [ -n "$helper" ] && tag=$tag-h$helper; [ -n "$launch" ] && tag=$tag-l$launch; [ -n "$cache" ] && tag=$tag-$cache; [ -n "$profile" ] && tag=$tag-prof; [ -n "$scriptname" ] && tag=$tag-$scriptname; [ -n "$label" ] && tag=$tag-$label
 	local name=$kind-$tag-$n R=$RES/$kind-$tag-$n view=grid script=nav
 	case $kind in
 		list) view=detailed ;;
@@ -101,8 +107,13 @@ run_one() {
 	fi
 
 	cp $T/es_settings.cfg.orig $H/es_settings.cfg
-	sed -i -e 's/name="LastSystem" value="[^"]*"/name="LastSystem" value="snes"/' $H/es_settings.cfg
-	sed -i "s|</config>|	<string name=\"snes.defaultView\" value=\"$view\" />\n</config>|" $H/es_settings.cfg
+	if grep -q 'name="LastSystem"' $H/es_settings.cfg; then
+		sed -i -e "s/name=\"LastSystem\" value=\"[^\"]*\"/name=\"LastSystem\" value=\"$system\"/" $H/es_settings.cfg
+	else
+		sed -i "s|</config>|	<string name=\"LastSystem\" value=\"$system\" />\n</config>|" $H/es_settings.cfg
+	fi
+	# the view the kind asks for, unless view=own: the system's own (the settings' or the theme's)
+	[ -n "$ownview" ] || sed -i "s|</config>|	<string name=\"$system.defaultView\" value=\"$view\" />\n</config>|" $H/es_settings.cfg
 	[ $kind = boot ] && { sync; echo 3 > /proc/sys/vm/drop_caches; }
 	sleep 2
 	local before=$(wc -l < $E/logs/es-mister.log)
@@ -131,7 +142,7 @@ while :; do
 	round=$((round + 1))
 done
 
-cp $T/es-p6 $E/emulationstation
+cp $B/bins/es-orig $E/emulationstation
 cp $B/bins/sh-orig $E/es-mister.sh
 cp $B/bins/helper-orig $E/es-mister-helper
 cp $B/bins/launch-orig $E/mister-launch.sh
