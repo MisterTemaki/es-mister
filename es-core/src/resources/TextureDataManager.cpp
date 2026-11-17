@@ -5,6 +5,7 @@
 #include "Settings.h"
 #include "Log.h"
 #include "utils/Platform.h"
+#include "utils/StartupTrace.h"
 #include <algorithm>
 #include <SDL.h>
 
@@ -26,6 +27,8 @@ std::shared_ptr<TextureData> TextureDataManager::add(const TextureResource* key,
 	auto it = mTextureLookup.find(key);
 	if (it != mTextureLookup.cend())
 	{
+		// out of the sums with it
+		(*(*it).second)->setCounted(false);
 		// Remove the list entry
 		mTextures.erase((*it).second);
 		// And the lookup
@@ -35,6 +38,7 @@ std::shared_ptr<TextureData> TextureDataManager::add(const TextureResource* key,
 	std::shared_ptr<TextureData> data = std::make_shared<TextureData>(tiled, linear);
 	mTextures.push_front(data);
 	mTextureLookup[key] = mTextures.cbegin();
+	data->setCounted(true);
 
 	return data;
 }
@@ -47,6 +51,8 @@ void TextureDataManager::remove(const TextureResource* key)
 	auto it = mTextureLookup.find(key);
 	if (it != mTextureLookup.cend())
 	{
+		// out of the sums with it
+		(*(*it).second)->setCounted(false);
 		// Remove the list entry
 		mTextures.erase((*it).second);
 		// And the lookup
@@ -114,10 +120,14 @@ size_t TextureDataManager::getTotalMemoryUsage(MemoryUsageType type)
 {
 	std::unique_lock<std::recursive_mutex> lock(mMutex);
 
+	// Allocated and RAM: summed as the textures change (TextureData::recount), not walked through every
+	// frame (cleanupVRAM asks for them every frame)
+	if (type == MemoryUsageType::Allocated || type == MemoryUsageType::RAM)
+		return TextureData::countedTotal(type);
+
 	size_t total = 0;
 
-	// By reference: this runs every frame (Window::update -> cleanupVRAM) over every texture ever created,
-	// and a copy of each shared_ptr costs two atomic operations
+	// By reference: a copy of each shared_ptr costs two atomic operations
 	for (const auto& tex : mTextures)
 		total += tex->getMemoryUsage(type);
 
@@ -140,6 +150,24 @@ void TextureDataManager::cleanupVRAM()
 
 	size_t maxVRAM = (size_t)Settings::getInstance()->getInt("MaxVRAM") * 1024 * 1024;
 	size_t size = TextureResource::getTotalMemoryUsage(MemoryUsageType::Allocated);
+
+#ifdef MISTER_PERF
+	// the running sums against the walk they replace, every frame; a difference that stays (more than a few
+	// frames: a change being made as it is checked can show for one) is written to the startup trace
+	{
+		static int differing = 0, written = 0;
+		size_t walked = 0;
+		for (const auto& tex : mTextures)
+			walked += tex->getMemoryUsage(MemoryUsageType::Allocated);
+		const size_t counted = TextureData::countedTotal(MemoryUsageType::Allocated);
+		differing = walked == counted ? 0 : differing + 1;
+		if (differing == 3 && written < 20)
+		{
+			written++;
+			StartupTrace::mark("texture sums differ", "counted " + std::to_string(counted) + ", walked " + std::to_string(walked));
+		}
+	}
+#endif
 
 	if (size < maxVRAM)
 		return;

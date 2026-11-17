@@ -57,6 +57,62 @@ namespace
 	};
 }
 
+// the sums of the counted textures (TextureDataManager's list), and their mutex: always taken last
+static std::mutex sCountMutex;
+static size_t sCountedAllocated = 0;
+static size_t sCountedRAM = 0;
+
+void TextureData::recount()
+{
+	std::unique_lock<std::mutex> lock(sCountMutex);
+	if (!mCounted)
+		return;
+	const size_t allocated = getMemoryUsage(MemoryUsageType::Allocated);
+	const size_t ram = getMemoryUsage(MemoryUsageType::RAM);
+	sCountedAllocated += allocated - mCountedAllocated;
+	sCountedRAM += ram - mCountedRAM;
+	mCountedAllocated = allocated;
+	mCountedRAM = ram;
+}
+
+void TextureData::setCounted(bool counted)
+{
+	std::unique_lock<std::mutex> lock(sCountMutex);
+	if (counted == mCounted)
+		return;
+	if (counted)
+	{
+		mCountedAllocated = getMemoryUsage(MemoryUsageType::Allocated);
+		mCountedRAM = getMemoryUsage(MemoryUsageType::RAM);
+		sCountedAllocated += mCountedAllocated;
+		sCountedRAM += mCountedRAM;
+	}
+	else
+	{
+		sCountedAllocated -= mCountedAllocated;
+		sCountedRAM -= mCountedRAM;
+		mCountedAllocated = 0;
+		mCountedRAM = 0;
+	}
+	mCounted = counted;
+}
+
+size_t TextureData::countedTotal(MemoryUsageType type)
+{
+	std::unique_lock<std::mutex> lock(sCountMutex);
+	return type == MemoryUsageType::RAM ? sCountedRAM : sCountedAllocated;
+}
+
+namespace
+{
+	// recount() when the method it is in returns, whatever way
+	struct Recount
+	{
+		TextureData* texture;
+		~Recount() { texture->recount(); }
+	};
+}
+
 TextureData::TextureData(bool tile, bool linear) : 
 	mTile(tile), mLinear(linear), mTextureID(0), mDataRGBA(nullptr), mScalable(false), mDynamic(true), mReloadable(false),
 #if defined(USE_OPENGLES_30)
@@ -124,6 +180,7 @@ void TextureData::initFromPath(const std::string& path)
 
 bool TextureData::initSVGFromMemory(const unsigned char* fileData, size_t length)
 {
+	Recount recount{ this };
 	// If already initialised then don't read again
 	std::unique_lock<std::mutex> lock(mMutex);
 	if (mDataRGBA || (mTextureID != 0))
@@ -258,6 +315,7 @@ MaxSizeInfo TextureData::pictureMaxSize()
 
 bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t length, int subImageIndex)
 {
+	Recount recount{ this };
 	if (length == 0)
 		return false;
 
@@ -270,6 +328,7 @@ bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t leng
 
 bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t length, int subImageIndex, const MaxSizeInfo& askedSize, const PictureCache::Key* cacheKey)
 {
+	Recount recount{ this };
 	if (length == 0)
 		return false;
 
@@ -311,6 +370,7 @@ bool TextureData::initImageFromMemory(const unsigned char* fileData, size_t leng
 
 bool TextureData::loadFromPictureCache(const std::string& file, PictureCache::Key& key, int subImageIndex)
 {
+	Recount recount{ this };
 	// If already initialised then don't read again
 	if (isLoaded())
 		return true;
@@ -343,6 +403,7 @@ bool TextureData::loadFromPictureCache(const std::string& file, PictureCache::Ke
 
 bool TextureData::initFromRGBA(unsigned char* dataRGBA, size_t width, size_t height, bool copyData)
 {
+	Recount recount{ this };
 	// If already initialised then don't read again
 	std::unique_lock<std::mutex> lock(mMutex);
 
@@ -374,6 +435,7 @@ bool TextureData::initFromRGBA(unsigned char* dataRGBA, size_t width, size_t hei
 
 bool TextureData::updateFromExternalRGBA(unsigned char* dataRGBA, size_t width, size_t height)
 {
+	Recount recount{ this };
 	std::unique_lock<std::mutex> lock(mMutex);
 
 	if (!mIsExternalDataRGBA && mDataRGBA != nullptr)
@@ -414,6 +476,7 @@ extern void _checkUpgradedVlcVersion();
 
 bool TextureData::loadFromVideo()
 {
+	Recount recount{ this };
 	Utils::StringListLock lock(mImageExtractorLock, mPath);
 
 	auto val = Utils::FileSystem::createRelativePath(Utils::FileSystem::changeExtension(mPath, ".jpg"), Paths::getHomePath(), true);
@@ -512,6 +575,7 @@ bool TextureData::loadFromVideo()
 
 bool TextureData::loadFromPdf(int pageIndex)
 {
+	Recount recount{ this };
 	if (PdfHandler == nullptr)
 		return false;
 	
@@ -539,6 +603,7 @@ bool TextureData::loadFromPdf(int pageIndex)
 
 bool TextureData::loadFromCbz()
 {
+	Recount recount{ this };
 	bool retval = false;
 
 	Utils::StringListLock lock(mImageExtractorLock, mPath);
@@ -587,6 +652,7 @@ bool TextureData::loadFromCbz()
 
 bool TextureData::load()
 {
+	Recount recount{ this };
 	// Need to load. See if there is a file
 	if (mPath.empty())
 		return false;
@@ -687,6 +753,7 @@ bool TextureData::uploadAndBind()
 			delete[] mDataRGBA;
 
 		mDataRGBA = nullptr;
+		recount();
 	}
 
 	return true;
@@ -694,6 +761,7 @@ bool TextureData::uploadAndBind()
 
 void TextureData::releaseVRAM()
 {
+	Recount recount{ this };
 	std::unique_lock<std::mutex> lock(mMutex);
 	if (mTextureID != 0)
 	{
@@ -707,6 +775,7 @@ void TextureData::releaseVRAM()
 
 void TextureData::releaseRAM()
 {
+	Recount recount{ this };
 	std::unique_lock<std::mutex> lock(mMutex);
 
 	if (mDataRGBA != nullptr && !mIsExternalDataRGBA)
@@ -761,6 +830,7 @@ bool TextureData::isMaxSizeValid()
 
 bool TextureData::rasterizeAt(float width, float height)
 {
+	Recount recount{ this };
 	if (mSize.empty())
 		return false;
 

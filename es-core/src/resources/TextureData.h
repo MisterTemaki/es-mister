@@ -98,6 +98,14 @@ public:
 	inline bool isScalable() { return mScalable; }
 	void setScalable(bool value) { mScalable = value; };
 
+	// The Allocated and RAM memory of the textures in TextureDataManager's list, summed as they change
+	// (cleanupVRAM asks for them every frame; summing them there walked every texture ever created).
+	// recount() after each change of mTextureID, mDataRGBA or mSize; setCounted() as one enters or leaves
+	// the list. The sums equal getMemoryUsage over the list (checked every frame in MISTER_PERF builds).
+	void recount();
+	void setCounted(bool counted);
+	static size_t countedTotal(MemoryUsageType type);
+
 private:
 	// the size a raster picture is decoded at (at most the screen's, or the size asked with OptimizeVRAM)
 	MaxSizeInfo pictureMaxSize();
@@ -129,6 +137,11 @@ private:
 	Vector2f		mScalableMinimumSize;
 
 	bool			mIsExternalDataRGBA;
+
+	// what this texture adds to the sums while it is in the list (under the sums' mutex)
+	bool			mCounted = false;
+	size_t			mCountedAllocated = 0;
+	size_t			mCountedRAM = 0;
 };
 
 #endif // ES_CORE_RESOURCES_TEXTURE_DATA_H
