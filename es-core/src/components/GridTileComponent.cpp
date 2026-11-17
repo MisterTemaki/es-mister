@@ -22,6 +22,10 @@
 GridTileComponent::GridTileComponent(Window* window) : GuiComponent(window), mBackground(window), mLabel(window), mVideo(nullptr), mVideoPlaying(false), mHasItemTemplate(false)
 {
 	mHasStandardMarquee = false;
+	// not selected: setSelected(false) at the end of this read it unset, and went the whole way when the memory held
+	// anything but 0 (the zoom of an item-template tile then 0, not 1: what such a tile showed when selected
+	// depended on what its memory held before)
+	mSelected = false;
 	mSelectedZoomPercent = 1.0f;
 	mAnimPosition = Vector3f(0, 0);
 	mVideo = nullptr;
