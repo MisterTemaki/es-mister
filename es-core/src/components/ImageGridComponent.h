@@ -61,6 +61,7 @@ struct ImageGridData
 	std::shared_ptr<GridTileComponent> tile;
 	std::string texturePath;
 	int sourceIndex = 0;						// original insertion order (restored when ungrouping)
+	unsigned int hiddenAtPass = 0;				// ensureVisibleTileExist's pass that hid the tile (0: none)
 };
 
 // Group of consecutive entries sharing the same property value (see setGroupBy)
@@ -441,6 +442,7 @@ private:
 	std::vector<int> mRowFirst;				 // index of the first entry of each row
 
 	bool mEntriesDirty;
+	unsigned int mTilePass = 0;					// ensureVisibleTileExist's passes, counted
 
 	int mLastCursor;
 	CursorState mLastCursorState;
@@ -1269,6 +1271,8 @@ void ImageGridComponent<T>::ensureVisibleTileExist()
 	auto oldScrollLoopTiles = mScrollLoopTiles;	
 	mScrollLoopTiles.clear();
 
+	const unsigned int pass = ++mTilePass;
+
 	int from = mScrollLoop ? Math::min(range.x(), 0) : 0;
 	int to = mScrollLoop ? Math::max(range.y(), mEntries.size()) : mEntries.size();
 
@@ -1329,7 +1333,14 @@ void ImageGridComponent<T>::ensureVisibleTileExist()
 			}
 			else if (!entry.data.tile->isVisible())
 			{
-				loadTile(entry.data.tile, entry);
+				// A tile hidden by the pass just before this one comes back as it left: in a fast scroll the
+				// camera goes forth and back between passes (a new animation starts from where the last one
+				// stood, after the last one's end was applied), and the tiles at both edges of the range,
+				// off screen, went out and in again every step, each loaded again (its bindings evaluated).
+				// Hidden longer, or by anything else, a tile is loaded again as before.
+				if (entry.data.hiddenAtPass == 0 || entry.data.hiddenAtPass + 1 != pass)
+					loadTile(entry.data.tile, entry);
+				entry.data.hiddenAtPass = 0;
 				entry.data.tile->setVisible(true);
 
 				mVisibleTiles.push_back(entry.data.tile);
@@ -1348,7 +1359,10 @@ void ImageGridComponent<T>::ensureVisibleTileExist()
 		else if (entry.data.tile != nullptr)
 		{
 			if (entry.data.tile->isVisible())
+			{
 				entry.data.tile->setVisible(false);
+				entry.data.hiddenAtPass = pass;
+			}
 
 			auto it = std::find(mVisibleTiles.cbegin(), mVisibleTiles.cend(), entry.data.tile);
 			if (it != mVisibleTiles.cend())
