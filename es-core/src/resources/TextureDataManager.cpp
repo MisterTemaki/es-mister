@@ -155,7 +155,8 @@ void TextureDataManager::cleanupVRAM()
 #ifdef MISTER_PERF
 	// ES_CHECK_TEXTURE_SUMS=1: the running sums against the walk they replace, every frame; a difference that
 	// stays (more than a few frames: a change being made as it is checked can show for one) is written to the
-	// startup trace. Off by default: the walk costs what the sums save, and would hide it in the measurements.
+	// startup trace, and so is its end. Off by default: the walk costs what the sums save, and would hide it in
+	// the measurements.
 	static const bool checkSums = getenv("ES_CHECK_TEXTURE_SUMS") != nullptr;
 	if (checkSums)
 	{
@@ -164,8 +165,14 @@ void TextureDataManager::cleanupVRAM()
 		for (const auto& tex : mTextures)
 			walked += tex->getMemoryUsage(MemoryUsageType::Allocated);
 		const size_t counted = TextureData::countedTotal(MemoryUsageType::Allocated);
+		// and when they agree again, how many frames later (a difference that never does is a sum gone wrong)
+		if (walked == counted && differing >= 3 && written < 40)
+		{
+			written++;
+			StartupTrace::mark("texture sums agree again", std::to_string(differing) + " frames after they differed");
+		}
 		differing = walked == counted ? 0 : differing + 1;
-		if (differing == 3 && written < 20)
+		if (differing == 3 && written < 40)
 		{
 			written++;
 			StartupTrace::mark("texture sums differ", "counted " + std::to_string(counted) + ", walked " + std::to_string(walked));
