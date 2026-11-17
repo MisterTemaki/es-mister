@@ -1,0 +1,56 @@
+# Golden frames (run with ES_PERF_FIXED_STEP=1: every frame 1/60 s of ES's time, the same frames on every run).
+# Starts on the SNES system (LastSystem=snes); the SNES view (grid or detailed) set by the harness.
+settle 30000
+wait 2000
+shot g01-sistemas
+key Right
+wait 3000
+shot g02-sistema-seguinte
+key Right
+key Right
+key Right
+key Right
+wait 3000
+shot g03-cinco-adiante
+key Left
+key Left
+key Left
+key Left
+key Left
+wait 3000
+shot g04-volta-snes
+key Return
+wait 4000
+shot g05-lista
+key Down
+key Down
+key Down
+key Right
+key Right
+wait 3000
+shot g06-lista-movida
+hold Down 3000
+wait 3000
+shot g07-lista-rolada
+key "
+wait 3000
+shot g08-pagina
+key Backspace
+wait 3000
+shot g09-opcoes
+key Escape
+wait 2000
+key Space
+wait 3000
+shot g10-menu
+key Escape
+wait 2000
+key -
+wait 3000
+shot g11-busca
+key Escape
+wait 2000
+key Escape
+wait 3000
+shot g12-sistemas-de-novo
+quit

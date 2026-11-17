@@ -124,6 +124,7 @@ set(CORE_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/TimeUtil.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ThreadPool.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StartupTrace.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/Perf.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/SampleProfiler.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/Platform.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/zip_file.hpp
@@ -258,6 +259,7 @@ set(CORE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/TimeUtil.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ThreadPool.cpp	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StartupTrace.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/Perf.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/SampleProfiler.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/Platform.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/MathExpr.cpp
@@ -322,5 +324,13 @@ if(MISTER)
 	LIST(APPEND CORE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/components/VideoVlcStub.cpp)
 endif()
 
+if(MISTER_PERF)
+  set_source_files_properties(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/Perf.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/Renderer_Soft.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScript.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureData.cpp
+    PROPERTIES COMPILE_DEFINITIONS MISTER_PERF)
+endif()
 add_library(es-core STATIC ${CORE_SOURCES} ${CORE_HEADERS})
 target_link_libraries(es-core ${COMMON_LIBRARIES})

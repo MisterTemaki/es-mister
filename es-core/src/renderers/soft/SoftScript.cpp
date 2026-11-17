@@ -9,6 +9,21 @@
 #include <fstream>
 #include <sstream>
 
+#ifdef MISTER_PERF
+#include "utils/Perf.h"
+#endif
+
+// the script's clock: real time, or with ES_PERF_FIXED_STEP (measurement build) ES's fixed-step time, so that
+// its waits and presses fall on the same frames on every run (golden frames)
+static uint32_t scriptNowMs()
+{
+#ifdef MISTER_PERF
+	if (Perf::fixedStep())
+		return Perf::virtualMs();
+#endif
+	return SDL_GetTicks();
+}
+
 namespace Renderer
 {
 	namespace Soft
@@ -46,7 +61,7 @@ namespace Renderer
 			event.key.keysym.sym = key;
 			event.key.keysym.scancode = SDL_GetScancodeFromKey(key);
 			SDL_PushEvent(&event);
-			mReleases.push_back({ key, SDL_GetTicks() + forMs });
+			mReleases.push_back({ key, scriptNowMs() + forMs });
 		}
 
 		void Script::savePng(const std::string& name, const uint32_t* pixels, int width, int height)
@@ -61,14 +76,14 @@ namespace Renderer
 			}
 			const std::string path = mShots + "/" + name + ".png";
 			if (stbi_write_png(path.c_str(), width, height, 3, rgb.data(), width * 3))
-				LOG(LogInfo) << "SoftRenderer: screenshot " << path << " at " << SDL_GetTicks() << " ms";
+				LOG(LogInfo) << "SoftRenderer: screenshot " << path << " at " << scriptNowMs() << " ms";
 			else
 				LOG(LogError) << "SoftRenderer: cannot write " << path;
 		}
 
 		void Script::frame(const std::function<const uint32_t*()>& pixels, int width, int height, bool drewNew)
 		{
-			const uint32_t now = SDL_GetTicks();
+			const uint32_t now = scriptNowMs();
 
 			// keys let go of
 			for (auto it = mReleases.begin(); it != mReleases.end(); )
@@ -162,6 +177,9 @@ namespace Renderer
 					std::string text;
 					std::getline(line, text);
 					LOG(LogInfo) << "SoftRenderer script:" << text;
+#ifdef MISTER_PERF
+					Perf::mark(text.size() > 0 && text[0] == ' ' ? text.substr(1) : text);
+#endif
 				}
 				else if (command == "quit")
 				{

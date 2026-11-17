@@ -28,6 +28,9 @@ option(ENABLE_TTS "Set to ON to enable text to speech" OFF)
 option(USE_SYSTEM_PUGIXML "Set to ON to use system-wide pugixml library" OFF)
 option(SOFTWARE "Set to ON to draw with the software renderer, without OpenGL" OFF)
 option(MISTER "Set to ON for the MiSTer FPGA: the software renderer, stb_image in place of FreeImage, no libVLC" OFF)
+# MISTER_PERF is defined only for the files with the instruments (es-core and es-app's CMakeLists): switching
+# it rebuilds those files alone
+option(MISTER_PERF "Set to ON for the measurement build: per-frame timings, fixed-step clock for golden frames (es-core/src/utils/Perf.h)" OFF)
 
 if(MISTER)
   MESSAGE("MiSTer FPGA build")

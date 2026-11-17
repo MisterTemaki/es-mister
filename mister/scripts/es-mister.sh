@@ -115,6 +115,7 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 		echo '</systemList>'
 	} >"$CONFIG/es_systems.cfg"
 fi
+echo "es_systems.cfg ready (uptime $(uptime) s)"
 
 # the menu core is loaded (ES starts from the Scripts menu, or after a game)
 for i in $(seq 30); do
@@ -126,7 +127,9 @@ done
 # at the screen's (ES enlarges its frames to it).
 # Started from the Scripts menu, Main_MiSTer is still closing the script's screen and does not take F9
 # yet: a moment first, then short tries (8 presses, about 4 s each) until it does, for up to ~30 s.
+echo "the menu core is loaded (uptime $(uptime) s)"
 sleep 2
+echo "asking for the framebuffer (uptime $(uptime) s)"
 DRAWN=""
 for attempt in 1 2 3 4 5 6 7; do
 	DRAWN=$("$ES/es-mister-helper" console "$SCREEN" 8) && break

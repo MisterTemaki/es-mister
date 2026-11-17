@@ -47,6 +47,7 @@
 #include "ZaparooSupport.h"
 #include "utils/ThreadPool.h"
 #include "utils/StartupTrace.h"
+#include "utils/Perf.h"
 #include "utils/SampleProfiler.h"
 
 #if defined(MISTER) && defined(__linux__)
@@ -840,6 +841,10 @@ int main(int argc, char* argv[])
 	while(running)
 	{
 		SDL_Event event;
+#ifdef MISTER_PERF
+		const int64_t perfStart = Perf::nowNs();
+		int64_t perfWaited = 0;
+#endif
 
 		int screenSaverTimeout = screensaver.getNextUpdateTimeout();
 		bool screenSaverWait = screenSaverTimeout > 0;
@@ -857,6 +862,9 @@ int main(int argc, char* argv[])
 			eventResult = SDL_WaitEventTimeout(&event, PowerSaver::getTimeout());
 		else
 			eventResult = SDL_PollEvent(&event);
+#ifdef MISTER_PERF
+		perfWaited = Perf::nowNs();
+#endif
 
 		if (eventResult)
 		{
@@ -981,9 +989,21 @@ int main(int argc, char* argv[])
 		if (deltaTime > 100)
 			deltaTime = 100;
 #endif
+#ifdef MISTER_PERF
+		// golden frames: every turn 1/60 s of ES's time, the same frames on every run
+		if (Perf::fixedStep())
+			deltaTime = Perf::nextStep();
+		const int64_t perfEvents = Perf::nowNs();
+#endif
 
 		TRYCATCH("Window.update" ,window.update(deltaTime))	
+#ifdef MISTER_PERF
+		const int64_t perfUpdated = Perf::nowNs();
+#endif
 		TRYCATCH("Window.render", window.render())
+#ifdef MISTER_PERF
+		const int64_t perfRendered = Perf::nowNs();
+#endif
 
 		int fpsLimit = Settings::FpsLimit();
 		if (fpsLimit > 0)
@@ -998,8 +1018,17 @@ int main(int argc, char* argv[])
 			}
 		}
 
+#ifdef MISTER_PERF
+		const int64_t perfPaced = Perf::nowNs();
+#endif
 		Renderer::swapBuffers();		
+#ifdef MISTER_PERF
+		Perf::loopTurn(perfStart, perfWaited, perfEvents, perfUpdated, perfRendered, perfPaced, Perf::nowNs());
+#endif
 	}
+#ifdef MISTER_PERF
+	Perf::flush();
+#endif
 
 	if (Utils::Platform::isFastShutdown())
 		Settings::getInstance()->setBool("IgnoreGamelist", true);

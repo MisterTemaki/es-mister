@@ -1,5 +1,6 @@
 #include "Renderer_Soft.h"
 #include "utils/StartupTrace.h"
+#include "utils/Perf.h"
 
 #ifdef RENDERER_SOFTWARE
 
@@ -1236,11 +1237,17 @@ namespace Renderer
 			}
 
 			// the time from a press to the frame that shows its effect, and the frames over a 60 Hz frame's time
+#ifdef MISTER_PERF
+			double perfAnswer = -1;
+#endif
 			if (s.flightPress != 0)
 			{
 				const double answeredMs = StartupTrace::msSincePress(s.flightPress);
 				s.flightPress = 0;
 				st.answers.push_back((float)answeredMs);
+#ifdef MISTER_PERF
+				perfAnswer = answeredMs;
+#endif
 				static bool first = true;
 				if (first && StartupTrace::enabled())
 				{
@@ -1250,6 +1257,14 @@ namespace Renderer
 			}
 			if (esMs + rasterMs + copyMs > 1000.0 / 60.0)
 				st.overBudget++;
+#ifdef MISTER_PERF
+			{
+				uint64_t copied = 0;
+				for (const int64_t c : s.bands.copied)
+					copied += (uint64_t)std::max<int64_t>(0, c);
+				Perf::frameDrawn(esMs, rasterMs, copyMs, copied, redrawn, s.partial, perfAnswer);
+			}
+#endif
 
 			st.rasterMs += rasterMs;
 			st.rasterMax = std::max(st.rasterMax, rasterMs);

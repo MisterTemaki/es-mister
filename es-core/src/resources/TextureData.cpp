@@ -17,6 +17,7 @@
 #include "utils/FileSystemUtil.h"
 #include "utils/StringListLock.h"
 #include "utils/StartupTrace.h"
+#include "utils/Perf.h"
 #include "Paths.h"
 #include <chrono>
 
@@ -35,10 +36,18 @@ namespace
 		const std::string& path;
 		const bool traced;
 		const std::chrono::steady_clock::time_point start;
+#ifdef MISTER_PERF
+		const Vector2i& size;
 
-		explicit WaitedLoad(const std::string& p) : path(p), traced(StartupTrace::onMainThread()), start(std::chrono::steady_clock::now()) { }
+		WaitedLoad(const std::string& p, const Vector2i& loadedSize) : path(p), traced(StartupTrace::onMainThread()), start(std::chrono::steady_clock::now()), size(loadedSize) { }
+#else
+		WaitedLoad(const std::string& p, const Vector2i&) : path(p), traced(StartupTrace::onMainThread()), start(std::chrono::steady_clock::now()) { }
+#endif
 		~WaitedLoad()
 		{
+#ifdef MISTER_PERF
+			Perf::pictureLoaded(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count(), size.x(), size.y(), traced);
+#endif
 			if (!traced)
 				return;
 			const int ms = (int)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
@@ -523,7 +532,7 @@ bool TextureData::load()
 		return false;
 
 	LOG(LogDebug) << "TextureData::load " << mPath;
-	WaitedLoad waited(mPath);
+	WaitedLoad waited(mPath, mSize);
 	mScalable = false;
 
 	std::string ext = Utils::String::toLower(Utils::FileSystem::getExtension(mPath));
