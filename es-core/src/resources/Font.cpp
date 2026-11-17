@@ -569,7 +569,13 @@ void Font::renderTextCacheEx(TextCache* cache, const Transform4x4f& parentTrans,
 		glowTrans.round();
 		Renderer::setMatrix(glowTrans);
 
-		auto copy = cache->vertexLists;
+		// The glow changes only the vertices' colours: those are kept and put back after it (the vertex lists
+		// were copied whole, and copied back, at every frame for every text with a glow)
+		static std::vector<unsigned int> colors;
+		colors.clear();
+		for (const auto& list : cache->vertexLists)
+			for (const auto& vertex : list.verts)
+				colors.push_back(vertex.col);
 
 		cache->setRenderingGlow(true);
 
@@ -606,7 +612,11 @@ void Font::renderTextCacheEx(TextCache* cache, const Transform4x4f& parentTrans,
 		}
 
 		cache->setRenderingGlow(false);
-		cache->vertexLists = copy;
+
+		size_t color = 0;
+		for (auto& list : cache->vertexLists)
+			for (auto& vertex : list.verts)
+				vertex.col = colors[color++];
 	}
 
 	auto trans = parentTrans;
