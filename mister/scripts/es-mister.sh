@@ -26,6 +26,7 @@ STRIP=auto
 PLD=256
 CAPTURE=0
 PICTURE_CACHE=1
+PREFETCH=1
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
@@ -94,6 +95,7 @@ xml() {
 	s=${s//\"/\&quot;}
 	REPLY=$s
 }
+SYSTEM_PATHS=()
 if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 	{
 		echo '<?xml version="1.0"?>'
@@ -112,6 +114,7 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 				done
 				[ -n "$path" ] || path=/media/fat/games/$folder
 			fi
+			SYSTEM_PATHS+=("$path")
 			echo "	<system>"
 			echo "		<name>$name</name>"
 			xml "$full"
@@ -128,6 +131,37 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 	} >"$CONFIG/es_systems.cfg"
 fi
 echo "es_systems.cfg ready (uptime $(uptime) s)"
+
+# What ES reads first, read now in the background while this script waits for Main_MiSTer below (the moment
+# and the F9 presses, ~3 s): the games folders (as ES walks them, less the folders it leaves out), their
+# gamelist.xml, the theme's XML files, ES's own resources and ES itself. On a cold start (after the MiSTer
+# is switched on) ES then finds them in memory (the page cache) instead of on the SD card. Only read: nothing
+# written or changed. PREFETCH=0: not.
+prefetch() {
+	local skip=() name i
+	for name in $ARCADE_SKIP palettes; do
+		skip+=(-iname "$name" -o)
+	done
+	unset 'skip[${#skip[@]}-1]'
+	cat "$ES/emulationstation" >/dev/null 2>&1 &
+	{
+		find "$ES/resources" -type f \( -name "*.xml" -o -name "*.png" -o -name "*.ttf" \) -exec cat {} + >/dev/null 2>&1
+		find "$CONFIG/themes" -type f \( -name "*.xml" -o -name "*.ttf" -o -name "*.otf" \) -exec cat {} + >/dev/null 2>&1
+	} &
+	# the folders in three walks at once (the SD card answers several reads better than one at a time)
+	for i in 0 1 2; do
+		{
+			local n
+			for ((n = i; n < ${#SYSTEM_PATHS[@]}; n += 3)); do
+				local dir=${SYSTEM_PATHS[$n]}
+				[ -d "$dir" ] || continue
+				[ -f "$dir/gamelist.xml" ] && cat "$dir/gamelist.xml" >/dev/null 2>&1
+				find "$dir" -mindepth 1 \( "${skip[@]}" \) -prune -o -type d -print >/dev/null 2>&1
+			done
+		} &
+	done
+}
+[ "$PREFETCH" = 1 ] && [ ${#SYSTEM_PATHS[@]} -gt 0 ] && prefetch </dev/null >/dev/null 2>&1
 
 # the menu core is loaded (ES starts from the Scripts menu, or after a game)
 for i in $(seq 30); do

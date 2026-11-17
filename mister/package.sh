@@ -113,6 +113,11 @@ CAPTURE=0
 # comes back ~20 times faster; 0: none (the folder can be deleted at any time)
 PICTURE_CACHE=1
 
+# 1: what EmulationStation reads first (games folders, gamelists, theme, itself) read in the background while
+# its start waits for the MiSTer menu, so that a start after switching the MiSTer on finds them in memory;
+# only read, nothing written; 0: not
+PREFETCH=1
+
 # Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of
 # other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.
 # Take it out of the list to see them in ES.

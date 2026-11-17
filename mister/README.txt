@@ -96,6 +96,10 @@ Settings
                  in cache/pictures (~70 KB a cover; not written while less
                  than 1 GB is free): a cover seen before comes back ~20 times
                  faster; 0 = none. The folder can be deleted at any time.
+  PREFETCH=1     1 = the games folders, gamelists, theme and EmulationStation
+                 itself read in the background while the start waits for the
+                 MiSTer menu (a faster first start after switching the MiSTer
+                 on); only read, nothing written; 0 = not
 
 Measuring the drawing on your MiSTer
 ------------------------------------

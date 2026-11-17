@@ -11,7 +11,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ANALISA = os.path.join(HERE, "analisa.py")
 
 runs = {}
-for path in sorted(glob.glob(os.path.join(RES, "*-*"))):
+for path in sorted(glob.glob(os.path.join(os.path.abspath(RES), "*-*"))):
     if not os.path.isdir(path):
         continue
     m = re.match(r"(grid|list|ggrid|glist|boot|launch)-(.+)-(\d+)$", os.path.basename(path))

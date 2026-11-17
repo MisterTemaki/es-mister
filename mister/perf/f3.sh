@@ -90,6 +90,9 @@ run_one() {
 		wait $lp; local d=$(up)
 		echo "launch $n start $s core $c menu-asked $m menu $b script-done $d" > $R/launch.txt
 		tail -12 $E/logs/es-mister.log | grep -v "MisterPads\|ERROR" > $R/script.txt
+		# the Linux framebuffer was left on without ES (no ES ran the game): there Main_MiSTer takes no F9,
+		# so the menu core again, as after any game with ES
+		echo "load_core /media/fat/menu.rbf" > /dev/MiSTer_cmd; sleep 3; menu_wait
 		log "$name done"
 		return
 	fi
