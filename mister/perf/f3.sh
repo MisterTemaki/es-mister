@@ -2,7 +2,7 @@
 # Phase 3 batch: binaries and scripts compared in the same session, interleaved, each run from a clean state.
 #   f3.sh PLAN_FILE
 # Each PLAN_FILE line: KIND BIN COUNT [sh=NAME] [helper=NAME] [launch=NAME] [cache=cold|warm] [profile=SECONDS]
-#   [script=NAME (one of $T/*.script, in place of the kind's)] [VAR=VALUE...]
+#   [script=NAME (one of $T/*.script, in place of the kind's)] [label=WORD (added to the run's name)] [VAR=VALUE...]
 #   KIND: grid | list (nav.script in that view), ggrid | glist (golden frames, fixed clock), boot (cold boot,
 #         page cache emptied, abrir.script), launch (a SNES game started as ES starts it, the menu core loaded
 #         again 5 s later; ES not running)
@@ -48,7 +48,7 @@ setup() {
 
 run_one() {
 	local kind=$1 bin=$2 n=$3; shift 3
-	local sh="" helper="" launch="" cache="" profile="" scriptname="" env=()
+	local sh="" helper="" launch="" cache="" profile="" scriptname="" label="" env=()
 	for a in "$@"; do
 		case $a in
 			sh=*) sh=${a#sh=} ;;
@@ -57,10 +57,11 @@ run_one() {
 			cache=*) cache=${a#cache=} ;;
 			profile=*) profile=${a#profile=} ;;
 			script=*) scriptname=${a#script=} ;;
+			label=*) label=${a#label=} ;;
 			*) env+=("$a") ;;
 		esac
 	done
-	local tag=$bin; [ -n "$sh" ] && tag=$tag-s$sh; [ -n "$helper" ] && tag=$tag-h$helper; [ -n "$launch" ] && tag=$tag-l$launch; [ -n "$cache" ] && tag=$tag-$cache; [ -n "$profile" ] && tag=$tag-prof; [ -n "$scriptname" ] && tag=$tag-$scriptname
+	local tag=$bin; [ -n "$sh" ] && tag=$tag-s$sh; [ -n "$helper" ] && tag=$tag-h$helper; [ -n "$launch" ] && tag=$tag-l$launch; [ -n "$cache" ] && tag=$tag-$cache; [ -n "$profile" ] && tag=$tag-prof; [ -n "$scriptname" ] && tag=$tag-$scriptname; [ -n "$label" ] && tag=$tag-$label
 	local name=$kind-$tag-$n R=$RES/$kind-$tag-$n view=grid script=nav
 	case $kind in
 		list) view=detailed ;;
