@@ -61,6 +61,74 @@ static int read_line(const char* path, char* out, size_t size)
 	return 1;
 }
 
+static pid_t process_named(const char* wanted);
+
+// Main_MiSTer finds new input devices on its own (it watches /dev/input): wait until it has opened this
+// keyboard, its /dev/input/eventN among Main_MiSTer's open files, so the first F9 is not lost. It was a
+// fixed second; now that second is only the most it waits (and what it waits when it cannot tell).
+static void keyboard_wait_opened(int fd)
+{
+	char sysname[64] = "";
+	char node[64] = "";
+	if (ioctl(fd, UI_GET_SYSNAME(sizeof(sysname)), sysname) >= 0)
+	{
+		char path[160];
+		snprintf(path, sizeof(path), "/sys/devices/virtual/input/%s", sysname);
+		DIR* dir = opendir(path);
+		if (dir)
+		{
+			struct dirent* entry;
+			while ((entry = readdir(dir)) != NULL)
+				if (!strncmp(entry->d_name, "event", 5))
+				{
+					snprintf(node, sizeof(node), "/dev/input/%s", entry->d_name);
+					break;
+				}
+			closedir(dir);
+		}
+	}
+
+	const pid_t mister = node[0] ? process_named("MiSTer") : 0;
+	if (!mister)
+	{
+		sleep_ms(1000);
+		return;
+	}
+
+	char fds[64];
+	snprintf(fds, sizeof(fds), "/proc/%d/fd", (int)mister);
+	for (int waited = 0; waited < 1000; waited += 10)
+	{
+		DIR* dir = opendir(fds);
+		int opened = 0;
+		if (dir)
+		{
+			struct dirent* entry;
+			while (!opened && (entry = readdir(dir)) != NULL)
+			{
+				char link[96], target[96];
+				snprintf(link, sizeof(link), "%s/%s", fds, entry->d_name);
+				const ssize_t n = readlink(link, target, sizeof(target) - 1);
+				if (n > 0)
+				{
+					target[n] = 0;
+					opened = !strcmp(target, node);
+				}
+			}
+			closedir(dir);
+		}
+		if (opened)
+		{
+			// a moment for Main_MiSTer to take it into its loop
+			sleep_ms(50);
+			fprintf(stderr, "es-mister-helper: Main_MiSTer opened the keyboard (%s) after %d ms\n", node, waited);
+			return;
+		}
+		sleep_ms(10);
+	}
+	fprintf(stderr, "es-mister-helper: Main_MiSTer did not open the keyboard (%s) in 1 s\n", node);
+}
+
 static int keyboard_open(void)
 {
 	int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
@@ -89,8 +157,7 @@ static int keyboard_open(void)
 		return -1;
 	}
 
-	// Main_MiSTer finds new input devices on its own
-	sleep_ms(1000);
+	keyboard_wait_opened(fd);
 	return fd;
 }
 
