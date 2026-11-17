@@ -36,4 +36,5 @@ wswan	WonderSwan	WonderSwan	.ws	_Console/WonderSwan	-	f	1	1
 wswanc	WonderSwan Color	WonderSwan	.wsc	_Console/WonderSwan	WonderSwanColor	f	1	1
 ngp	Neo-Geo Pocket	NGP	.ngp	_Arcade/JTNGP	NeoGeoPocket	f	2	1
 ngpc	Neo-Geo Pocket Color	NGPC	.ngc	_Arcade/JTNGPC	JTNGPC	f	2	1
+x68000	Sharp X68000	@_Computer/_X68000 Games	.mgl	-	-	-	-	-
 arcade	Arcade	@_Arcade	.mra	-	-	-	-	-

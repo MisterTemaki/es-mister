@@ -17,8 +17,9 @@ Installing
      /media/fat/Scripts/__ES_DIR__.sh
 2. Keep "fb_terminal=1" in MiSTer.ini (it is the default).
 3. Games stay in the MiSTer's usual folders (games/NES, games/SNES,
-   games/MegaDrive, games/GBA, games/PSX...; arcade in _Arcade). Games inside
-   .zip files are not listed yet.
+   games/MegaDrive, games/GBA, games/PSX...; arcade in _Arcade; the Sharp
+   X68000 as the MGL files in _Computer/_X68000 Games, each starting its game's
+   disks as the MiSTer menu does). Games inside .zip files are not listed yet.
 
 Using it
 --------
