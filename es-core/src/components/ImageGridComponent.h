@@ -1669,11 +1669,13 @@ void ImageGridComponent<T>::setGridSizeOverride(Vector2f size)
 template<typename T>
 std::shared_ptr<GridTileComponent> ImageGridComponent<T>::getSelectedTile()
 {
-	for (auto tile : mVisibleTiles)
+	// By reference: onCursorChanged calls this until it finds nothing, so the last call walks every entry,
+	// and a copy of an Entry is two strings and a shared_ptr
+	for (const auto& tile : mVisibleTiles)
 		if (tile->isSelected())
 			return tile;
 
-	for (auto entry : mEntries)
+	for (const auto& entry : mEntries)
 		if (entry.data.tile != nullptr)
 			if (entry.data.tile->isSelected())
 				return entry.data.tile;
