@@ -124,9 +124,11 @@ namespace SampleProfiler
 				for (auto& thread : counts.threads)
 					fprintf(out, " %d %.1f%%", thread.first, counts.total ? 100.0 * thread.second / counts.total : 0.0);
 				fprintf(out, "\n");
-				top(out, "all threads, where:", counts.pc, counts.total, 120);
-				top(out, "main thread, where:", counts.mainPc, counts.main, 80);
-				top(out, "all threads, called from:", counts.caller, counts.total, 80);
+				// every address (a few thousand lines): named and summed per function afterwards (symprof.py), where a
+				// short list leaves out the work spread over many small functions
+				top(out, "all threads, where:", counts.pc, counts.total, counts.pc.size());
+				top(out, "main thread, where:", counts.mainPc, counts.main, counts.mainPc.size());
+				top(out, "all threads, called from:", counts.caller, counts.total, counts.caller.size());
 				fclose(out);
 			}
 		}
