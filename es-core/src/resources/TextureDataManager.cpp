@@ -116,7 +116,9 @@ size_t TextureDataManager::getTotalMemoryUsage(MemoryUsageType type)
 
 	size_t total = 0;
 
-	for (auto tex : mTextures)
+	// By reference: this runs every frame (Window::update -> cleanupVRAM) over every texture ever created,
+	// and a copy of each shared_ptr costs two atomic operations
+	for (const auto& tex : mTextures)
 		total += tex->getMemoryUsage(type);
 
 	return total;
