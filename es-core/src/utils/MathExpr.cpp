@@ -503,7 +503,9 @@ namespace Utils
 		std::string evalxp = expr;
 
 		// Evaluate functions
-		for (auto method : extractMethods(evalxp))
+		// each method changed where it is in the list (its arguments evaluated), not copied out of it first
+		auto methods = extractMethods(evalxp);
+		for (auto& method : methods)
 		{			
 			// Evaluate arguments
 			for (int arg = 0; arg < method.arguments.size(); arg++)
@@ -754,16 +756,16 @@ namespace Utils
 
 				char startChr = *expr;
 
-				std::stringstream ss;
+				// the characters up to the closing quote, as they are (a stringstream took them one at a time: every
+				// path of every binding, at every tile)
 				++expr;
+				const char* start = expr;
 				while (*expr && *expr != startChr)
-				{
-					ss << *expr;
 					++expr;
-				}
+				std::string value(start, expr - start);
 				if (*expr) expr++;
 
-				rpnQueue.push(new Value(ss.str()));
+				rpnQueue.push(new Value(value));
 				lastTokenWasOp = false;
 			}
 			else
@@ -797,18 +799,16 @@ namespace Utils
 					//       and p(o1) <= p(o2), then
 					//     pop o2 off the stack onto the output queue.
 					//   Push o1 on the stack.
-					std::stringstream ss;
-					ss << *expr;
+					const char* start = expr;
 					++expr;
 					while (*expr && !isspace(*expr) && !isdigit(*expr) && !isvariablechar(*expr) && *expr != '(' && *expr != ')' && *expr != '\"' && *expr != '\'' && *expr != '$' && *expr != '{' && *expr != '}')
-					{
-						ss << *expr;
 						++expr;
-					}
 
-					ss.clear();
-					std::string str;
-					ss >> str;
+					// what a stringstream's >> gave from those characters: only the first can be a space (after a
+					// "continue" the spaces are not skipped), and >> leaves it out
+					if (isspace(*start))
+						++start;
+					std::string str(start, expr - start);
 
 					if (str.empty())
 						continue;
