@@ -49,6 +49,10 @@ GuiComponent::~GuiComponent()
 		else
 			child->setParent(NULL);
 	}
+
+	mStoryBoards.clear();
+	for (auto storyboard : mOwnedStoryBoards)
+		delete storyboard;
 }
 
 bool GuiComponent::input(InputConfig* config, Input input)
@@ -669,6 +673,14 @@ bool GuiComponent::selectStoryboard(const std::string& name)
 	}
 
 	return false;
+}
+
+void GuiComponent::takeStoryboards(std::map<std::string, ThemeStoryboard*>& storyboards)
+{
+	for (auto& storyboard : storyboards)
+		mOwnedStoryBoards.push_back(storyboard.second);
+
+	storyboards.clear();
 }
 
 bool GuiComponent::applyStoryboard(const ThemeData::ThemeElement* elem, const std::string name)

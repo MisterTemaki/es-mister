@@ -170,6 +170,7 @@ public:
 	// Storyboards
 	bool			hasStoryBoard(const std::string& name = "", bool compareEmptyName = false);
 	bool			applyStoryboard(const ThemeData::ThemeElement* elem, const std::string name = "");
+	void			takeStoryboards(std::map<std::string, ThemeStoryboard*>& storyboards); // freed with the component
 	virtual bool	selectStoryboard(const std::string& name = "");
 	virtual void	deselectStoryboard(bool restoreinitialProperties = true);
 	virtual void	startStoryboard();
@@ -294,6 +295,10 @@ private:
 
 	StoryboardAnimator* mStoryboardAnimator;
 	std::map<std::string, ThemeStoryboard*> mStoryBoards;
+
+	// the storyboards of the copy of a theme element this component was themed from alone (applySelfTheme):
+	// its own, freed with it (mStoryBoards points to them)
+	std::vector<ThemeStoryboard*> mOwnedStoryBoards;
 };
 
 #endif // ES_CORE_GUI_COMPONENT_H

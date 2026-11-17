@@ -2911,6 +2911,8 @@ void ThemeData::applySelfTheme(GuiComponent* comp, const ThemeElement& elem)
 
 	comp->applyTheme(theme, "default", "default", ThemeFlags::ALL);
 
-	// Clear storyboard or they'll be deleted as we use a temporary fake theme...
-	element.first->second.mStoryBoards.clear();
+	// The copy's storyboards are the component's from now on (its storyboard map points to them), freed with it:
+	// left to no one before, they were lost with every component made from a template, as a grid's tiles are
+	// made and freed while it scrolls. (Taken out of the copy, which would free them with this temporary theme.)
+	comp->takeStoryboards(element.first->second.mStoryBoards);
 }
