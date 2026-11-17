@@ -41,12 +41,12 @@ for v in grid detailed; do for n in 1 2; do run_es gold-$v-$n golden $v ES_PERF_
 es_gone
 big=$(find /media/fat/games/PSX -type f -size +300M 2>/dev/null | head -1)
 sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
-$T/f1bench "$big" /media/fat/games/SNES > $T/res/bench-frio.txt 2>&1
-$T/f1bench "$big" /media/fat/games/SNES > $T/res/bench-quente.txt 2>&1
+$T/f1bench "$big" /media/fat/games/SNES > $T/res/bench-cold.txt 2>&1
+$T/f1bench "$big" /media/fat/games/SNES > $T/res/bench-warm.txt 2>&1
 log "bench done"
 
 # cold boots: the page cache emptied first, as after the MiSTer starts
-for n in $(seq 1 10); do es_gone; menu_wait; sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1; run_es frio-$n abrir grid; done
+for n in $(seq 1 10); do es_gone; menu_wait; sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1; run_es cold-$n start grid; done
 
 # navigation: 30 in the grid, 10 in the detailed list (each a warm boot too)
 for n in $(seq 1 30); do run_es nav-grid-$n nav grid; done
@@ -73,6 +73,6 @@ log "launches done"
 cp $T/es-p6 $E/emulationstation
 cp $T/es_settings.cfg.orig $H/es_settings.cfg
 log "end"
-date +%T > $T/res/fim
+date +%T > $T/res/end
 menu_wait; sleep 2
 setsid bash /media/fat/es-mister-720p/es-mister.sh </dev/null >/dev/null 2>&1 &

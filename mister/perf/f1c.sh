@@ -55,17 +55,17 @@ clean
 cp $T/es-perf2 $E/emulationstation
 
 for n in 1 2 3 4 5 6 9; do run_es nav-list-$n nav detailed; done
-for n in 1 2; do run_es gold2-grid-$n golden2 grid ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$T/res/gold2-grid-$n; done
-run_es prof-rolagem nav grid ES_PROFILE=$T/res/prof-rolagem/profile.txt ES_PROFILE_FROM=60
-run_es prof-ocioso-sis ocioso-sis grid ES_PROFILE=$T/res/prof-ocioso-sis/profile.txt ES_PROFILE_FROM=9
-run_es prof-ocioso-lista ocioso-lista grid ES_PROFILE=$T/res/prof-ocioso-lista/profile.txt ES_PROFILE_FROM=16
+for n in 1 2; do run_es gold2-grid-$n golden grid ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$T/res/gold2-grid-$n; done
+run_es prof-scroll nav grid ES_PROFILE=$T/res/prof-scroll/profile.txt ES_PROFILE_FROM=60
+run_es prof-idle-systems idle-systems grid ES_PROFILE=$T/res/prof-idle-systems/profile.txt ES_PROFILE_FROM=9
+run_es prof-idle-list idle-list grid ES_PROFILE=$T/res/prof-idle-list/profile.txt ES_PROFILE_FROM=16
 
 # one cover's cost, ES closed: the first 40 SNES covers at the grid's tile size (219x156), page cache emptied
 clean
 ls /media/fat/games/SNES/images/*.png | head -40 > $T/res/f1img-files.txt
 sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
-tr '\n' '\0' < $T/res/f1img-files.txt | xargs -0 $T/f1img 219 156 > $T/res/f1img-frio.txt 2>&1
-tr '\n' '\0' < $T/res/f1img-files.txt | xargs -0 $T/f1img 219 156 > $T/res/f1img-quente.txt 2>&1
+tr '\n' '\0' < $T/res/f1img-files.txt | xargs -0 $T/f1img 219 156 > $T/res/f1img-cold.txt 2>&1
+tr '\n' '\0' < $T/res/f1img-files.txt | xargs -0 $T/f1img 219 156 > $T/res/f1img-warm.txt 2>&1
 log "f1img done"
 
 # the test copy as it was, and the user's ES: started, then checked
@@ -80,4 +80,4 @@ for try in 1 2; do
 	clean; sleep 2
 done
 log "f1c end"
-date +%T > $T/res/fim3
+date +%T > $T/res/end3

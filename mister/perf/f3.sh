@@ -4,7 +4,7 @@
 # Each PLAN_FILE line: KIND BIN COUNT [sh=NAME] [helper=NAME] [launch=NAME] [cache=cold|warm] [profile=SECONDS]
 #   [script=NAME (one of $T/*.script, in place of the kind's)] [label=WORD (added to the run's name)] [VAR=VALUE...]
 #   KIND: grid | list (nav.script in that view), ggrid | glist (golden frames, fixed clock), boot (cold boot,
-#         page cache emptied, abrir.script), launch (a SNES game started as ES starts it, the menu core loaded
+#         page cache emptied, start.script), launch (a SNES game started as ES starts it, the menu core loaded
 #         again 5 s later; ES not running)
 #   BIN:  a binary in $B/bins (es-NAME)
 #   sh=, helper=, launch=: es-mister.sh, es-mister-helper, mister-launch.sh from $B/bins (sh-NAME, ...);
@@ -65,9 +65,9 @@ run_one() {
 	local name=$kind-$tag-$n R=$RES/$kind-$tag-$n view=grid script=nav
 	case $kind in
 		list) view=detailed ;;
-		ggrid) script=golden2; env+=(ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$R) ;;
-		glist) view=detailed; script=golden2; env+=(ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$R) ;;
-		boot) script=abrir ;;
+		ggrid) script=golden; env+=(ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$R) ;;
+		glist) view=detailed; script=golden; env+=(ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$R) ;;
+		boot) script=start ;;
 	esac
 	[ -n "$scriptname" ] && script=$scriptname
 	# sampled from PROFILE seconds after ES starts (ES_PROFILE_FROM), into the run's profile.txt
@@ -145,4 +145,4 @@ for try in 1 2; do
 	clean; sleep 2
 done
 log "f3 end"
-date +%T > $RES/fim
+date +%T > $RES/end

@@ -1,6 +1,6 @@
 # The slowest scroll nav.script found: the SNES list (detailed), Right twice (a quick switch to the next systems:
 # Game Boy on the MiSTer, a grid of placeholder covers), then a long fast scroll there, for a profile of that alone
-# (f3.sh list c3 1 ... script=rolagb profile=20: sampled from 20 s after ES starts, within the scroll)
+# (f3.sh list c3 1 ... script=scroll-gb profile=20: sampled from 20 s after ES starts, within the scroll)
 settle 30000
 key Return
 wait 4000
@@ -10,7 +10,7 @@ key Right
 wait 600
 key Right
 wait 3000
-log rola
+log scroll
 hold Down 40000
-log fim
+log end
 quit

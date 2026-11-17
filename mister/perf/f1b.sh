@@ -19,21 +19,21 @@ run_es() {
 	tail -n +$((before + 1)) $E/logs/es-mister.log | grep -v "MisterPads\|ERROR" > $R/script.txt
 	log "$name done"
 }
-while [ ! -f $T/res/fim ]; do sleep 10; done
+while [ ! -f $T/res/end ]; do sleep 10; done
 sleep 20
 log "f1b start"
 es_gone; menu_wait
 cp $T/es-perf2 $E/emulationstation
-for n in 1 2; do run_es gold2-grid-$n golden2 grid ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$T/res/gold2-grid-$n; done
+for n in 1 2; do run_es gold2-grid-$n golden grid ES_PERF_FIXED_STEP=1 ES_SOFT_SHOTS=$T/res/gold2-grid-$n; done
 es_gone
 big=$(find /media/fat/games/PSX -type f -size +300M 2>/dev/null | head -1)
 $T/f1bench2 "$big" /media/fat/games/SNES > $T/res/bench2.txt 2>&1
-run_es prof-rolagem nav grid ES_PROFILE=$T/res/prof-rolagem/profile.txt ES_PROFILE_FROM=60
-run_es prof-ocioso-sis ocioso-sis grid ES_PROFILE=$T/res/prof-ocioso-sis/profile.txt ES_PROFILE_FROM=9
-run_es prof-ocioso-lista ocioso-lista grid ES_PROFILE=$T/res/prof-ocioso-lista/profile.txt ES_PROFILE_FROM=16
+run_es prof-scroll nav grid ES_PROFILE=$T/res/prof-scroll/profile.txt ES_PROFILE_FROM=60
+run_es prof-idle-systems idle-systems grid ES_PROFILE=$T/res/prof-idle-systems/profile.txt ES_PROFILE_FROM=9
+run_es prof-idle-list idle-list grid ES_PROFILE=$T/res/prof-idle-list/profile.txt ES_PROFILE_FROM=16
 cp $T/es-p6 $E/emulationstation
 cp $T/es_settings.cfg.orig $H/es_settings.cfg
 log "f1b end"
-date +%T > $T/res/fim2
+date +%T > $T/res/end2
 es_gone; menu_wait; sleep 2
 setsid bash /media/fat/es-mister-720p/es-mister.sh </dev/null >/dev/null 2>&1 &

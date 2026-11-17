@@ -1,9 +1,9 @@
 # Navigation (real time): carousel, SNES game list (view set by the harness), fast scroll, pages, screens.
 # Each phase between two "log" marks; the harness reads the per-frame lines between them.
 settle 30000
-log ocioso-sistemas
+log idle-systems
 wait 5000
-log carrossel-lento
+log carousel-slow
 key Right
 wait 1500
 key Right
@@ -28,7 +28,7 @@ key Left
 wait 1500
 key Left
 wait 1500
-log carrossel-rapido
+log carousel-fast
 key Right
 wait 300
 key Right
@@ -61,12 +61,12 @@ key Left
 wait 300
 key Left
 wait 2000
-log entrar-lista
+log enter-list
 key Return
 wait 4000
-log ocioso-lista
+log idle-list
 wait 5000
-log lista-passos
+log list-steps
 key Down
 wait 600
 key Down
@@ -87,10 +87,10 @@ key Down
 wait 600
 key Down
 wait 600
-log lista-rolagem-rapida
+log list-fast-scroll
 hold Down 12000
 wait 3000
-log lista-paginas
+log list-pages
 key "
 wait 1500
 key "
@@ -101,10 +101,10 @@ key !
 wait 1500
 key !
 wait 1500
-log lista-volta-rapida
+log list-fast-back
 hold Up 6000
 wait 3000
-log telas
+log screens
 key Backspace
 wait 2000
 key Escape
@@ -117,13 +117,13 @@ key Down
 wait 500
 key Escape
 wait 1500
-log busca
+log search
 key -
 wait 2000
 key Escape
 wait 1500
-log sair-lista
+log leave-list
 key Escape
 wait 3000
-log fim
+log end
 quit

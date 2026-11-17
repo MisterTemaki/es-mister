@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Phase 1 analysis: the batch's results (f1.sh) as percentiles.
-   analisa.py RESDIR  ->  tables on stdout (markdown) and resumo.json beside them.
+   analyze.py RESDIR  ->  tables on stdout (markdown) and summary.json beside them.
 Definitions (all from the measurement build's lines, es-core/src/utils/Perf.h):
  - frame work: ES before the frame + the slowest band's drawing + its copy (F: es + raster + copy), ms
  - present interval: time between two frames drawn one after the other while the screen moves (F t deltas)
@@ -140,8 +140,8 @@ def boot_metrics(run):
     return {k: v for k, v in m.items() if v is not None}
 
 
-MOVING = {"carrossel-lento", "carrossel-rapido", "lista-passos", "lista-rolagem-rapida", "lista-paginas", "lista-volta-rapida", "telas"}
-IDLE = {"ocioso-sistemas", "ocioso-lista"}
+MOVING = {"carousel-slow", "carousel-fast", "list-steps", "list-fast-scroll", "list-pages", "list-fast-back", "screens"}
+IDLE = {"idle-systems", "idle-list"}
 
 
 def nav_metrics(run, agg):
@@ -187,7 +187,7 @@ def nav_metrics(run, agg):
             a["picture_ms"].append(x[1])
         a["pictures"].append(len(ts))
         # covers after a press: press time = answer frame t - answer; covers = last picture before the next press
-        if name in ("lista-paginas", "lista-passos"):
+        if name in ("list-pages", "list-steps"):
             presses = [f[0] - f[7] for f in fs if f[7] >= 0]
             for i, p in enumerate(presses):
                 nxt = presses[i + 1] if i + 1 < len(presses) else t1
@@ -210,7 +210,7 @@ def mem_metrics(run):
 def main():
     out = {}
     lines = []
-    boots = {"frio": [], "quente-grid": [], "quente-list": []}
+    boots = {"cold": [], "warm-grid": [], "warm-list": []}
     for run in sorted(glob.glob(os.path.join(RES, "*"))):
         name = os.path.basename(run)
         if not os.path.isdir(run):
@@ -218,16 +218,16 @@ def main():
         b = boot_metrics(run)
         if b is None:
             continue
-        if name.startswith("frio-"):
-            boots["frio"].append(b)
+        if name.startswith("cold-"):
+            boots["cold"].append(b)
         elif name.startswith("nav-grid-"):
-            boots["quente-grid"].append(b)
+            boots["warm-grid"].append(b)
         elif name.startswith("nav-list-"):
-            boots["quente-list"].append(b)
-    lines.append("## Abertura (s) — p50 / p95 / p99 / máx\n")
+            boots["warm-list"].append(b)
+    lines.append("## Start (s) — p50 / p95 / p99 / max\n")
     keys = ["script_to_ui_s", "pre_es_s", "es_systems_s", "menu_wait_s", "sleep_s", "console_f9_s", "exec_to_trace_s",
             "es_first_frame_s", "logo_ms", "window_init_s", "load_systems_s", "go_to_start_s", "es_ready_s", "script_to_first_frame_s"]
-    lines.append("| Métrica | " + " | ".join(boots) + " |")
+    lines.append("| Metric | " + " | ".join(boots) + " |")
     lines.append("|---|" + "---|" * len(boots))
     for k in keys:
         row = [fmt(summary([b[k] for b in v if k in b])) for v in boots.values()]
@@ -242,10 +242,10 @@ def main():
             mems.append(mem_metrics(run))
         if not agg:
             continue
-        lines.append(f"\n## Navegação, vista {view} ({len(mems)} execuções) — p50 / p95 / p99 / máx\n")
+        lines.append(f"\n## Navigation, {view} view ({len(mems)} runs) — p50 / p95 / p99 / max\n")
         metrics = ["work", "es", "raster", "copy", "interval", "dropped", "answer", "covers_ms", "picture_ms", "redraw_pct", "fb_kb_frame",
                    "fb_mb_s", "frames_drawn_per_s", "turn", "allocs", "reads", "writes", "cpu_pct", "pictures"]
-        lines.append("| Fase | " + " | ".join(metrics) + " |")
+        lines.append("| Phase | " + " | ".join(metrics) + " |")
         lines.append("|---|" + "---|" * len(metrics))
         out[view] = {}
         for ph, a in agg.items():
@@ -256,13 +256,13 @@ def main():
                 out[view][ph][k] = s
                 if k == "dropped" and a[k]:
                     s2 = {"n": len(a[k]), "p50": sum(a[k]), "p95": 100.0 * sum(a[k]) / max(1, sum(a[k]) + len(a[k])), "p99": 0, "max": max(a[k])}
-                    row.append(f"{sum(a[k])} perdidos em {len(a[k])} quadros ({s2['p95']:.0f}%)")
+                    row.append(f"{sum(a[k])} dropped in {len(a[k])} frames ({s2['p95']:.0f}%)")
                 else:
                     row.append(fmt(s))
             lines.append(f"| {ph} | " + " | ".join(row) + " |")
         hw = [m[2] for m in mems if m[2]]
         rs = [m[1] for m in mems if m[1]]
-        lines.append(f"\nMemória: VmHWM {fmt(summary([h / 1024 for h in hw]))} MB; VmRSS no fim {fmt(summary([r / 1024 for r in rs]))} MB")
+        lines.append(f"\nMemory: VmHWM {fmt(summary([h / 1024 for h in hw]))} MB; VmRSS at the end {fmt(summary([r / 1024 for r in rs]))} MB")
         out[view]["mem_hwm_mb"] = summary([h / 1024 for h in hw])
 
     launch = os.path.join(RES, "launch.txt")
@@ -275,14 +275,14 @@ def main():
                 L.append(c - s)
                 B.append(mn - ma)
                 D.append(d - mn)
-        lines.append("\n## Lançamento de core (s) — p50 / p95 / p99 / máx\n")
-        lines.append(f"- comando do ES até o core carregado (CORENAME): {fmt(summary(L))}")
-        lines.append(f"- load_core do menu até MENU: {fmt(summary(B))}")
-        lines.append(f"- MENU até o mister-launch.sh devolver a tela ao ES: {fmt(summary(D))}")
+        lines.append("\n## Core launch (s) — p50 / p95 / p99 / max\n")
+        lines.append(f"- ES's command to the core loaded (CORENAME): {fmt(summary(L))}")
+        lines.append(f"- the menu's load_core to MENU: {fmt(summary(B))}")
+        lines.append(f"- MENU to mister-launch.sh giving the screen back to ES: {fmt(summary(D))}")
         out["launch"] = {"core": summary(L), "menu": summary(B), "back": summary(D)}
 
     print("\n".join(lines))
-    json.dump(out, open(os.path.join(RES, "resumo.json"), "w"), indent=1)
+    json.dump(out, open(os.path.join(RES, "summary.json"), "w"), indent=1)
 
 
 main()

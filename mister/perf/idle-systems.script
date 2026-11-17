@@ -1,5 +1,5 @@
 settle 30000
-log ocioso-sistemas
+log idle-systems
 wait 15000
-log fim
+log end
 quit

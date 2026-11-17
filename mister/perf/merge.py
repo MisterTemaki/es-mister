@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Phase 3: several f3.sh result folders put together for compara.py, each run renamed so that the same
+"""Phase 3: several f3.sh result folders put together for compare.py, each run renamed so that the same
 variant in two batches stays two groups (KIND-TAG@BATCH-N), and runs listed to be merged into one group.
-   junta.py OUT BATCH=RESDIR [BATCH=RESDIR...] [--as NEWTAG=BATCH:KIND-TAG ...]
+   merge.py OUT BATCH=RESDIR [BATCH=RESDIR...] [--as NEWTAG=BATCH:KIND-TAG ...]
 Symbolic links only: the runs are not copied.
 """
 import os, re, sys
