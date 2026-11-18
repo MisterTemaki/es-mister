@@ -605,7 +605,10 @@ namespace LibretroArt
 		if (namesAge >= 0)
 			loadNames(readFile(names), mArt);
 		if (namesAge < 0 || namesAge >= NAMES_DAYS)
-			mRoot = githubRequest(endpoints().api + mSystem.repo + "/git/trees/master");
+			// HEAD: the repository's own branch. Most are on master, but a few are on main (Philips - CD-i,
+			// Commodore - CD32): their list was a 404 there, and only the pictures whose names could be guessed
+			// were found (2 of the CD-i's 32 games here)
+			mRoot = githubRequest(endpoints().api + mSystem.repo + "/git/trees/HEAD");
 
 		if (mSystem.dat)
 		{
