@@ -97,17 +97,15 @@ ES_PID=$(pidof emulationstation)
 "$ES/es-mister-helper" cmd "load_core $target"
 stamp "load_core sent"
 
-# the core loaded now, in $core, read by bash itself (no cat), and a wait of SECONDS without a sleep process
-# (read's timeout on a pipe nothing writes to; sleep if that read ends any other way): both cost nothing,
-# so the core's change is seen within 0.1 s
+# the core loaded now, in $core, read by bash itself (no cat)
 corename() { core=""; read -r core </tmp/CORENAME 2>/dev/null; }
-exec {nap}<> <(:)
-wait_s() { read -r -t "$1" -u "$nap" _; [ $? -gt 128 ] || sleep "$1"; }
 
-# the core starts (Main_MiSTer starts again, and names it)
+# the core starts (Main_MiSTer starts again, and names it): a look every 0.1 s, about 1.5 s. (No read -t on a
+# pipe in place of sleep here: bash 5.0's read -t can miss its timeout when a signal comes meanwhile, and then
+# waits for ever)
 started=0
 for i in $(seq 300); do
-	wait_s 0.1
+	sleep 0.1
 	corename
 	if [ -n "$core" ] && [ "$core" != "MENU" ]; then
 		started=1
@@ -118,18 +116,19 @@ done
 if [ $started = 1 ]; then
 	stamp "core $core started"
 	# back to ES from the controller too: Create + Options held for a second (a DualSense or DualShock 4,
-	# read by the helper) load the menu core
-	"$ES/es-mister-helper" exitkeys $$ &
-	keys=$!
-	# the game runs until the menu core is loaded again (the OSD's System > Reboot, or those keys)
+	# read by the helper) load the menu core. The helper also waits for the game's end: it returns once the
+	# menu core is loaded again (the OSD's System > Reboot, or those keys). Before, the helper ran beside a
+	# loop here that looked at the core every 0.1 s with bash's read -t; the helper ending as the menu core
+	# came, its signal could meet that read, which then waited for ever (seen once on the MiSTer: ES did not
+	# come back).
+	"$ES/es-mister-helper" exitkeys $$
+	# the helper gone another way (it cannot run, say): the same wait, with sleep
 	corename
 	while [ "$core" != "MENU" ]; do
-		wait_s 0.1
+		sleep 0.2
 		corename
 	done
 	stamp "back in the menu"
-	kill "$keys" 2>/dev/null
-	wait "$keys" 2>/dev/null
 	# no wait for Main_MiSTer starting again: the helper waits until it has taken its keyboard, and presses
 	# F9 until it switches to the Linux framebuffer (a fixed 2 s here kept the MiSTer menu on screen)
 else
