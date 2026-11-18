@@ -281,8 +281,16 @@ void GridGameListView::onFileChanged(FileData* file, FileChangeType change)
 {
 	if (change == FILE_METADATA_CHANGED)
 	{
+#ifdef MISTER
+		// ES picks a view from the games' pictures only for the automatic view (basic, detailed or video), never
+		// a grid, so this one cannot switch: its list is filled again in place, the cursor kept, instead of the
+		// whole view built again (theme, tiles, pictures), which came after every game (its play count and
+		// last played change)
+		ISimpleGameListView::onFileChanged(file, change);
+#else
 		// might switch to a detailed view
 		ViewController::get()->reloadGameListView(this);
+#endif
 		return;
 	}
 
