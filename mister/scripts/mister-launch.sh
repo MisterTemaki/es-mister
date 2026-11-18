@@ -130,7 +130,8 @@ if [ $started = 1 ]; then
 	stamp "back in the menu"
 	kill "$keys" 2>/dev/null
 	wait "$keys" 2>/dev/null
-	sleep 2 # Main_MiSTer starting again
+	# no wait for Main_MiSTer starting again: the helper waits until it has taken its keyboard, and presses
+	# F9 until it switches to the Linux framebuffer (a fixed 2 s here kept the MiSTer menu on screen)
 else
 	echo "the core did not start"
 fi
