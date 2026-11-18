@@ -106,6 +106,48 @@ TEST(file_names_find_their_art)
 	CHECK_EQ(box.resolve("Super Mario Kart (US)", ""), std::string(""));
 }
 
+TEST(a_games_other_titles_and_accents_find_its_art)
+{
+	// libretro-thumbnails' Neo Geo and MAME names: the other titles after " _ " (MAME's " / ")
+	Names neo;
+	for (const char* n : { "Art of Fighting _ Ryuuko no Ken (NGM-044)(NGH-044)", "Art of Fighting 2 _ Ryuuko no Ken 2 (NGH-056)",
+		"Art of Fighting 2 _ Ryuuko no Ken 2 (NGM-056)", "Ganryu _ Musashi Ganryuki", "Windjammers _ Flying Power Disc",
+		"Samurai Shodown III _ Samurai Spirits - Zankurou Musouken (NGH-087)", "Samurai Shodown _ Samurai Spirits (NGM-045)",
+		"Street Hoop _ Street Slam _ Dunk Dream (DEM-004) (DEH-004)", "Spin Master _ Miracle Adventure",
+		"Quiz Daisousa Sen - The Last Count Down (NGM-023)(NGH-023)", "Syougi No Tatsujin - Master of Shougi",
+		"The King of Fighters '98 - The Slugfest _ King of Fighters '98 - dream match never ends (NGM-2420)",
+		"Puzzle Bobble _ Bust-A-Move (Neo-Geo) (NGM-083)", "Puzzle Bobble _ Bust-A-Move (Neo-Geo) (bootleg) [Bootleg]",
+		"Gururin", "Magical Drop II", "Panic Bomber", "Matrimelee _ Shin Gouketsuji Ichizoku Toukon (NGM-2660) (NGH-2660)",
+		"Matrimelee _ Shin Gouketsuji Ichizoku Toukon (bootleg) [Bootleg]", "Quiz Daisousa Sen - The Last Count Down (Korean release)" })
+		neo.add(n);
+	CHECK_EQ(neo.resolve("Art of Fighting", ""), std::string("Art of Fighting _ Ryuuko no Ken (NGM-044)(NGH-044)"));
+	CHECK_EQ(neo.resolve("Art of Fighting 2", ""), std::string("Art of Fighting 2 _ Ryuuko no Ken 2 (NGH-056)"));
+	CHECK_EQ(neo.resolve("Ganryu", ""), std::string("Ganryu _ Musashi Ganryuki"));
+	CHECK_EQ(neo.resolve("Windjammers", ""), std::string("Windjammers _ Flying Power Disc"));
+	CHECK_EQ(neo.resolve("Samurai Shodown III - Blades of Blood", ""), std::string("Samurai Shodown III _ Samurai Spirits - Zankurou Musouken (NGH-087)"));
+	CHECK_EQ(neo.resolve("Samurai Shodown", ""), std::string("Samurai Shodown _ Samurai Spirits (NGM-045)"));
+	CHECK_EQ(neo.resolve("Street Slam", ""), std::string("Street Hoop _ Street Slam _ Dunk Dream (DEM-004) (DEH-004)"));
+	CHECK_EQ(neo.resolve("SpinMaster", ""), std::string("Spin Master _ Miracle Adventure"));
+	CHECK_EQ(neo.resolve("Quiz Dais\xC5\x8Dsasen - The Last Count Down", ""), std::string("Quiz Daisousa Sen - The Last Count Down (NGM-023)(NGH-023)"));
+	CHECK_EQ(neo.resolve("Sh\xC5\x8Dgi no Tatsujin - Master of Syougi", ""), std::string("Syougi No Tatsujin - Master of Shougi"));
+	CHECK_EQ(neo.resolve("The King of Fighters '98 - The Slugfest", ""), std::string("The King of Fighters '98 - The Slugfest _ King of Fighters '98 - dream match never ends (NGM-2420)"));
+	CHECK_EQ(neo.resolve("Puzzle Bobble", ""), std::string("Puzzle Bobble _ Bust-A-Move (Neo-Geo) (NGM-083)"));
+	CHECK_EQ(neo.resolve("Gururin", ""), std::string("Gururin"));
+	// of one game's entries, its own release before a bootleg or a Korean one
+	CHECK_EQ(neo.resolve("Matrimelee", ""), std::string("Matrimelee _ Shin Gouketsuji Ichizoku Toukon (NGM-2660) (NGH-2660)"));
+	// not another game: a number, a title not there, a subtitle that is not the first title
+	CHECK_EQ(neo.resolve("Art of Fighting 3", ""), std::string(""));
+	CHECK_EQ(neo.resolve("Samurai Shodown IV - Amakusa's Revenge", ""), std::string(""));
+	CHECK_EQ(neo.resolve("Bomberman - Panic Bomber", ""), std::string(""));
+	CHECK_EQ(neo.resolve("Dunk Dream - Street Slam", ""), std::string(""));
+	// " _ " as "&" (Sega CD): the whole title still comes first
+	Names cd;
+	for (const char* n : { "Adventures of Batman _ Robin, The (USA)", "Advanced Dungeons _ Dragons - Eye of the Beholder (USA)" })
+		cd.add(n);
+	CHECK_EQ(cd.resolve("Adventures of Batman and Robin, The (U)", ""), std::string("Adventures of Batman _ Robin, The (USA)"));
+	CHECK_EQ(cd.resolve("Advanced Dungeons & Dragons Eye of the Beholder", ""), std::string("Advanced Dungeons _ Dragons - Eye of the Beholder (USA)"));
+}
+
 TEST(rom_crcs_are_no_intros)
 {
 	// plain: both the same

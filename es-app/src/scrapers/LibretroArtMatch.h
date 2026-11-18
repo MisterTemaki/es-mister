@@ -107,8 +107,10 @@ inline void ClassifyTag(std::string tag, Parsed& out)
         out.penalty += 5;
     }
     for (const char* bad : {"beta", "proto", "sample", "demo", "unl", "pirate", "kiosk", "virtual console", "aftermarket",
-                            "hack", "collection", "arcade", "not for resale"})
+                            "hack", "collection", "arcade", "not for resale", "bootleg"})
         if (has(bad)) { out.penalty += 100; break; }
+    // MAME's lists: a game's Korean release after its own ("Quiz Daisousa Sen (NGM-023)", not "(Korean release)")
+    if (has("korean")) out.penalty += 3;
     if (t.compare(0, 3, "rev") == 0) out.penalty += 1;
 }
 // "v1.1", "ver 1.2", "1.02": a version, not a title word.
@@ -298,6 +300,31 @@ inline int Roman(const std::string& w)
     return 0;
 }
 inline bool IsDigits(const std::string& w) { return !w.empty() && std::isdigit(static_cast<unsigned char>(w[0])); }
+// The plain letter of an accented Latin one in UTF-8 (lead byte 0xC3..0xC5, then the second byte), or 0: the vowels with
+// grave, acute, circumflex, tilde, diaeresis or macron (Japanese long vowels: "ō"), ñ and ç.
+inline char PlainLetter(unsigned char lead, unsigned char next)
+{
+    if (lead == 0xC3 && next >= 0x80 && next <= 0xBF)
+    {
+        static const char latin1[] = "AAAAAAACEEEEIIII" "DNOOOOO*OUUUUYTs" "aaaaaaaceeeeiiii" "dnooooo/ouuuuyty";
+        const char c = latin1[next - 0x80];
+        return (c == '*' || c == '/') ? 0 : c;
+    }
+    if (lead == 0xC4) // Ā ā Ă ă Ą ą ... Ē ē ... Ī ī
+    {
+        if (next >= 0x80 && next <= 0x85) return (next & 1) ? 'a' : 'A';
+        if (next >= 0x92 && next <= 0x9B) return (next & 1) ? 'e' : 'E';
+        if (next >= 0xAA && next <= 0xB1) return (next & 1) ? 'i' : 'I';
+        return 0;
+    }
+    if (lead == 0xC5) // Ō ō Ŏ ŏ Ő ő ... Ū ū Ŭ ŭ Ů ů Ű ű
+    {
+        if (next >= 0x8C && next <= 0x91) return (next & 1) ? 'o' : 'O';
+        if (next >= 0xAA && next <= 0xB3) return (next & 1) ? 'u' : 'U';
+        return 0;
+    }
+    return 0;
+}
 // The comparable words of a title. Order is kept.
 inline std::vector<std::string> Tokens(const std::string& title)
 {
@@ -310,7 +337,13 @@ inline std::vector<std::string> Tokens(const std::string& title)
     };
     for (size_t i = 0; i < title.size(); ++i)
     {
-        const unsigned char c = static_cast<unsigned char>(title[i]);
+        unsigned char c = static_cast<unsigned char>(title[i]);
+        // an accented Latin letter (UTF-8) as its plain one: "Daisōsasen" -> daisosasen, "Pokémon" -> pokemon
+        if ((c == 0xC3 || c == 0xC4 || c == 0xC5) && i + 1 < title.size())
+        {
+            const char plain = PlainLetter(c, static_cast<unsigned char>(title[i + 1]));
+            if (plain != 0) { c = static_cast<unsigned char>(plain); ++i; }
+        }
         if (c == '\'') continue; // Yoshi's -> yoshis
         if (c == 0xE2 && i + 2 < title.size() && static_cast<unsigned char>(title[i + 1]) == 0x80 &&
             static_cast<unsigned char>(title[i + 2]) == 0x99) { i += 2; continue; } // the same, curly
@@ -409,8 +442,35 @@ struct Index
     std::vector<std::string> vocabulary;
     std::vector<std::pair<std::string, int>> by_raw;             // sorted RawKey -> entry, for headers
     std::vector<std::pair<std::string, int>> by_key;             // sorted joined words -> entry, for headers
+    // MAME's lists (the arcade, the Neo Geo) give a game's other titles after " / " ("Art of Fighting / Ryuuko no Ken"),
+    // " _ " in an art name: each such title, joined -> the entries that have it (by_first: the first title only)
+    std::unordered_map<std::string, std::vector<int>> by_alternate, by_first;
     double games = 1;
 };
+// The titles of an art name that " _ " parts ("Art of Fighting _ Ryuuko no Ken (NGM-044)" -> "Art of Fighting",
+// "Ryuuko no Ken"): outside brackets, each part with its own words; none when there is no " _ ".
+inline std::vector<std::string> AlternateTitles(const std::string& name)
+{
+    std::vector<std::string> parts;
+    std::string text;
+    int depth = 0;
+    for (char c : name)
+    {
+        if (c == '(' || c == '[' || c == '{') ++depth;
+        else if ((c == ')' || c == ']' || c == '}') && depth > 0) --depth;
+        else if (depth == 0) text += c;
+    }
+    size_t from = 0;
+    for (;;)
+    {
+        const size_t at = text.find(" _ ", from);
+        parts.push_back(text.substr(from, at == std::string::npos ? std::string::npos : at - from));
+        if (at == std::string::npos) break;
+        from = at + 3;
+    }
+    if (parts.size() < 2) parts.clear();
+    return parts;
+}
 inline void Build(Index& ix, const std::vector<std::string>& names)
 {
     ix = Index();
@@ -428,6 +488,16 @@ inline void Build(Index& ix, const std::vector<std::string>& names)
         if (e.head.empty()) e.head = e.all;
         e.tail = Tokens(TailOf(e.p.title));
         for (const std::string& w : e.all) e.joined += w;
+        const std::vector<std::string> titles = AlternateTitles(names[i]);
+        for (size_t t = 0; t < titles.size(); ++t)
+        {
+            std::string key;
+            for (const std::string& w : Tokens(Parse(titles[t]).title)) key += w;
+            if (key.empty() || key == e.joined) continue;
+            std::vector<int>& alternate = ix.by_alternate[key];
+            if (alternate.empty() || alternate.back() != int(ix.entries.size())) alternate.push_back(int(ix.entries.size()));
+            if (t == 0) ix.by_first[key].push_back(int(ix.entries.size()));
+        }
         ix.entries.push_back(std::move(e));
     }
     for (size_t k = 0; k < ix.entries.size(); ++k)
@@ -599,21 +669,10 @@ inline int UsaOfTwo(const Index& ix, const std::vector<std::pair<int, double>>& 
     if ((usa[0] >= 0) == (usa[1] >= 0)) return -1;
     return usa[0] >= 0 ? games[0] : games[1];
 }
-// The art name of the game this file name means, or "" when it cannot be told from others.
-// region_hint: the region to prefer when the name carries none.
-// usa_on_tie: when games fit equally well, take the USA one of two games that share a main title (UsaOfTwo), instead of none.
-// whole_title: the whole title must fit (not only its main part before " - "), for lists of variants and hacks.
-inline std::string Resolve(const Index& ix, const std::string& requested, const std::string& region_hint = "", bool usa_on_tie = false,
-                           bool whole_title = false)
+// Resolve's search by words (ResolveTitle): the query's words against the games that share its rarer ones.
+inline std::string ResolveTitle(const Index& ix, const Parsed& q, const std::vector<std::string>& words, bool usa_on_tie,
+                                bool whole_title)
 {
-    Parsed q = Parse(requested);
-    if (q.region.empty()) q.region = region_hint;
-    const std::vector<std::string> words = Tokens(q.title);
-    if (words.empty()) return "";
-    std::string joined;
-    for (const std::string& w : words) joined += w;
-    const auto same = ix.by_joined.find(joined);
-    if (same != ix.by_joined.end()) return Pick(ix, same->second, q.region);
     if (words.size() < 2) return "";
     // the games that share (or nearly share) one of the query's rarer words
     std::vector<std::string> rare;
@@ -662,6 +721,41 @@ inline std::string Resolve(const Index& ix, const std::string& requested, const 
         if (best < 0) return "";
     }
     return Pick(ix, ix.by_joined.at(ix.entries[size_t(best)].joined), q.region);
+}
+// The art name of the game this file name means, or "" when it cannot be told from others.
+// region_hint: the region to prefer when the name carries none.
+// usa_on_tie: when games fit equally well, take the USA one of two games that share a main title (UsaOfTwo), instead of none.
+// whole_title: the whole title must fit (not only its main part before " - "), for lists of variants and hacks.
+inline std::string Resolve(const Index& ix, const std::string& requested, const std::string& region_hint = "", bool usa_on_tie = false,
+                           bool whole_title = false)
+{
+    Parsed q = Parse(requested);
+    if (q.region.empty()) q.region = region_hint;
+    const std::vector<std::string> words = Tokens(q.title);
+    if (words.empty()) return "";
+    std::string joined;
+    for (const std::string& w : words) joined += w;
+    const auto same = ix.by_joined.find(joined);
+    if (same != ix.by_joined.end()) return Pick(ix, same->second, q.region);
+    const std::string found = ResolveTitle(ix, q, words, usa_on_tie, whole_title);
+    if (!found.empty()) return found;
+    // nothing fits: one of a game's other titles, exactly ("Art of Fighting" is "Art of Fighting _ Ryuuko no Ken");
+    // or the query's main title, before " - ", exactly the first of them ("Samurai Shodown III - Blades of Blood" is
+    // "Samurai Shodown III _ Samurai Spirits - Zankurou Musouken"); only when those entries are one game
+    auto oneGame = [&ix](const std::vector<int>& group) {
+        for (int k : group)
+            if (ix.entries[size_t(k)].joined != ix.entries[size_t(group[0])].joined) return false;
+        return !group.empty();
+    };
+    const auto alternate = ix.by_alternate.find(joined);
+    if (alternate != ix.by_alternate.end() && oneGame(alternate->second))
+        return Pick(ix, ix.by_joined.at(ix.entries[size_t(alternate->second[0])].joined), q.region);
+    std::string main;
+    for (const std::string& w : Tokens(MainOf(q.title))) main += w;
+    const auto first = main != joined ? ix.by_first.find(main) : ix.by_first.end();
+    if (first != ix.by_first.end() && oneGame(first->second))
+        return Pick(ix, ix.by_joined.at(ix.entries[size_t(first->second[0])].joined), q.region);
+    return "";
 }
 // The entries of a sorted key list that equal key, and those that only start with it.
 inline void Find(const std::vector<std::pair<std::string, int>>& sorted, const std::string& key, std::vector<int>& exact,
