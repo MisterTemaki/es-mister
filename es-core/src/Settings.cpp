@@ -250,7 +250,13 @@ void Settings::setDefaults()
 
 	mStringMap["ThemeSet"] = "";
 	mStringMap["ScreenSaverBehavior"] = "dim";
+#ifdef MISTER
+	// the MiSTer port: every system's games in a grid, unless the player picks another view, for all of
+	// them (Main menu > UI settings) or for one system (its view options)
+	mStringMap["GamelistViewStyle"] = "grid";
+#else
 	mStringMap["GamelistViewStyle"] = "automatic";
+#endif
 
 #ifdef MISTER
 	// the MiSTer port: the source that needs no account nor key (ScreenScraper is built only with its keys)
@@ -583,6 +589,15 @@ std::string Settings::getString(const std::string& name)
 {
 	auto it = mStringMap.find(name);
 	if (it == mStringMap.cend())
+		return mEmptyString;
+
+	return it->second;
+}
+
+std::string Settings::getDefaultString(const std::string& name)
+{
+	auto it = mDefaultStringMap.find(name);
+	if (it == mDefaultStringMap.cend())
 		return mEmptyString;
 
 	return it->second;

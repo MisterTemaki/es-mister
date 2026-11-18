@@ -208,6 +208,19 @@ GuiGamelistOptions::GuiGamelistOptions(Window* window, IGameListView* gamelist, 
 			styles.push_back(*it);
 	}
 
+#ifdef MISTER
+	// a system without its own view gets the view style of the main menu (a grid by default): named beside
+	// "automatic", so the player sees which
+	std::string mainStyle = Settings::getInstance()->getString("GamelistViewStyle");
+	if (mainStyle != "automatic" && system->getTheme()->hasView(mainStyle))
+		for (auto it = styles.cbegin(); it != styles.cend(); ++it)
+			if (it->first == mainStyle)
+			{
+				styles[0].second += " (" + it->second + ")";
+				break;
+			}
+#endif
+
 	std::string viewMode = system->getSystemViewMode();
 
 	bool found = false;

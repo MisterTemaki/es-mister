@@ -69,6 +69,8 @@ public:
 	int getInt(const std::string& name);
 	float getFloat(const std::string& name);
 	std::string getString(const std::string& name);
+	// the value a setting has when the player has not chosen one
+	std::string getDefaultString(const std::string& name);
 
 	bool setBool(const std::string& name, bool value);
 	bool setInt(const std::string& name, int value);

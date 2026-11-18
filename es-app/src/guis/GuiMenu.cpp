@@ -4012,7 +4012,7 @@ void GuiMenu::openThemeConfiguration(Window* mWindow, GuiComponent* s, std::shar
 
 		if (themeconfig->getVariable("resetTheme"))
 		{
-			Settings::getInstance()->setString("GamelistViewStyle", "");
+			Settings::getInstance()->setString("GamelistViewStyle", Settings::getInstance()->getDefaultString("GamelistViewStyle"));
 			Settings::getInstance()->setString("DefaultGridSize", "");
 			Settings::getInstance()->setString("ThemeRegionName", "");
 			Settings::getInstance()->setString("ThemeColorSet", "");
@@ -4020,7 +4020,7 @@ void GuiMenu::openThemeConfiguration(Window* mWindow, GuiComponent* s, std::shar
 			Settings::getInstance()->setString("ThemeMenu", "");
 			Settings::getInstance()->setString("ThemeSystemView", "");
 			Settings::getInstance()->setString("ThemeGamelistView", "");
-			Settings::getInstance()->setString("GamelistViewStyle", "");
+			Settings::getInstance()->setString("GamelistViewStyle", Settings::getInstance()->getDefaultString("GamelistViewStyle"));
 			Settings::getInstance()->setString("DefaultGridSize", "");
 
 			for (auto sm : Settings::getInstance()->getStringMap())
@@ -4122,7 +4122,7 @@ void GuiMenu::openUISettings()
 				Settings::getInstance()->setString("ThemeMenu", "");
 				Settings::getInstance()->setString("ThemeSystemView", "");
 				Settings::getInstance()->setString("ThemeGamelistView", "");
-				Settings::getInstance()->setString("GamelistViewStyle", "");
+				Settings::getInstance()->setString("GamelistViewStyle", Settings::getInstance()->getDefaultString("GamelistViewStyle"));
 				Settings::getInstance()->setString("DefaultGridSize", "");
 
 				for(auto sm : Settings::getInstance()->getStringMap())
