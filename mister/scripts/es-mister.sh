@@ -196,7 +196,16 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 			cfg+="		<path>$REPLY</path>"$'\n'
 			cfg+="		<extension>$exts ${exts^^}</extension>"$'\n'
 			cfg+="		<command>bash $ES/mister-launch.sh %SYSTEM% %ROM%</command>"$'\n'
-			cfg+="		<platform>$name</platform>"$'\n'
+			# the platform as ES's PlatformIds knows it (its scrapers and the scraper's "systems included" go by
+			# it): the same as the name but for these four, which ES knows by other names
+			case $name in
+			segacd) platform=megacd ;;
+			lynx) platform=atarilynx ;;
+			wswan) platform=wonderswan ;;
+			wswanc) platform=wonderswancolor ;;
+			*) platform=$name ;;
+			esac
+			cfg+="		<platform>$platform</platform>"$'\n'
 			cfg+="		<theme>$name</theme>"$'\n'
 			cfg+="	</system>"$'\n'
 		done <"$ES/systems.tsv"
