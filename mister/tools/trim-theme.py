@@ -5,7 +5,8 @@ the SD card comfortably (Carbon's art is 175 MB for 300 systems; a few dozen nee
     trim-theme.py THEME_DIR OUT_DIR SYSTEMS_TSV [WIDTHxHEIGHT]
 
 In the theme's per-system art folders (art/background, art/consoles, art/logos, art/controllers), a
-file is kept when its name starts with one of the systems' names (nes.jpg, nes-w.svg, nesen.png...)
+file is kept when its name starts with one of the systems' names, or the theme names systems.tsv gives
+them (nes.jpg, nes-w.svg, nesen.png, atarilynx.svg...)
 or names something every theme screen uses (default, auto-*, collections...); everything else in the
 theme is copied as it is. The .git folder is left out.
 
@@ -70,7 +71,10 @@ def main():
     with open(tsv) as f:
         for line in f:
             if line.strip() and not line.startswith("#"):
-                systems.append(line.split("\t")[0])
+                cols = line.rstrip("\n").split("\t")
+                systems.append(cols[0])
+                if len(cols) > 11 and cols[11] not in ("", "-"):
+                    systems.append(cols[11])  # the theme's own name for the system's art
     keep = re.compile(r"^(%s)([-_].*|en|jp|us|eu)?$" % "|".join(map(re.escape, systems + list(SHARED))), re.I)
 
     kept = dropped = resaved = shrunk = 0

@@ -30,20 +30,36 @@ if [ -z "$row" ]; then
 	echo "unknown system $system"
 	exit 1
 fi
-IFS=$'\t' read -r name full folder exts rbf setname method delay index <<<"$row"
+IFS=$'\t' read -r name full folder exts rbf setname method delay index reset platform theme <<<"$row"
 
 ext=${game##*.}
 ext=.${ext,,}
 if [ "$ext" = ".mra" ] || [ "$ext" = ".mgl" ]; then
 	target=$game # Main_MiSTer loads these itself
 else
+	media=$game
+	# a game in a zip: Main_MiSTer loads it from inside, named as a file in a folder (game.zip/game.vb),
+	# the zip's first file with one of the system's extensions
+	if [ "$ext" = ".zip" ]; then
+		inner=""
+		while IFS= read -r entry; do
+			e=.${entry##*.}
+			e=${e,,}
+			case " ${exts,,} " in
+			*" $e "*) [ "$e" != .zip ] && inner=$entry && break ;;
+			esac
+		done < <(unzip -Z1 "$game" 2>/dev/null)
+		if [ -n "$inner" ]; then media=$game/$inner; else echo "no $exts file in $game"; fi
+	fi
 	target=/tmp/es-mister.mgl
-	path=$(printf '%s' "$game" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g')
+	path=$(printf '%s' "$media" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g')
 	{
 		echo "<mistergamedescription>"
 		echo "	<rbf>$rbf</rbf>"
 		[ "$setname" != "-" ] && echo "	<setname>$setname</setname>"
 		echo "	<file delay=\"$delay\" type=\"$method\" index=\"$index\" path=\"../../../../..$path\"/>"
+		# the core's reset held after the game is loaded (delay:hold, seconds), for one that starts it at a boot
+		[ "$reset" != "-" ] && [ -n "$reset" ] && echo "	<reset delay=\"${reset%:*}\" hold=\"${reset#*:}\"/>"
 		echo "</mistergamedescription>"
 	} >"$target"
 	cat "$target"

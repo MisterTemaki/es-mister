@@ -173,19 +173,26 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 	{
 		cfg+='<?xml version="1.0"?>'$'\n'
 		cfg+='<systemList>'$'\n'
-		while IFS=$'\t' read -r name full folder exts rbf setname method delay index; do
+		while IFS=$'\t' read -r name full folder exts rbf setname method delay index reset platform theme; do
 			case "$name" in '' | '#'*) continue ;; esac
 			path=""
 			if [ "${folder:0:1}" = "@" ]; then
 				path=/media/fat/${folder:1}
 			else
-				for root in $GAMES_ROOTS; do
-					if [ -d "$root/games/$folder" ]; then
-						path=$root/games/$folder
-						break
-					fi
+				# the first of the folders ("|" apart) that exists, in their order, on the first card or drive
+				# that has it
+				rest=$folder
+				while [ -z "$path" ] && [ -n "$rest" ]; do
+					one=${rest%%|*}
+					if [ "$one" = "$rest" ]; then rest=""; else rest=${rest#*|}; fi
+					for root in $GAMES_ROOTS; do
+						if [ -d "$root/games/$one" ]; then
+							path=$root/games/$one
+							break
+						fi
+					done
 				done
-				[ -n "$path" ] || path=/media/fat/games/$folder
+				[ -n "$path" ] || path=/media/fat/games/${folder%%|*}
 			fi
 			SYSTEM_PATHS+=("$path")
 			cfg+="	<system>"$'\n'
@@ -197,16 +204,11 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 			cfg+="		<extension>$exts ${exts^^}</extension>"$'\n'
 			cfg+="		<command>bash $ES/mister-launch.sh %SYSTEM% %ROM%</command>"$'\n'
 			# the platform as ES's PlatformIds knows it (its scrapers and the scraper's "systems included" go by
-			# it): the same as the name but for these four, which ES knows by other names
-			case $name in
-			segacd) platform=megacd ;;
-			lynx) platform=atarilynx ;;
-			wswan) platform=wonderswan ;;
-			wswanc) platform=wonderswancolor ;;
-			*) platform=$name ;;
-			esac
+			# it) and the theme's name for the system (its art): systems.tsv's, else the system's own name
+			case $platform in '' | -) platform=$name ;; esac
+			case $theme in '' | -) theme=$name ;; esac
 			cfg+="		<platform>$platform</platform>"$'\n'
-			cfg+="		<theme>$name</theme>"$'\n'
+			cfg+="		<theme>$theme</theme>"$'\n'
 			cfg+="	</system>"$'\n'
 		done <"$ES/systems.tsv"
 		cfg+='</systemList>'$'\n'
