@@ -36,6 +36,13 @@
 #include "resources/TextureData.h"
 #include "views/gamelist/GameNameFormatter.h"
 #include "watchers/WatchersManager.h"
+#ifdef MISTER_PERF
+#include "utils/Perf.h"
+// a launch's steps in the measurement build's lines (M): where ES's time goes before and after a game
+#define LAUNCH_STEP(name) Perf::mark(name)
+#else
+#define LAUNCH_STEP(name) do { } while (0)
+#endif
 
 using namespace Utils::Platform;
 
@@ -737,21 +744,27 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 	if (command.empty())
 		return false;
 
+	LAUNCH_STEP("launch: begin");
 	AudioManager::getInstance()->deinit();
+	LAUNCH_STEP("launch: sound off");
 	VolumeControl::getInstance()->deinit();
+	LAUNCH_STEP("launch: audio off");
 
 	bool hideWindow = Settings::getInstance()->getBool("HideWindow");
 	window->deinit(hideWindow);
+	LAUNCH_STEP("launch: window off");
 #ifdef MISTER
 	// the MiSTer shows the game: ES lets go of the screen (and of the console, which it holds in graphics
 	// mode: no console switch could happen until it did, and ES could not be shown again after the game)
 	Renderer::releaseScreen();
+	LAUNCH_STEP("launch: screen released");
 #endif
 	
 	const std::string rom = Utils::FileSystem::getEscapedPath(getPath());
 	const std::string basename = Utils::FileSystem::getStem(getPath());
 
 	Scripting::fireEvent("game-start", rom, basename, getName());
+	LAUNCH_STEP("launch: game-start event");
 
 	time_t tstart = time(NULL);
 
@@ -767,7 +780,9 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 	ProcessStartInfo process(command);
 	process.window = hideWindow ? NULL : window;
 	
+	LAUNCH_STEP("launch: run");
 	int exitCode = process.run();
+	LAUNCH_STEP("launch: game over");
 	
 	// Resume watchers when returning to ES
 	WatchersManager::resume();
@@ -791,9 +806,11 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 		Utils::FileSystem::removeFile(p2kConv);
 
 	Scripting::fireEvent("game-end");
+	LAUNCH_STEP("launch: game-end event");
 
 #ifdef MISTER
 	Renderer::reclaimScreen();
+	LAUNCH_STEP("launch: screen back");
 #endif
 	if (!hideWindow && Settings::getInstance()->getBool("HideWindowFullReinit"))
 	{
@@ -804,9 +821,11 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 	}
 	else
 		window->init(hideWindow);
+	LAUNCH_STEP("launch: window on");
 	
 	VolumeControl::getInstance()->init();
 	AudioManager::getInstance()->init();
+	LAUNCH_STEP("launch: audio on");
 
 	window->normalizeNextUpdate();
 
@@ -830,6 +849,7 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 		saveToGamelistRecovery(gameToUpdate);
 	}
 
+	LAUNCH_STEP("launch: metadata saved");
 	window->reactivateGui();
 
 	if (system != nullptr && system->getTheme() != nullptr)
@@ -840,6 +860,7 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 	if (exitCode >= 200 && exitCode <= 300)
 		window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURRED") + ":\r\n" + getMessageFromExitCode(exitCode), _("OK"), nullptr, GuiMsgBoxIcon::ICON_ERROR));
 
+	LAUNCH_STEP("launch: done");
 	return exitCode == 0;
 }
 
