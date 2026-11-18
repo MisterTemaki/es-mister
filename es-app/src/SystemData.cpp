@@ -21,6 +21,9 @@
 #include "views/ViewController.h"
 #include "ThreadedHasher.h"
 #include <unordered_set>
+#include <future>
+#include <map>
+#include <mutex>
 #include <chrono>
 #include <algorithm>
 #include <functional>
@@ -321,6 +324,54 @@ int SystemData::getIndexDirectoryDepth()
 	return maxDepth > 0 ? maxDepth : 0;
 }
 
+#ifdef MISTER
+namespace
+{
+	// While ES's start reads the systems (loadConfig): a games folder that several systems share (games/NES for
+	// nes and fds, GAMEBOY for gb and gbc, SMS, TGFX16, ATARI7800, WonderSwan) listed once, by the first of them
+	// to get to it; the others take that list, waiting for it while it is made. Each listing of games/NES cost
+	// ~0.5 s of a thread on a cold start. Only a system's own folder (depth 0); dropped when all are read.
+	std::mutex sListingsLock;
+	std::map<std::string, std::shared_future<Utils::FileSystem::fileList>> sListings;
+	bool sShareListings = false;
+
+	Utils::FileSystem::fileList listSystemFolder(const std::string& path)
+	{
+		std::promise<Utils::FileSystem::fileList> made;
+		std::shared_future<Utils::FileSystem::fileList> listing;
+		bool mine = false;
+		{
+			std::lock_guard<std::mutex> lock(sListingsLock);
+			if (sShareListings)
+			{
+				auto it = sListings.find(path);
+				if (it != sListings.cend())
+					listing = it->second;
+				else
+				{
+					listing = made.get_future().share();
+					sListings[path] = listing;
+					mine = true;
+				}
+			}
+		}
+		if (!listing.valid())
+			return Utils::FileSystem::getDirectoryFiles(path);
+		if (mine)
+			made.set_value(Utils::FileSystem::getDirectoryFiles(path));
+		return listing.get();
+	}
+
+	void shareListings(bool on)
+	{
+		std::lock_guard<std::mutex> lock(sListingsLock);
+		sShareListings = on;
+		if (!on)
+			sListings.clear();
+	}
+}
+#endif
+
 void SystemData::populateFolder(FolderData* folder, std::unordered_map<std::string, FileData*>& fileMap, int depth, int maxDepth)
 {
 	const std::string& folderPath = folder->getPath();
@@ -350,7 +401,11 @@ void SystemData::populateFolder(FolderData* folder, std::unordered_map<std::stri
 	if (shv == "1") showHidden = true;
 	else if (shv == "0") showHidden = false;
 
+#ifdef MISTER
+	Utils::FileSystem::fileList dirContent = depth == 0 ? listSystemFolder(folderPath) : Utils::FileSystem::getDirectoryFiles(folderPath);
+#else
 	Utils::FileSystem::fileList dirContent = Utils::FileSystem::getDirectoryFiles(folderPath);
+#endif
 	for (auto fileInfo : dirContent)
 	{
 		filePath = fileInfo.path;
@@ -1026,6 +1081,10 @@ bool SystemData::loadConfig(Window* window)
 	int processedSystem = 0;
 
 #ifdef MISTER
+	// a folder several systems share read once while they are read (listSystemFolder)
+	if (pThreadPool != NULL)
+		shareListings(true);
+
 	// The systems outside a games folder (the SD card's _Arcade, with its subfolders) take by far the longest
 	// to read on a cold start (~2 s): queued first, they are read while the others are, instead of alone at
 	// the end with the other threads done. The systems keep their order: each is stored at its own index.
@@ -1098,6 +1157,10 @@ bool SystemData::loadConfig(Window* window)
 		}
 		else
 			pThreadPool->wait();
+
+#ifdef MISTER
+		shareListings(false);
+#endif
 
 		for (int i = 0; i < systemCount; i++)
 		{
