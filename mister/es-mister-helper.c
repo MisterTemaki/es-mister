@@ -14,6 +14,7 @@
 //                                          when the MiSTer's scaler fills the screen with it (a whole number
 //                                          of times both ways); the size is printed
 //   es-mister-helper console SIZE PRESSES  at most PRESSES presses of F9 (default 30, about 10 s)
+//   es-mister-helper cmd TEXT               TEXT (a line) to Main_MiSTer's command FIFO, 0 when taken (see send_cmd)
 //   es-mister-helper key NAME               a key pressed and let go (F9, F12, ESC, ENTER)
 //   es-mister-helper core                   the core loaded now (/tmp/CORENAME)
 //   es-mister-helper text                   the console back in text mode, after ES ended (see text_mode)
@@ -428,6 +429,43 @@ static int guard(int es)
 }
 
 // the Linux framebuffer's size as it is now; 0 when it cannot be read
+// A line to Main_MiSTer's command FIFO. Opened without waiting (O_NONBLOCK: no reader, ENXIO at once) and tried
+// again for up to 10 s: a Main_MiSTer starting again (the menu core loaded, after a game or when ES ends) makes the
+// FIFO anew, and a plain open made meanwhile waits on the old one for ever, with whatever waits for it (ES, while
+// it starts a game). 0 when written whole.
+static int send_cmd(const char* text)
+{
+	char line[1024];
+	const int length = snprintf(line, sizeof(line), "%s\n", text);
+	if (length <= 0 || length >= (int)sizeof(line))
+	{
+		fprintf(stderr, "es-mister-helper: command too long\n");
+		return 1;
+	}
+	for (int tries = 0; tries < 100; tries++)
+	{
+		const int fd = open("/dev/MiSTer_cmd", O_WRONLY | O_NONBLOCK | O_CLOEXEC);
+		if (fd >= 0)
+		{
+			// a line under PIPE_BUF goes into the FIFO whole or not at all
+			const ssize_t written = write(fd, line, (size_t)length);
+			close(fd);
+			if (written == length)
+				return 0;
+		}
+		else if (errno != ENXIO && errno != ENOENT && errno != EINTR)
+		{
+			perror("es-mister-helper: /dev/MiSTer_cmd");
+			return 1;
+		}
+		if (tries == 0)
+			fprintf(stderr, "es-mister-helper: Main_MiSTer is not reading its commands yet, \"%s\" tried again\n", text);
+		sleep_ms(100);
+	}
+	fprintf(stderr, "es-mister-helper: Main_MiSTer did not take \"%s\"\n", text);
+	return 1;
+}
+
 static int framebuffer_size(int* width, int* height)
 {
 	int fd = open("/dev/fb0", O_RDONLY | O_CLOEXEC);
@@ -530,14 +568,10 @@ static int console_on(const char* size, int presses)
 	}
 
 	// the framebuffer at that size, 32 bits a pixel
-	FILE* cmd = fopen("/dev/MiSTer_cmd", "w");
-	if (!cmd)
-	{
-		perror("es-mister-helper: /dev/MiSTer_cmd");
+	char command[64];
+	snprintf(command, sizeof(command), "fb_cmd1 8888 1 %d %d", width, height);
+	if (send_cmd(command) != 0)
 		return 1;
-	}
-	fprintf(cmd, "fb_cmd1 8888 1 %d %d\n", width, height);
-	fclose(cmd);
 	sleep_ms(300); // Main_MiSTer sets the framebuffer driver's mode
 	printf("%dx%d\n", width, height);
 	return 0;
@@ -647,6 +681,8 @@ int main(int argc, char** argv)
 		return console_on(argc >= 3 ? argv[2] : NULL, presses >= 1 && presses <= 100 ? presses : 30);
 	}
 
+	if (argc >= 3 && !strcmp(argv[1], "cmd"))
+		return send_cmd(argv[2]);
 	if (argc >= 3 && !strcmp(argv[1], "key"))
 	{
 		int code = key_code(argv[2]);
@@ -683,6 +719,6 @@ int main(int argc, char** argv)
 	if (argc >= 2 && (!strcmp(argv[1], "reboot") || !strcmp(argv[1], "halt")))
 		return power(!strcmp(argv[1], "halt"));
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | key NAME | core | text | guard PID | ungrab PID | reboot | halt\n", argv[0]);
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | cmd TEXT | key NAME | core | text | guard PID | ungrab PID | reboot | halt\n", argv[0]);
 	return 2;
 }

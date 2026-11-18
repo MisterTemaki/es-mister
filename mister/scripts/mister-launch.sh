@@ -53,7 +53,9 @@ fi
 # menu's button asks first) when it lets go of the screen; again here, in case it could not
 ES_PID=$(pidof emulationstation)
 [ -n "$ES_PID" ] && "$ES/es-mister-helper" ungrab "$ES_PID"
-echo "load_core $target" >/dev/MiSTer_cmd
+# (through the helper: a Main_MiSTer starting again makes its command FIFO anew, and an echo opened meanwhile
+# would wait on the old one for ever, ES with it)
+"$ES/es-mister-helper" cmd "load_core $target"
 
 # the core loaded now, in $core, read by bash itself (no cat), and a wait of SECONDS without a sleep process
 # (read's timeout on a pipe nothing writes to; sleep if that read ends any other way): both cost nothing,
