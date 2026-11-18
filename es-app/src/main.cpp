@@ -763,6 +763,15 @@ int main(int argc, char* argv[])
 		ViewController::get()->preload();
 	}
 
+#ifdef MISTER
+	// started by es-mister.sh before the screen was ready (ES_SOFT_OUTPUT_WAIT), ES has loaded meanwhile: the
+	// controllers are opened once the screen is ES's
+	{
+		StartupTrace::Scope trace("wait for the screen");
+		Renderer::waitForScreen();
+	}
+#endif
+
 	// Initialize input
 	{
 		StartupTrace::Scope trace("input init");

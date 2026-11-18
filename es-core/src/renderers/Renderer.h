@@ -176,6 +176,8 @@ namespace Renderer
 	// all console switches) let go of, then taken again; ES, SDL and the input stay as they are
 	void        releaseScreen   ();
 	void        reclaimScreen   ();
+	// ES started before the screen was ready (ES_SOFT_OUTPUT_WAIT): back once it is open
+	void        waitForScreen   ();
 #endif
 	void        pushClipRect    (const Vector2i& _pos, const Vector2i& _size);
 	void		pushClipRect	(int x, int y, int w, int h);

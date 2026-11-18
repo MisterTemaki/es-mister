@@ -26,6 +26,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#include <unistd.h>
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
 #include <arm_neon.h>
 #endif
@@ -201,6 +202,12 @@ namespace Renderer
 			std::unique_ptr<Output> output;
 			bool open = false;
 			int width = 0, height = 0;
+			// ES_SOFT_OUTPUT_WAIT (the MiSTer): ES started before the screen is ready (es-mister.sh asks Main_MiSTer
+			// for the framebuffer meanwhile, then writes this file): drawn at ES_SOFT_DRAW_SIZE, nothing shown, the
+			// output opened at the first frame after the file is there (attachOutput)
+			bool pending = false;
+			bool pendingError = false;
+			std::string waitPath;
 
 			Raster raster;
 			Bands bands;
@@ -300,10 +307,29 @@ namespace Renderer
 		bool openOutput()
 		{
 			SoftState& s = S();
-			if (s.open)
+			if (s.open || s.pending)
 				return true;
 			if (!s.output)
 				s.output = createOutput();
+
+#ifdef MISTER
+			// the screen not ready yet: ES goes on (loads its systems) at the size it draws at, and opens the
+			// framebuffer, the console and the controllers' hold only once es-mister.sh says Main_MiSTer shows it
+			const char* wait = getenv("ES_SOFT_OUTPUT_WAIT");
+			const char* drawSize = getenv("ES_SOFT_DRAW_SIZE");
+			int drawWidth = 0, drawHeight = 0;
+			if (wait != nullptr && *wait != 0 && access(wait, F_OK) != 0 && drawSize != nullptr &&
+				sscanf(drawSize, "%dx%d", &drawWidth, &drawHeight) == 2 && drawWidth >= 16 && drawHeight >= 16 && drawWidth <= 7680 && drawHeight <= 4320)
+			{
+				s.waitPath = wait;
+				s.width = drawWidth;
+				s.height = drawHeight;
+				s.pending = true;
+				LOG(LogInfo) << "SoftRenderer: the screen opened once " << s.waitPath << " is there";
+				StartupTrace::mark("screen", "waiting for " + s.waitPath);
+				return true;
+			}
+#endif
 
 			std::string error;
 			int width = 0, height = 0;
@@ -323,6 +349,36 @@ namespace Renderer
 			LOG(LogInfo) << "SoftRenderer: output " << s.output->describe();
 			return true;
 		}
+
+#ifdef MISTER
+		// ES_SOFT_OUTPUT_WAIT's file there: the screen opened (the next frame drawn whole); true once it is open
+		bool attachOutput()
+		{
+			SoftState& s = S();
+			if (!s.pending)
+				return true;
+			if (access(s.waitPath.c_str(), F_OK) != 0)
+				return false;
+			std::string error;
+			int width = 0, height = 0;
+			if (!s.output->open(width, height, error))
+			{
+				if (!s.pendingError)
+					LOG(LogError) << "SoftRenderer: the screen: " << error << "; tried again at each frame";
+				s.pendingError = true;
+				return false;
+			}
+			if (width != s.width || height != s.height)
+				LOG(LogWarning) << "SoftRenderer: the screen takes " << width << "x" << height << ", ES draws at " << s.width << "x" << s.height;
+			s.pending = false;
+			s.open = true;
+			s.forceRedraw = true;
+			s.lastValid = false;
+			LOG(LogInfo) << "SoftRenderer: output " << s.output->describe();
+			StartupTrace::mark("screen", "open");
+			return true;
+		}
+#endif
 
 		void record(const Vertex* vertices, unsigned int count, Topology topology, Blend::Factor src, Blend::Factor dst, const std::shared_ptr<Soft::Texture>& texture, bool stencil = false)
 		{
@@ -1653,7 +1709,12 @@ namespace Renderer
 	void SoftRenderer::swapBuffers()
 	{
 		SoftState& s = S();
-		StartupTrace::frameShown();
+#ifdef MISTER
+		if (s.pending)
+			attachOutput();
+#endif
+		if (s.open)
+			StartupTrace::frameShown();
 
 		// ES's time on this frame (before waiting for the bands below)
 		const double esElapsed = s.frameStarted ? msSince(s.frameStart) : 0;
@@ -1797,6 +1858,25 @@ namespace Renderer
 	}
 
 #ifdef MISTER
+	void waitForScreen()
+	{
+		SoftState& s = S();
+		if (!s.pending)
+			return;
+		// as long as es-mister.sh, which started ES, is there (it ends ES when the screen cannot be had)
+		const pid_t parent = getppid();
+		while (!attachOutput())
+		{
+			if (getppid() != parent)
+			{
+				LOG(LogError) << "SoftRenderer: the script that started ES ended before the screen was ready: ES ends";
+				Log::flush();
+				_exit(1);
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		}
+	}
+
 	void releaseScreen()
 	{
 		SoftState& s = S();

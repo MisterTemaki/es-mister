@@ -175,45 +175,7 @@ for i in $(seq 30); do
 	sleep 1
 done
 
-# the framebuffer ES draws in: at SIZE, with auto at the size Main_MiSTer gives it for the menu, with fill
-# at the screen's (ES enlarges its frames to it).
-# Started from the Scripts menu, Main_MiSTer is still closing the script's screen and does not take F9
-# yet: a moment first, then short tries (8 presses, about 4 s each) until it does, for up to ~30 s.
-echo "the menu core is loaded (uptime $(uptime) s)"
-sleep 2
-echo "asking for the framebuffer (uptime $(uptime) s)"
-framebuffer_on() {
-	DRAWN=""
-	for attempt in 1 2 3 4 5 6 7; do
-		DRAWN=$("$ES/es-mister-helper" console "$SCREEN" 8) && return 0
-		DRAWN=""
-		echo "the framebuffer is not on yet (try $attempt)"
-		sleep 1
-	done
-	return 1
-}
-if ! framebuffer_on; then
-	# Main_MiSTer did not take F9 (seen with its framebuffer left on without ES): the menu core loaded again,
-	# so Main_MiSTer starts afresh (as after any game), and the same tries once more
-	echo "the menu core loaded again, then the same tries"
-	"$ES/es-mister-helper" cmd "load_core /media/fat/menu.rbf"
-	sleep 3
-	for i in $(seq 30); do
-		[ "$(cat /tmp/CORENAME 2>/dev/null)" = "MENU" ] && break
-		sleep 1
-	done
-	sleep 2
-	framebuffer_on
-fi
-if [ -z "$DRAWN" ]; then
-	echo "no Linux framebuffer: ES does not start"
-	rm -f /tmp/es-mister.pid
-	exit 1
-fi
-
-# its size, to show it again at it (show, above)
-echo "$DRAWN" >"$LOGS/es-mister.size"
-
+# ES's settings, for an ES started now or once the framebuffer is on
 cd "$ES"
 export HOME=$HOME_DIR
 # the framebuffer kept at ES's size whenever ES's console is shown (F9 after F12 or after a script shows
@@ -256,16 +218,84 @@ fi
 [ "$PICTURE_CACHE" = 1 ] && export ES_PICTURE_CACHE=${ES_PICTURE_CACHE:-$ES/cache/pictures}
 # keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
-echo "starting ES: framebuffer $DRAWN (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
+
 # RESTART SYSTEM and SHUTDOWN OPERATING SYSTEM in ES's menu leave these (ES's processQuitMode) for
 # below
 rm -f /tmp/reboot.please /tmp/shutdown.please
+# With FILL=1 and SIZE as WIDTHxHEIGHT the size ES draws at is known before the framebuffer is on: ES starts
+# now, and loads its systems while the framebuffer is asked for below (the moment and the F9 presses, ~4 s);
+# it opens the framebuffer, the console and the controllers only once SCREEN_READY is there (written below,
+# when Main_MiSTer shows the framebuffer: ES_SOFT_OUTPUT_WAIT). Otherwise it starts then, as before.
+SCREEN_READY=/tmp/es-mister.screen
+rm -f "$SCREEN_READY"
+ES_PID=""
+case "$SCREEN" in
+fill:*x*)
+	export ES_SOFT_OUTPUT_WAIT=$SCREEN_READY
+	echo "starting ES: it loads while the framebuffer is asked for (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
+	./emulationstation &
+	ES_PID=$!
+	;;
+esac
+
+# the framebuffer ES draws in: at SIZE, with auto at the size Main_MiSTer gives it for the menu, with fill
+# at the screen's (ES enlarges its frames to it).
+# Started from the Scripts menu, Main_MiSTer is still closing the script's screen and does not take F9
+# yet: a moment first, then short tries (8 presses, about 4 s each) until it does, for up to ~30 s.
+echo "the menu core is loaded (uptime $(uptime) s)"
+sleep 2
+echo "asking for the framebuffer (uptime $(uptime) s)"
+framebuffer_on() {
+	DRAWN=""
+	for attempt in 1 2 3 4 5 6 7; do
+		DRAWN=$("$ES/es-mister-helper" console "$SCREEN" 8) && return 0
+		DRAWN=""
+		echo "the framebuffer is not on yet (try $attempt)"
+		sleep 1
+	done
+	return 1
+}
+if ! framebuffer_on; then
+	# Main_MiSTer did not take F9 (seen with its framebuffer left on without ES): the menu core loaded again,
+	# so Main_MiSTer starts afresh (as after any game), and the same tries once more
+	echo "the menu core loaded again, then the same tries"
+	"$ES/es-mister-helper" cmd "load_core /media/fat/menu.rbf"
+	sleep 3
+	for i in $(seq 30); do
+		[ "$(cat /tmp/CORENAME 2>/dev/null)" = "MENU" ] && break
+		sleep 1
+	done
+	sleep 2
+	framebuffer_on
+fi
+if [ -z "$DRAWN" ]; then
+	echo "no Linux framebuffer: ES does not start"
+	if [ -n "$ES_PID" ]; then
+		kill "$ES_PID" 2>/dev/null
+		wait "$ES_PID"
+	fi
+	rm -f /tmp/es-mister.pid "$SCREEN_READY"
+	exit 1
+fi
+
+# its size, to show it again at it (show, above)
+echo "$DRAWN" >"$LOGS/es-mister.size"
+
 # a console switch ES does not let go of within a second (Main_MiSTer running a script after F12 waited
 # for it for ever, the menu frozen) is let go of by the guard (es-mister-helper guard)
 "$ES/es-mister-helper" guard $$ &
 GUARD=$!
-./emulationstation
+if [ -n "$ES_PID" ]; then
+	echo "$DRAWN" >"$SCREEN_READY"
+	echo "the framebuffer is on: ES shown at $DRAWN (uptime $(uptime) s)"
+else
+	echo "starting ES: framebuffer $DRAWN (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
+	./emulationstation &
+	ES_PID=$!
+fi
+wait "$ES_PID"
 echo "ES closed ($?)"
+rm -f "$SCREEN_READY"
 kill $GUARD 2>/dev/null
 # ES ended by a signal (killall, a crash, out of memory: 128 + the signal above) leaves the console in
 # graphics mode, where the kernel ignores console switches: no F9, and no script shown from the MiSTer
