@@ -83,6 +83,76 @@ for file in es_settings.cfg es_input.cfg; do
 	[ -f "$CONFIG/$file" ] || cp "$ES/defaults/$file" "$CONFIG/$file"
 done
 
+# ES's settings (its environment), and the files a quit of ES's menu leaves for below cleared
+es_settings() {
+	cd "$ES"
+	export HOME=$HOME_DIR
+	# the framebuffer kept at ES's size whenever ES's console is shown (F9 after F12 or after a script shows
+	# it at the console's size)
+	export ES_SOFT_MISTER_MODE=1
+	# ES drawn at SIZE whatever the framebuffer's size, its frames enlarged to it (1280x720 on a 1080p screen:
+	# 1.5 times, filling it, where the MiSTer's scaler enlarges only by whole times)
+	case "$SCREEN" in fill:*) export ES_SOFT_DRAW_SIZE=$SIZE ;; esac
+	# the MiSTer menu's button on a controller (the DualSense's PS) asks first while ES is shown, and on yes
+	# ES closes (the MiSTer menu loaded below)
+	export ES_MISTER_MENU_ASK=$MENU_ASK
+	export SDL_AUDIODRIVER=alsa
+	export ES_SOFT_FPS=$FPS
+	# the drawing times, a line every 600 frames (the previous start's kept beside it: ES adds to the file);
+	# ES_SOFT_STATS set before (a measurement: 0 for the lines a script asks for only) stays
+	export ES_SOFT_STATS=${ES_SOFT_STATS:-600}
+	[ -f "$LOGS/es-mister-stats.txt" ] && mv -f "$LOGS/es-mister-stats.txt" "$LOGS/es-mister-stats.prev.txt"
+	export ES_SOFT_STATS_FILE=$LOGS/es-mister-stats.txt
+	# how long each step of ES's start takes (the previous start's is kept beside it)
+	[ -f "$LOGS/es-startup.log" ] && mv -f "$LOGS/es-startup.log" "$LOGS/es-startup.prev.log"
+	export ES_STARTUP_TRACE=${ES_STARTUP_TRACE:-$LOGS/es-startup.log}
+	[ "$BENCH" = 1 ] && export ES_SOFT_BENCH=1
+	# where ES spends the processor (logs/es-profile.txt), for the port's tuning
+	[ "$PROFILE" = 1 ] && export ES_PROFILE=$LOGS/es-profile.txt
+	export ES_ARCADE_SKIP="$ARCADE_SKIP"
+	# rows drawn at a time through all the layers (they stay in the processor's cache); 0: a band at once
+	export ES_SOFT_STRIP="$STRIP"
+	# memory asked for ahead of the drawing and the copy to the screen, in bytes (0: not)
+	export ES_SOFT_PLD="$PLD"
+	# the first frames slow to draw, with each draw's time (logs/es-slow-frame-N.txt), to see what to make faster
+	if [ "$SLOW_DUMPS" -gt 0 ] 2>/dev/null; then
+		rm -f "$LOGS"/es-slow-frame-*.txt
+		rm -f "$LOGS"/es-slow-frame-*.escf
+		export ES_SOFT_SLOW_DUMP=$LOGS/es-slow-frame- ES_SOFT_SLOW_DUMPS=$SLOW_DUMPS
+		# and the frames themselves, to draw again with es-mister-replay
+		[ "$CAPTURE" = 1 ] && export ES_SOFT_SLOW_CAPTURE=1
+	fi
+	# pictures kept decoded and at their size, without loss (cache/pictures; ~70 KB a cover), so that a cover
+	# seen once comes back ~20 times faster; PICTURE_CACHE=0: none
+	[ "$PICTURE_CACHE" = 1 ] && export ES_PICTURE_CACHE=${ES_PICTURE_CACHE:-$ES/cache/pictures}
+	# keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
+	export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
+	# RESTART SYSTEM and SHUTDOWN OPERATING SYSTEM in ES's menu leave these (ES's processQuitMode) for
+	# below
+	rm -f /tmp/reboot.please /tmp/shutdown.please
+}
+
+# With FILL=1 and SIZE as WIDTHxHEIGHT the size ES draws at is known before the framebuffer is on: ES starts
+# now, and loads its systems while es_systems.cfg is made and the framebuffer is asked for below (the
+# moment and the F9 presses, ~4 s). It reads es_systems.cfg once SYSTEMS_READY is there (ES_SYSTEMS_WAIT),
+# and opens the framebuffer, the console and the controllers only once SCREEN_READY is there (written when
+# Main_MiSTer shows the framebuffer: ES_SOFT_OUTPUT_WAIT). Otherwise it starts then, as before.
+SCREEN_READY=/tmp/es-mister.screen
+SYSTEMS_READY=/tmp/es-mister.systems
+rm -f "$SCREEN_READY" "$SYSTEMS_READY"
+ES_PID=""
+EARLY=""
+case "$SCREEN" in
+fill:*x*)
+	EARLY=1
+	es_settings
+	export ES_SOFT_OUTPUT_WAIT=$SCREEN_READY ES_SYSTEMS_WAIT=$SYSTEMS_READY
+	echo "starting ES: it loads while the framebuffer is asked for (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
+	./emulationstation &
+	ES_PID=$!
+	;;
+esac
+
 # the systems, from systems.tsv, each with the first games folder of its that exists (an
 # es_systems.cfg of your own: create es_systems.cfg.keep beside it and it is left as it is)
 # $1 with XML's special characters escaped, in REPLY: bash's own expansions, no sed or subshell (a fork and
@@ -137,6 +207,7 @@ if [ ! -f "$CONFIG/es_systems.cfg.keep" ]; then
 		printf '%s' "$cfg" >"$CONFIG/es_systems.cfg"
 fi
 echo "es_systems.cfg ready (uptime $(uptime) s)"
+: >"$SYSTEMS_READY"
 
 # What ES reads first, read now in the background while this script waits for Main_MiSTer below (the moment
 # and the F9 presses, ~3 s): the games folders (as ES walks them, less the folders it leaves out), their
@@ -170,10 +241,7 @@ prefetch() {
 # Not when ES starts before the framebuffer is on (FILL=1, SIZE as WIDTHxHEIGHT, below): ES reads all this
 # itself meanwhile, and both reading at once on the SD card made each slower (a cold start 8.6 s without,
 # 10.8 s with)
-case "$SCREEN" in
-fill:*x*) ;;
-*) [ "$PREFETCH" = 1 ] && [ ${#SYSTEM_PATHS[@]} -gt 0 ] && prefetch </dev/null >/dev/null 2>&1 ;;
-esac
+[ -z "$EARLY" ] && [ "$PREFETCH" = 1 ] && [ ${#SYSTEM_PATHS[@]} -gt 0 ] && prefetch </dev/null >/dev/null 2>&1
 
 # the menu core is loaded (ES starts from the Scripts menu, or after a game)
 for i in $(seq 30); do
@@ -181,68 +249,9 @@ for i in $(seq 30); do
 	sleep 1
 done
 
-# ES's settings, for an ES started now or once the framebuffer is on
-cd "$ES"
-export HOME=$HOME_DIR
-# the framebuffer kept at ES's size whenever ES's console is shown (F9 after F12 or after a script shows
-# it at the console's size)
-export ES_SOFT_MISTER_MODE=1
-# ES drawn at SIZE whatever the framebuffer's size, its frames enlarged to it (1280x720 on a 1080p screen:
-# 1.5 times, filling it, where the MiSTer's scaler enlarges only by whole times)
-case "$SCREEN" in fill:*) export ES_SOFT_DRAW_SIZE=$SIZE ;; esac
-# the MiSTer menu's button on a controller (the DualSense's PS) asks first while ES is shown, and on yes
-# ES closes (the MiSTer menu loaded below)
-export ES_MISTER_MENU_ASK=$MENU_ASK
-export SDL_AUDIODRIVER=alsa
-export ES_SOFT_FPS=$FPS
-# the drawing times, a line every 600 frames (the previous start's kept beside it: ES adds to the file);
-# ES_SOFT_STATS set before (a measurement: 0 for the lines a script asks for only) stays
-export ES_SOFT_STATS=${ES_SOFT_STATS:-600}
-[ -f "$LOGS/es-mister-stats.txt" ] && mv -f "$LOGS/es-mister-stats.txt" "$LOGS/es-mister-stats.prev.txt"
-export ES_SOFT_STATS_FILE=$LOGS/es-mister-stats.txt
-# how long each step of ES's start takes (the previous start's is kept beside it)
-[ -f "$LOGS/es-startup.log" ] && mv -f "$LOGS/es-startup.log" "$LOGS/es-startup.prev.log"
-export ES_STARTUP_TRACE=${ES_STARTUP_TRACE:-$LOGS/es-startup.log}
-[ "$BENCH" = 1 ] && export ES_SOFT_BENCH=1
-# where ES spends the processor (logs/es-profile.txt), for the port's tuning
-[ "$PROFILE" = 1 ] && export ES_PROFILE=$LOGS/es-profile.txt
-export ES_ARCADE_SKIP="$ARCADE_SKIP"
-# rows drawn at a time through all the layers (they stay in the processor's cache); 0: a band at once
-export ES_SOFT_STRIP="$STRIP"
-# memory asked for ahead of the drawing and the copy to the screen, in bytes (0: not)
-export ES_SOFT_PLD="$PLD"
-# the first frames slow to draw, with each draw's time (logs/es-slow-frame-N.txt), to see what to make faster
-if [ "$SLOW_DUMPS" -gt 0 ] 2>/dev/null; then
-	rm -f "$LOGS"/es-slow-frame-*.txt
-	rm -f "$LOGS"/es-slow-frame-*.escf
-	export ES_SOFT_SLOW_DUMP=$LOGS/es-slow-frame- ES_SOFT_SLOW_DUMPS=$SLOW_DUMPS
-	# and the frames themselves, to draw again with es-mister-replay
-	[ "$CAPTURE" = 1 ] && export ES_SOFT_SLOW_CAPTURE=1
-fi
-# pictures kept decoded and at their size, without loss (cache/pictures; ~70 KB a cover), so that a cover
-# seen once comes back ~20 times faster; PICTURE_CACHE=0: none
-[ "$PICTURE_CACHE" = 1 ] && export ES_PICTURE_CACHE=${ES_PICTURE_CACHE:-$ES/cache/pictures}
-# keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
-export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
+# ES's settings, for an ES started early (above) or now
+[ -n "$EARLY" ] || es_settings
 
-# RESTART SYSTEM and SHUTDOWN OPERATING SYSTEM in ES's menu leave these (ES's processQuitMode) for
-# below
-rm -f /tmp/reboot.please /tmp/shutdown.please
-# With FILL=1 and SIZE as WIDTHxHEIGHT the size ES draws at is known before the framebuffer is on: ES starts
-# now, and loads its systems while the framebuffer is asked for below (the moment and the F9 presses, ~4 s);
-# it opens the framebuffer, the console and the controllers only once SCREEN_READY is there (written below,
-# when Main_MiSTer shows the framebuffer: ES_SOFT_OUTPUT_WAIT). Otherwise it starts then, as before.
-SCREEN_READY=/tmp/es-mister.screen
-rm -f "$SCREEN_READY"
-ES_PID=""
-case "$SCREEN" in
-fill:*x*)
-	export ES_SOFT_OUTPUT_WAIT=$SCREEN_READY
-	echo "starting ES: it loads while the framebuffer is asked for (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
-	./emulationstation &
-	ES_PID=$!
-	;;
-esac
 
 # the framebuffer ES draws in: at SIZE, with auto at the size Main_MiSTer gives it for the menu, with fill
 # at the screen's (ES enlarges its frames to it).
@@ -280,7 +289,7 @@ if [ -z "$DRAWN" ]; then
 		kill "$ES_PID" 2>/dev/null
 		wait "$ES_PID"
 	fi
-	rm -f /tmp/es-mister.pid "$SCREEN_READY"
+	rm -f /tmp/es-mister.pid "$SCREEN_READY" "$SYSTEMS_READY"
 	exit 1
 fi
 
@@ -301,7 +310,7 @@ else
 fi
 wait "$ES_PID"
 echo "ES closed ($?)"
-rm -f "$SCREEN_READY"
+rm -f "$SCREEN_READY" "$SYSTEMS_READY"
 kill $GUARD 2>/dev/null
 # ES ended by a signal (killall, a crash, out of memory: 128 + the signal above) leaves the console in
 # graphics mode, where the kernel ignores console switches: no F9, and no script shown from the MiSTer

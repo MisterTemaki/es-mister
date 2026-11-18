@@ -21,6 +21,10 @@
 #include "views/ViewController.h"
 #include "ThreadedHasher.h"
 #include <unordered_set>
+#ifdef MISTER
+#include <unistd.h>
+#endif
+#include <thread>
 #include <future>
 #include <map>
 #include <mutex>
@@ -997,9 +1001,36 @@ void SystemData::loadAdditionnalConfig(pugi::xml_node& srcSystems)
 	}
 }
 
+#ifdef MISTER
+// es-mister.sh starts ES before it has written es_systems.cfg (ES_SYSTEMS_WAIT: the file it writes after it):
+// waited for here, where ES first reads it, as long as the script is there
+static void waitForSystemsFile()
+{
+	const char* wait = getenv("ES_SYSTEMS_WAIT");
+	if (wait == nullptr || *wait == 0 || access(wait, F_OK) == 0)
+		return;
+
+	StartupTrace::Scope trace("wait for es_systems.cfg");
+	const pid_t parent = getppid();
+	while (access(wait, F_OK) != 0)
+	{
+		if (getppid() != parent)
+		{
+			LOG(LogError) << "The script that started ES ended before es_systems.cfg was written: ES ends";
+			Log::flush();
+			_exit(1);
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+	}
+}
+#endif
+
 //creates systems from information located in a config file
 bool SystemData::loadConfig(Window* window)
 {
+#ifdef MISTER
+	waitForSystemsFile();
+#endif
 	deleteSystems();
 	ThemeData::setDefaultTheme(nullptr);
 	UIModeController::getInstance(); // Init UIModeController before loading systems
