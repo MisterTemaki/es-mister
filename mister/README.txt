@@ -19,7 +19,11 @@ Installing
 3. Games stay in the MiSTer's usual folders (games/NES, games/SNES,
    games/MegaDrive, games/GBA, games/PSX...; arcade in _Arcade; the Sharp
    X68000 as the MGL files in _Computer/_X68000 Games, each starting its game's
-   disks as the MiSTer menu does). Games inside .zip files are not listed yet.
+   disks as the MiSTer menu does). A system with two usual folders (games/GBC
+   or games/GAMEBOY, games/GameGear or games/SMS, games/Atari2600 or
+   games/ATARI7800) shows the first of them that exists. The systems and their
+   folders are listed in __ES_DIR__/systems.tsv. Games inside .zip files are
+   listed for the Virtual Boy (they usually come zipped), not yet elsewhere.
 
 Using it
 --------
@@ -148,7 +152,14 @@ Limits of this version
 ----------------------
 - No preview videos (the game's picture is shown instead).
 - ScreenScraper and TheGamesDB (with search) need keys at build time.
-- Games in .zip files, and several games folders for one system, not yet.
+- Games in .zip files (but the Virtual Boy's), and one system's games spread
+  over several folders, not yet.
+- Atari 5200: a 16 KB cart in .a52 or .bin fits two cart types, and the core
+  asks which in its OSD, which a game started from EmulationStation cannot
+  answer: the core waits at the Atari screen; load the cart from the OSD.
+- Amiga CD32: the disc is written into the CD32's configuration
+  (config/AmigaCD32.cfg) as Zaparoo does; start the CD32 once from the MiSTer
+  menu first, so that file exists.
 - No shader effects (blur etc.).
 
 Licences: EmulationStation (MIT, LICENSE-EmulationStation.md); Carbon theme by
