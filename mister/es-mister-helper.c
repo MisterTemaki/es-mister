@@ -520,6 +520,11 @@ static int console_on(const char* size, int presses)
 	if (kbd < 0)
 		return 1;
 
+	// the framebuffer driver's count of mode sets: Main_MiSTer's F9 sets the mode (and the count goes up)
+	// right after its switch to tty1
+	char count_before[32] = "", count_now[32] = "";
+	const int counted = read_line("/sys/module/MiSTer_fb/parameters/res_count", count_before, sizeof(count_before));
+
 	// a console Main_MiSTer does not use, so its switch to tty1 can be seen
 	char before[32] = "";
 	read_line("/sys/devices/virtual/tty/tty0/active", before, sizeof(before));
@@ -547,8 +552,19 @@ static int console_on(const char* size, int presses)
 		return 1;
 	}
 
-	// auto: the size Main_MiSTer gave the framebuffer for the menu, which follows the screen's
-	sleep_ms(200);
+	// auto: the size Main_MiSTer gave the framebuffer for the menu, which follows the screen's, once it has
+	// set it (the count moved; at most 0.4 s), 0.2 s where the driver has no count
+	if (counted)
+	{
+		for (int waited = 0; waited < 400; waited += 10)
+		{
+			if (read_line("/sys/module/MiSTer_fb/parameters/res_count", count_now, sizeof(count_now)) && strcmp(count_now, count_before) != 0)
+				break;
+			sleep_ms(10);
+		}
+	}
+	else
+		sleep_ms(200);
 	if (automatic)
 	{
 		if (framebuffer_size(&width, &height))
