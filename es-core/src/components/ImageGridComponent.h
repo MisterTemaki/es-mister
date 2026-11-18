@@ -452,6 +452,10 @@ private:
 	std::string mDefaultLogoBackgroundTexture;
 
 	std::vector<std::shared_ptr<GridTileComponent>> mVisibleTiles;
+#ifdef MISTER
+	// a cleared list's tiles, until the new list's tiles exist (see clear)
+	std::vector<std::shared_ptr<GridTileComponent>> mRetiredTiles;
+#endif
 
 	// TILES
 	bool mLastRowPartial;
@@ -1468,6 +1472,15 @@ void ImageGridComponent<T>::add(const std::string& name, const std::string& imag
 template<typename T>
 void ImageGridComponent<T>::clear()
 {	
+#ifdef MISTER
+	// the tiles go after the next update, when the list filled again has made its own: a picture is shared
+	// while a tile holds it, so the same games' tiles (the list filled again after each game, for its play
+	// count) find their pictures still there, instead of each read and decoded again (on the MiSTer, the
+	// tiles came back one by one over 1.5-2.5 s)
+	for (auto& entry : mEntries)
+		if (entry.data.tile != nullptr)
+			mRetiredTiles.push_back(entry.data.tile);
+#endif
 	IList<ImageGridData, T>::clear();
 	mNextSourceIndex = 0;
 	mEntriesReordered = false;
@@ -1608,6 +1621,13 @@ void ImageGridComponent<T>::update(int deltaTime)
 		ensureVisibleTileExist();
 		mEntriesDirty = false;
 	}
+
+#ifdef MISTER
+	// the new tiles have their pictures now: the old ones go, a few each frame
+	for (auto& tile : mRetiredTiles)
+		GuiComponent::releaseLater(std::move(tile));
+	mRetiredTiles.clear();
+#endif
 
 	for (auto tile : mVisibleTiles)
 		tile->update(deltaTime);
