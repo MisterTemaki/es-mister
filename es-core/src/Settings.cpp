@@ -246,7 +246,13 @@ void Settings::setDefaults()
 	}
 
 	mStringMap["TransitionStyle"] = "auto";
+#ifdef MISTER
+	// the MiSTer port: a game starts at once, without the zoom on its picture (0.75 s, and 0.6 s more back from
+	// the game, drawn in software); the other transitions stay in Main menu > UI settings
+	mStringMap["GameTransitionStyle"] = "instant";
+#else
 	mStringMap["GameTransitionStyle"] = "auto";
+#endif
 
 	mStringMap["ThemeSet"] = "";
 	mStringMap["ScreenSaverBehavior"] = "dim";
