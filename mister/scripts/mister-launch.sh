@@ -112,13 +112,19 @@ done
 
 if [ $started = 1 ]; then
 	echo "core $core started"
-	# the game runs until the menu core is loaded again (the OSD's Reset or Exit)
+	# back to ES from the controller too: Create + Options held for a second (a DualSense or DualShock 4,
+	# read by the helper) load the menu core
+	"$ES/es-mister-helper" exitkeys $$ &
+	keys=$!
+	# the game runs until the menu core is loaded again (the OSD's System > Reboot, or those keys)
 	corename
 	while [ "$core" != "MENU" ]; do
 		wait_s 0.1
 		corename
 	done
 	echo "back in the menu"
+	kill "$keys" 2>/dev/null
+	wait "$keys" 2>/dev/null
 	sleep 2 # Main_MiSTer starting again
 else
 	echo "the core did not start"

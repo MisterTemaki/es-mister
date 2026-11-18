@@ -21,6 +21,9 @@
 //   es-mister-helper guard PID              while PID lives: no console switch waits more than a second
 //                                          (see guard)
 //   es-mister-helper ungrab PID             PID's hold on the controllers let go of (see ungrab)
+//   es-mister-helper exitkeys PID           while PID (mister-launch.sh) waits for a game to end: Create and
+//                                          Options (Share and Options) of a DualSense or DualShock 4 held
+//                                          together for a second load the menu core (see exit_keys)
 //   es-mister-helper reboot                 the MiSTer restarted cold, as its menu's Reboot held (see power)
 //   es-mister-helper halt                   the MiSTer shut down, its HDMI output off (see power)
 
@@ -673,6 +676,167 @@ static int power(int off)
 	return 1;
 }
 
+// Back to ES from a game with the controller: Create and Options (a DualShock 4's Share and Options) held
+// together for a second load the menu core, as the OSD's System > Reboot does, and ES comes back. During a
+// game Main_MiSTer holds the controllers' input devices (EVIOCGRAB: their events go to it alone), so the
+// controller is read from its raw HID reports (hidraw), which that hold leaves alone; Sony's pads only,
+// whose reports the kernel's hid-playstation driver documents. Ends when PID ends or the menu core is
+// loaded; nothing is held, nothing is changed in the reports.
+enum { PAD_DUALSENSE = 1, PAD_DUALSHOCK4 = 2 };
+
+// a hidraw node's pad kind from its HID_ID (bus:vendor:product), 0 when not a Sony pad
+static int pad_kind(const char* node)
+{
+	char path[96], line[128];
+	snprintf(path, sizeof(path), "/sys/class/hidraw/%s/device/uevent", node);
+	FILE* f = fopen(path, "r");
+	if (!f)
+		return 0;
+	int kind = 0;
+	while (!kind && fgets(line, sizeof(line), f))
+	{
+		unsigned bus, vendor, product;
+		if (sscanf(line, "HID_ID=%x:%x:%x", &bus, &vendor, &product) != 3 || vendor != 0x054c)
+			continue;
+		if (product == 0x0ce6 || product == 0x0df2) // DualSense, DualSense Edge
+			kind = PAD_DUALSENSE;
+		else if (product == 0x05c4 || product == 0x09cc || product == 0x0ba0) // DualShock 4 v1, v2, its USB dongle
+			kind = PAD_DUALSHOCK4;
+	}
+	fclose(f);
+	return kind;
+}
+
+// the report's second buttons byte (L1 R1 L2 R2 Create/Share Options L3 R3), -1 when the report has none:
+// DualSense over Bluetooth 0x31 (78 bytes), over USB 0x01 (64); DualShock 4 over Bluetooth 0x11 (78), over
+// USB 0x01 (64); either over Bluetooth before the driver asks for the full reports, 0x01 (10)
+static int pad_buttons(int kind, const unsigned char* data, int size)
+{
+	if (size < 1)
+		return -1;
+	if (kind == PAD_DUALSENSE && data[0] == 0x31 && size >= 78)
+		return data[10];
+	if (kind == PAD_DUALSHOCK4 && data[0] == 0x11 && size >= 78)
+		return data[8];
+	if (data[0] == 0x01 && kind == PAD_DUALSENSE && size >= 64)
+		return data[9];
+	if (data[0] == 0x01 && size >= 10)
+		return data[6];
+	return -1;
+}
+
+#define EXIT_KEYS 0x30     // Create (Share) and Options in that byte
+#define EXIT_HOLD_MS 1000
+
+static long long now_ms(void)
+{
+	struct timespec t;
+	clock_gettime(CLOCK_MONOTONIC, &t);
+	return (long long)t.tv_sec * 1000 + t.tv_nsec / 1000000;
+}
+
+static int exit_keys(int launcher)
+{
+	struct
+	{
+		int fd, kind;
+		char node[32];
+		long long since; // when both keys were down, 0 while not
+	} pads[8];
+	int count = 0;
+	long long next_scan = 0;
+
+	for (;;)
+	{
+		if (kill(launcher, 0) != 0 && errno == ESRCH)
+			break;
+		char core[64] = "";
+		if (read_line("/tmp/CORENAME", core, sizeof(core)) && !strncmp(core, "MENU", 4))
+			break;
+
+		// controllers connected meanwhile (a Bluetooth pad turned on during the game), every 2 s
+		const long long now = now_ms();
+		if (now >= next_scan)
+		{
+			next_scan = now + 2000;
+			DIR* dir = opendir("/sys/class/hidraw");
+			struct dirent* entry;
+			while (dir && count < (int)(sizeof(pads) / sizeof(pads[0])) && (entry = readdir(dir)) != NULL)
+			{
+				if (strncmp(entry->d_name, "hidraw", 6) != 0 || strlen(entry->d_name) >= sizeof(pads[0].node))
+					continue;
+				int known = 0;
+				for (int i = 0; i < count; i++)
+					known |= !strcmp(pads[i].node, entry->d_name);
+				const int kind = known ? 0 : pad_kind(entry->d_name);
+				if (!kind)
+					continue;
+				char path[64];
+				snprintf(path, sizeof(path), "/dev/%s", entry->d_name);
+				const int fd = open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+				if (fd < 0)
+					continue;
+				pads[count].fd = fd;
+				pads[count].kind = kind;
+				pads[count].since = 0;
+				strcpy(pads[count].node, entry->d_name);
+				printf("es-mister-helper: %s, a %s: Create + Options held for a second go back to ES\n", entry->d_name,
+					kind == PAD_DUALSENSE ? "DualSense" : "DualShock 4");
+				fflush(stdout);
+				count++;
+			}
+			if (dir)
+				closedir(dir);
+		}
+
+		// a look every 50 ms at what came meanwhile (a DualSense sends some 250 reports a second: woken for each,
+		// this costs 2.5% of a core, 0.5% so)
+		sleep_ms(50);
+		for (int i = 0; i < count; i++)
+		{
+			unsigned char report[128];
+			ssize_t size;
+			int buttons = -1;
+			while ((size = read(pads[i].fd, report, sizeof(report))) > 0)
+			{
+				const int b = pad_buttons(pads[i].kind, report, (int)size);
+				if (b >= 0)
+					buttons = b;
+			}
+			if (size < 0 && errno != EAGAIN && errno != EINTR)
+			{
+				// gone (turned off): forgotten, found again by the next scan if it comes back
+				close(pads[i].fd);
+				pads[i] = pads[--count];
+				i--;
+				continue;
+			}
+			if (buttons < 0)
+				continue;
+			if ((buttons & EXIT_KEYS) != EXIT_KEYS)
+				pads[i].since = 0;
+			else if (!pads[i].since)
+				pads[i].since = now_ms();
+		}
+
+		for (int i = 0; i < count; i++)
+		{
+			if (pads[i].since && now_ms() - pads[i].since >= EXIT_HOLD_MS)
+			{
+				printf("es-mister-helper: Create + Options held on %s: the menu core, back to ES\n", pads[i].node);
+				fflush(stdout);
+				for (int j = 0; j < count; j++)
+					close(pads[j].fd);
+				return send_cmd("load_core /media/fat/menu.rbf");
+			}
+		}
+	}
+
+	for (int i = 0; i < count; i++)
+		close(pads[i].fd);
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 	if (argc >= 2 && !strcmp(argv[1], "console"))
@@ -716,9 +880,12 @@ int main(int argc, char** argv)
 	if (argc >= 3 && !strcmp(argv[1], "ungrab"))
 		return ungrab(atoi(argv[2])) >= 0 ? 0 : 1;
 
+	if (argc >= 3 && !strcmp(argv[1], "exitkeys"))
+		return exit_keys(atoi(argv[2]));
+
 	if (argc >= 2 && (!strcmp(argv[1], "reboot") || !strcmp(argv[1], "halt")))
 		return power(!strcmp(argv[1], "halt"));
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | cmd TEXT | key NAME | core | text | guard PID | ungrab PID | reboot | halt\n", argv[0]);
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | cmd TEXT | key NAME | core | text | guard PID | ungrab PID | exitkeys PID | reboot | halt\n", argv[0]);
 	return 2;
 }

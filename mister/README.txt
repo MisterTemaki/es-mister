@@ -39,10 +39,11 @@ Using it
   changes the screen every frame and so forces the whole screen to be drawn
   again each time: it shows the worst case, not normal use.
 - To play: choose the game. Its MiSTer core loads with it.
-- To come back from a game: open the OSD (F12 or the controller's menu button)
-  and go back to the MiSTer menu (System > Reboot, a short press, not held).
-  The MiSTer menu loads again and EmulationStation comes back by itself within
-  a few seconds.
+- To come back from a game: hold Create and Options together for a second
+  (Share and Options on a DualShock 4). Or open the OSD (F12 or the
+  controller's menu button) and go back to the MiSTer menu (System > Reboot,
+  a short press, not held). The MiSTer menu loads again and EmulationStation
+  comes back by itself within a few seconds.
 - To leave EmulationStation: Menu > Quit > Quit EmulationStation (back to the
   MiSTer menu).
 - Menu > Quit > Restart system: the MiSTer restarts cold, as its menu's
