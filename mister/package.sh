@@ -115,7 +115,8 @@ PICTURE_CACHE=1
 
 # 1: what EmulationStation reads first (games folders, gamelists, theme, itself) read in the background while
 # its start waits for the MiSTer menu, so that a start after switching the MiSTer on finds them in memory;
-# only read, nothing written; 0: not
+# only read, nothing written; 0: not. Only with SIZE=auto or FILL=0: otherwise EmulationStation starts at once
+# and reads them itself meanwhile
 PREFETCH=1
 
 # Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of

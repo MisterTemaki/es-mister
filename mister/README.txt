@@ -100,7 +100,9 @@ Settings
   PREFETCH=1     1 = the games folders, gamelists, theme and EmulationStation
                  itself read in the background while the start waits for the
                  MiSTer menu (a faster first start after switching the MiSTer
-                 on); only read, nothing written; 0 = not
+                 on); only read, nothing written; 0 = not. Only with SIZE=auto
+                 or FILL=0: otherwise EmulationStation starts at once and reads
+                 them itself meanwhile
 
 Measuring the drawing on your MiSTer
 ------------------------------------

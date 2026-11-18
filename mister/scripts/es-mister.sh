@@ -167,7 +167,13 @@ prefetch() {
 		} &
 	done
 }
-[ "$PREFETCH" = 1 ] && [ ${#SYSTEM_PATHS[@]} -gt 0 ] && prefetch </dev/null >/dev/null 2>&1
+# Not when ES starts before the framebuffer is on (FILL=1, SIZE as WIDTHxHEIGHT, below): ES reads all this
+# itself meanwhile, and both reading at once on the SD card made each slower (a cold start 8.6 s without,
+# 10.8 s with)
+case "$SCREEN" in
+fill:*x*) ;;
+*) [ "$PREFETCH" = 1 ] && [ ${#SYSTEM_PATHS[@]} -gt 0 ] && prefetch </dev/null >/dev/null 2>&1 ;;
+esac
 
 # the menu core is loaded (ES starts from the Scripts menu, or after a game)
 for i in $(seq 30); do
