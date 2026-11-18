@@ -751,7 +751,13 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 	LAUNCH_STEP("launch: audio off");
 
 	bool hideWindow = Settings::getInstance()->getBool("HideWindow");
+#ifdef MISTER
+	// the game runs on the FPGA, in memory of its own: ES keeps its pictures and fonts, and shows itself
+	// again after the game without reading them all again
+	window->deinit(hideWindow, true);
+#else
 	window->deinit(hideWindow);
+#endif
 	LAUNCH_STEP("launch: window off");
 #ifdef MISTER
 	// the MiSTer shows the game: ES lets go of the screen (and of the console, which it holds in graphics

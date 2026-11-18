@@ -62,7 +62,8 @@ public:
 	void render();
 
 	bool init(bool initRenderer = true, bool initInputManager = true);
-	void deinit(bool deinitRenderer = true);
+	// keepResources: the pictures and fonts stay loaded (a game that runs elsewhere, as on the MiSTer's FPGA)
+	void deinit(bool deinitRenderer = true, bool keepResources = false);
 
 	void normalizeNextUpdate();
 

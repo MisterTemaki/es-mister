@@ -188,7 +188,7 @@ void Window::reactivateGui()
 		peekGui()->updateHelpPrompts();
 }
 
-void Window::deinit(bool deinitRenderer)
+void Window::deinit(bool deinitRenderer, bool keepResources)
 {
 	// freed before the renderer goes (their pictures with it), as when they were freed at once
 	GuiComponent::releaseDeferred(-1);
@@ -206,7 +206,8 @@ void Window::deinit(bool deinitRenderer)
 		InputManager::getInstance()->deinit();
 
 	TextureResource::clearQueue();
-	ResourceManager::getInstance()->unloadAll();
+	if (!keepResources)
+		ResourceManager::getInstance()->unloadAll();
 
 	if (deinitRenderer)
 		Renderer::deinit();
