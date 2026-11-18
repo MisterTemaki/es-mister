@@ -24,6 +24,7 @@ supergrafx	NEC - PC Engine SuperGrafx	1	NEC SuperGrafx
 pcenginecd,tg16cd	NEC - PC Engine CD - TurboGrafx-CD	0	NEC PC-Engine CD & TurboGrafx-16 CD
 neogeo	SNK - Neo Geo	0	Neo Geo
 neogeocd	SNK - Neo Geo CD	0	Neo Geo CD
+arcade,mame	MAME	0	-
 psx	Sony - PlayStation	0	Sony PlayStation
 atari2600	Atari - 2600	1	Atari 2600
 atari7800	Atari - 7800	1	Atari 7800
@@ -36,3 +37,4 @@ wswan,wonderswan	Bandai - WonderSwan	1	Bandai WonderSwan
 wswanc,wonderswancolor	Bandai - WonderSwan Color	1	Bandai WonderSwan Color
 ngp	SNK - Neo Geo Pocket	1	Neo Geo Pocket
 ngpc	SNK - Neo Geo Pocket Color	1	Neo Geo Pocket Color
+x68000	Sharp - X68000	0	-
