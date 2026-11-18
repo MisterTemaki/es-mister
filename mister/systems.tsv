@@ -1,7 +1,7 @@
 # The systems ES shows on the MiSTer, and how mister-launch.sh starts their games. One a line, tab separated:
 # ES name (Batocera's) | full name | folder under games/ (several "|" apart: the first that exists; "@" first: under
 # the SD card's root) | extensions | core (as an MGL names it) | set name ("-": none) | MGL file: method (f: file,
-# s: disc), delay, index | the core's reset held after the game
+# s: disc; cd32: Minimig's CD32, the disc in its configuration), delay, index | the core's reset held after the game
 # is loaded (delay:hold, seconds; "-": none) | platform, as ES's PlatformIds knows it ("-": the ES name) | the
 # theme's name for the system's art ("-": the ES name).
 # The values follow the MiSTer cores' own (the same Zaparoo and mrext launch with).
@@ -28,9 +28,15 @@ pcenginecd	PC Engine CD	TGFX16-CD	.cue .chd	_Console/TurboGrafx16	-	s	1	0	-	-	-
 neogeo	Neo-Geo	NEOGEO	.neo	_Console/NeoGeo	-	f	1	1	-	-	-
 neogeocd	Neo-Geo CD	NeoGeo-CD	.cue .chd	_Console/NeoGeo	-	s	1	1	-	-	-
 psx	PlayStation	PSX	.cue .chd	_Console/PSX	-	s	1	1	-	-	-
+3do	3DO	3DO	.iso .cue .chd	_Console/3DO	-	s	1	0	-	-	-
+cdi	CD-i	CD-i	.cue .chd	_Console/CDi	-	s	1	0	-	-	-
+amigacd32	Amiga CD32	AmigaCD32	.cue .chd .iso	_Computer/Minimig	AmigaCD32	cd32	-	-	-	-	-
 atari2600	Atari 2600	Atari2600|ATARI7800	.a26 .bin	_Console/Atari7800	Atari2600	f	1	1	-	-	-
+atari5200	Atari 5200	ATARI5200	.a52 .bin .car .rom	_Console/Atari5200	-	f	1	1	-	-	-
 atari7800	Atari 7800	ATARI7800	.a78	_Console/Atari7800	-	f	1	1	-	-	-
 lynx	Lynx	AtariLynx	.lnx .lyx	_Console/AtariLynx	-	f	1	1	-	atarilynx	atarilynx
+jaguar	Atari Jaguar	Jaguar	.j64 .jag	_Console/Jaguar	-	f	1	1	1:1	atarijaguar	atarijaguar
+jaguarcd	Atari Jaguar CD	Jaguar	.cdi	_Console/Jaguar	-	s	1	1	1:1	atarijaguarcd	atarijaguarcd
 colecovision	ColecoVision	Coleco	.col .rom	_Console/ColecoVision	-	f	1	1	-	-	-
 intellivision	Intellivision	Intellivision	.int .rom	_Console/Intellivision	-	f	1	1	-	-	-
 vectrex	Vectrex	VECTREX	.vec .bin	_Console/Vectrex	-	f	1	1	-	-	-
