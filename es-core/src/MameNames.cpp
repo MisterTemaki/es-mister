@@ -6,13 +6,17 @@
 #include <pugixml/src/pugixml.hpp>
 #include "utils/StringUtil.h"
 #include <string.h>
+#include <mutex>
 
 MameNames* MameNames::sInstance = nullptr;
 
+// Made once, by whichever thread asks first (main()'s start, or a system's games being read): the others wait for
+// it. ES's start no longer waits for it before reading the systems; only the arcade's and the Neo Geo's ask.
+static std::once_flag sMade;
+
 void MameNames::init()
 {
-	if(!sInstance)
-		sInstance = new MameNames();
+	std::call_once(sMade, [] { sInstance = new MameNames(); });
 
 } // init
 
@@ -28,6 +32,8 @@ void MameNames::deinit()
 
 MameNames* MameNames::getInstance()
 {
+	std::call_once(sMade, [] { sInstance = new MameNames(); });
+	// (after deinit, at ES's end: made again, as before)
 	if(!sInstance)
 		sInstance = new MameNames();
 

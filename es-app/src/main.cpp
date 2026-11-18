@@ -655,7 +655,7 @@ int main(int argc, char* argv[])
 	auto vlcInit = threadPool->queueWorkItem([] { StartupTrace::Scope trace("video init"); VideoVlcComponent::init(); });
 	threadPool->queueWorkItem([] { StartupTrace::Scope trace("ip address"); ApiSystem::getInstance()->getIpAddress(); });
 	threadPool->queueWorkItem([] { StartupTrace::Scope trace("metadata init"); MetaDataList::initMetadata(); });
-	threadPool->queueWorkItem([] { StartupTrace::Scope trace("mame names"); MameNames::init(); });
+	auto mameInit = threadPool->queueWorkItem([] { StartupTrace::Scope trace("mame names"); MameNames::init(); });
 	threadPool->queueWorkItem([] { StartupTrace::Scope trace("genres"); Genres::init(); });
 	threadPool->queueWorkItem([] { StartupTrace::Scope trace("http cookies"); HttpReq::resetCookies(); });
 	threadPool->start();
@@ -701,7 +701,9 @@ int main(int argc, char* argv[])
 	
 	{
 		StartupTrace::Scope trace("wait for init threads");
-		threadPool->waitAllExcept(vlcInit); // Wait for what's necessary for loadSystemConfigFile
+		// What's necessary for loadSystemConfigFile; the arcade names (MameNames, ~1 s on the MiSTer) are waited for
+		// by the systems that use them, when they do
+		threadPool->waitAllExcept({ vlcInit, mameInit });
 	}
 
 	const char* errorMsg = NULL;
