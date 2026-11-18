@@ -4,7 +4,7 @@
 # Each PLAN_FILE line: KIND BIN COUNT [sh=NAME] [helper=NAME] [launch=NAME] [cache=cold|warm] [profile=SECONDS]
 #   [script=NAME (one of $T/*.script, in place of the kind's)] [label=WORD (added to the run's name)]
 #   [system=NAME (the system ES starts on, snes by default)] [view=own (that system's own view, not the kind's)]
-#   [VAR=VALUE...]
+#   [nodrop (boot: the page cache left as it is, a warm start)] [VAR=VALUE...]
 #   KIND: grid | list (nav.script in that view), ggrid | glist (golden frames, fixed clock), boot (cold boot,
 #         page cache emptied, start.script), launch (a SNES game started as ES starts it, the menu core loaded
 #         again 5 s later; ES not running)
@@ -52,7 +52,7 @@ setup() {
 
 run_one() {
 	local kind=$1 bin=$2 n=$3; shift 3
-	local sh="" helper="" launch="" cache="" profile="" scriptname="" label="" system=snes ownview="" env=()
+	local sh="" helper="" launch="" cache="" profile="" scriptname="" label="" system=snes ownview="" nodrop="" env=()
 	for a in "$@"; do
 		case $a in
 			sh=*) sh=${a#sh=} ;;
@@ -64,6 +64,7 @@ run_one() {
 			label=*) label=${a#label=} ;;
 			system=*) system=${a#system=} ;;
 			view=own) ownview=1 ;;
+			nodrop) nodrop=1 ;;
 			*) env+=("$a") ;;
 		esac
 	done
@@ -114,7 +115,7 @@ run_one() {
 	fi
 	# the view the kind asks for, unless view=own: the system's own (the settings' or the theme's)
 	[ -n "$ownview" ] || sed -i "s|</config>|	<string name=\"$system.defaultView\" value=\"$view\" />\n</config>|" $H/es_settings.cfg
-	[ $kind = boot ] && { sync; echo 3 > /proc/sys/vm/drop_caches; }
+	[ $kind = boot ] && [ -z "$nodrop" ] && { sync; echo 3 > /proc/sys/vm/drop_caches; }
 	sleep 2
 	local before=$(wc -l < $E/logs/es-mister.log)
 	( while :; do p=$(pidof emulationstation); [ -n "$p" ] && awk -v t=$(up) '/VmRSS|VmHWM/{printf "%s %s %s\n", t, $1, $2}' /proc/$p/status 2>/dev/null; sleep 1; done > $R/mem.txt ) &

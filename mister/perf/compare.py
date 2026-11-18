@@ -80,7 +80,7 @@ for view, groups in nav.items():
     table(f"Navigation ({view})", groups, rows)
 
 boots = [g for g in result if g.startswith("boot-")]
-keys = ["script_to_ui_s", "script_to_first_frame_s", "pre_es_s", "es_systems_s", "sleep_s", "console_f9_s", "es_ready_s",
+keys = ["script_to_ui_s", "script_to_first_frame_s", "pre_es_s", "es_systems_s", "sleep_s", "console_f9_s", "handshake_s", "screen_wait_s", "es_ready_s",
         "logo_ms", "load_systems_s", "window_init_s", "go_to_start_s"]
 table("Cold start", boots, [(k, lambda r, k=k: r.get("boot", {}).get("cold", {}).get(k)) for k in keys])
 

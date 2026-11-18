@@ -89,6 +89,7 @@ def trace_times(path):
         for key, pat in (("load_systems", r"< load systems \(([\d.]+)"), ("go_to_start", r"< go to start \(([\d.]+)"),
                          ("window_init", r"< window init \(([\d.]+)"), ("group", r"< group systems and collections \(([\d.]+)"),
                          ("input_init", r"< input init \(([\d.]+)"), ("gamelist", r"< game list view: snes \(([\d.]+)"),
+                         ("screen_wait", r"< wait for the screen \(([\d.]+)"),
                          ("logo_ms", r"image loaded on the main thread: (\d+) ms, :/logo")):
             mm = re.search(pat, s)
             if mm:
@@ -104,7 +105,7 @@ def script_times(path):
     for line in open(path):
         for key, pat in (("start", r"es-mister.sh \(uptime ([\d.]+) s\)"), ("es_systems", r"es_systems.cfg ready \(uptime ([\d.]+)"),
                          ("menu", r"the menu core is loaded \(uptime ([\d.]+)"), ("asked", r"asking for the framebuffer \(uptime ([\d.]+)"),
-                         ("es", r"starting ES: .*uptime ([\d.]+) s")):
+                         ("es", r"starting ES: .*uptime ([\d.]+) s"), ("fbon", r"framebuffer (?:is )?on\b.*uptime ([\d.]+)")):
             m = re.search(pat, line)
             if m and key not in d:
                 d[key] = float(m.group(1))
@@ -133,8 +134,13 @@ def boot_metrics(run):
         m["menu_wait_s"] = s["menu"] - s["es_systems"]
     if "asked" in s and "menu" in s:
         m["sleep_s"] = s["asked"] - s["menu"]
-    if "es" in s and "asked" in s:
+    if "es" in s and "asked" in s and s["es"] > s["asked"]:
         m["console_f9_s"] = s["es"] - s["asked"]
+    if "fbon" in s and "asked" in s:
+        # the helper's F9 handshake (es-mister.sh started before or after ES)
+        m["handshake_s"] = s["fbon"] - s["asked"]
+    if "screen_wait" in t:
+        m["screen_wait_s"] = t["screen_wait"]
     if "es" in s:
         m["exec_to_trace_s"] = t["uptime0"] - s["es"]
     return {k: v for k, v in m.items() if v is not None}
@@ -225,7 +231,7 @@ def main():
         elif name.startswith("nav-list-"):
             boots["warm-list"].append(b)
     lines.append("## Start (s) — p50 / p95 / p99 / max\n")
-    keys = ["script_to_ui_s", "pre_es_s", "es_systems_s", "menu_wait_s", "sleep_s", "console_f9_s", "exec_to_trace_s",
+    keys = ["script_to_ui_s", "pre_es_s", "es_systems_s", "menu_wait_s", "sleep_s", "console_f9_s", "handshake_s", "screen_wait_s", "exec_to_trace_s",
             "es_first_frame_s", "logo_ms", "window_init_s", "load_systems_s", "go_to_start_s", "es_ready_s", "script_to_first_frame_s"]
     lines.append("| Metric | " + " | ".join(boots) + " |")
     lines.append("|---|" + "---|" * len(boots))
