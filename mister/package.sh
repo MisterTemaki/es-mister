@@ -24,6 +24,9 @@ THEME_SIZE=${ES_SIZE:-1920x1080}
 ES_NAME=${ES_NAME:-emulationstation}
 # ES_TITLE: the package's name in README.txt
 ES_TITLE=${ES_TITLE:-ES-MiSTer}
+# ES_VERSION: the release's number ("0.10 beta 1"), in README.txt and in ES (its menu's footer and System
+# information: version.info and about.info beside ES); none: ES shows its own (Batocera's) number
+ES_VERSION=${ES_VERSION:-}
 # ES_LANGUAGE: the language ES starts in, until changed in its menu (System settings > Language)
 ES_LANGUAGE=${ES_LANGUAGE:-en_US}
 case "$ES_NAME" in
@@ -156,7 +159,11 @@ cp "$SRC/batocera.linux/package/batocera/emulationstation/batocera-emulationstat
 echo "== theme"
 python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv" "$THEME_SIZE"
 
-sed -e "s|__ES_DIR__|$ES_NAME|g" -e "s|__ES_SIZE__|${ES_SIZE:-auto}|g" -e "s|__ES_TITLE__|$ES_TITLE|g" "$ROOT/mister/README.txt" >"$ES/README.txt"
+sed -e "s|__ES_DIR__|$ES_NAME|g" -e "s|__ES_SIZE__|${ES_SIZE:-auto}|g" -e "s|__ES_TITLE__|$ES_TITLE${ES_VERSION:+ $ES_VERSION}|g" "$ROOT/mister/README.txt" >"$ES/README.txt"
+if [ -n "$ES_VERSION" ]; then
+	printf '%s\n' "$ES_VERSION" >"$ES/version.info"
+	printf '%s\n' "$ES_TITLE" >"$ES/about.info"
+fi
 cp "$ROOT/LICENSE.md" "$ES/LICENSE-EmulationStation.md"
 
 # every script with Unix line ends
