@@ -48,6 +48,9 @@ Window::Window() : mNormalizeNextUpdate(false), mFrameTimeElapsed(0), mFrameCoun
 
 Window::~Window()
 {
+	// before anything they point to (this window: removeGui)
+	GuiComponent::releaseDeferred(-1);
+
 	resetMenuBackgroundShader();
 
 	for (auto extra : mScreenExtras)
@@ -187,6 +190,9 @@ void Window::reactivateGui()
 
 void Window::deinit(bool deinitRenderer)
 {
+	// freed before the renderer goes (their pictures with it), as when they were freed at once
+	GuiComponent::releaseDeferred(-1);
+
 	resetMenuBackgroundShader();
 
 	for (auto extra : mScreenExtras)
@@ -432,6 +438,9 @@ void Window::processSongTitleNotifications()
 
 void Window::update(int deltaTime)
 {
+	// what a list left queued to free (its tiles): 2 ms of it a frame
+	GuiComponent::releaseDeferred(2000);
+
 	TextureResource::cleanupVRAM();
 
 	if (mLastShowCursor >= 0)

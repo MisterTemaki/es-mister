@@ -1376,6 +1376,9 @@ void ImageGridComponent<T>::ensureVisibleTileExist()
 				// for every tile its scrolling made
 				if (entry.data.tile.use_count() > 1)
 					entry.data.tile->resetImages();
+				// freed in the frames after (Window::update, a little each): every tile the scroll made, freed here,
+				// was the frame that answers leaving the list (with each tile's own storyboards, ~60-100 frees)
+				GuiComponent::releaseLater(std::move(entry.data.tile));
 				entry.data.tile = nullptr;
 			}
 			else if (entry.data.tile->isShowing())

@@ -171,6 +171,11 @@ public:
 	bool			hasStoryBoard(const std::string& name = "", bool compareEmptyName = false);
 	bool			applyStoryboard(const ThemeData::ThemeElement* elem, const std::string name = "");
 	void			takeStoryboards(std::map<std::string, ThemeStoryboard*>& storyboards); // freed with the component
+
+	// A component to free a little later rather than now (a grid's tiles when it is left: freed a few each frame after,
+	// within releaseDeferred's time, not all in the frame that answers the press); releaseDeferred(-1): all of them
+	static void		releaseLater(std::shared_ptr<GuiComponent>&& component);
+	static void		releaseDeferred(int budgetUs);
 	virtual bool	selectStoryboard(const std::string& name = "");
 	virtual void	deselectStoryboard(bool restoreinitialProperties = true);
 	virtual void	startStoryboard();

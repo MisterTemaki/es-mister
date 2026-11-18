@@ -1,4 +1,5 @@
 #include "GuiComponent.h"
+#include <chrono>
 
 #include "animations/Animation.h"
 #include "animations/AnimationController.h"
@@ -673,6 +674,33 @@ bool GuiComponent::selectStoryboard(const std::string& name)
 	}
 
 	return false;
+}
+
+// the main thread's (the grids that queue, the Window that frees: both on it)
+static std::vector<std::shared_ptr<GuiComponent>> sReleaseLater;
+
+void GuiComponent::releaseLater(std::shared_ptr<GuiComponent>&& component)
+{
+	if (component != nullptr)
+		sReleaseLater.push_back(std::move(component));
+}
+
+void GuiComponent::releaseDeferred(int budgetUs)
+{
+	if (sReleaseLater.empty())
+		return;
+
+	const auto start = std::chrono::steady_clock::now();
+	while (!sReleaseLater.empty())
+	{
+		// out of the list before it is freed (its destructor may queue another)
+		std::shared_ptr<GuiComponent> component = std::move(sReleaseLater.back());
+		sReleaseLater.pop_back();
+		component.reset();
+
+		if (budgetUs >= 0 && std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() >= budgetUs)
+			break;
+	}
 }
 
 void GuiComponent::takeStoryboards(std::map<std::string, ThemeStoryboard*>& storyboards)
