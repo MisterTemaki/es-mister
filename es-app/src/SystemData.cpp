@@ -443,6 +443,22 @@ void SystemData::populateFolder(FolderData* folder, std::unordered_map<std::stri
 				if (skipped.find(fn) != skipped.cend())
 					continue;
 			}
+			// MiSTer's X68000 games (the MGL files of _Computer/_X68000 Games): '_Genre' holds every game again, sorted
+			// by genre (as _Arcade's _Organized): listed flat, as ES lists folders, each game came twice. ES_X68000_SKIP
+			// names the folders left out (lower case, space apart).
+			if (mMetadata.name == "x68000" && depth == 0)
+			{
+				static const std::set<std::string> skipped = []
+				{
+					const char* value = getenv("ES_X68000_SKIP");
+					std::set<std::string> names;
+					for (auto& name : Utils::String::split(value != nullptr ? value : "_genre", ' ', true))
+						names.insert(Utils::String::toLower(name));
+					return names;
+				}();
+				if (skipped.find(fn) != skipped.cend())
+					continue;
+			}
 #endif
 
 			// Index subfolder depth limit (maxDepth = 2 -> roms/<system>/<game>/<subfolder>/ is scanned, nothing deeper)
