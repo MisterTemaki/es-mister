@@ -102,12 +102,18 @@ static SettingsBinding settingsBinding;
 
 void BindingManager::bindValues(IBindable* current, std::string& xp, bool showDefaultText, std::string& evaluableExpression)
 {
-	std::string typeName = current->getBindableTypeName();
-	const std::string prefix = "{" + typeName + ":";
+	const std::string typeName = current->getBindableTypeName();
 
-	// most bindables of a chain have nothing in the expression: no list of names to make for them
-	if (xp.find(prefix) == std::string::npos)
+	// most bindables of a chain (one a tile's child) have nothing in the expression: whether it holds "{typeName:"
+	// looked at where its '{' are, without making that text (a new string at every level of every binding, for a
+	// tag of 14 characters or more)
+	bool named = false;
+	for (size_t at = xp.find('{'); at != std::string::npos && !named; at = xp.find('{', at + 1))
+		named = xp.size() > at + 1 + typeName.size() && xp.compare(at + 1, typeName.size(), typeName) == 0 && xp[at + 1 + typeName.size()] == ':';
+	if (!named)
 		return;
+
+	const std::string prefix = "{" + typeName + ":";
 
 	for (const auto& name : Utils::String::extractStrings(xp, prefix, "}"))
 	{
