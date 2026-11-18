@@ -24,6 +24,10 @@ esac
 system=$1
 game=$2
 echo "== $(date '+%F %T') launch $system: $game"
+# a step with the time since the MiSTer started (/proc/uptime, as es-mister.sh's lines): a launch's and the
+# way back's steps on one clock with Main_MiSTer's and ES's
+stamp() { local up _; read -r up _ </proc/uptime; echo "[$up] $*"; }
+stamp "launch asked"
 
 row=$(awk -F'\t' -v s="$system" '$1 == s' "$ES/systems.tsv")
 if [ -z "$row" ]; then
@@ -91,6 +95,7 @@ ES_PID=$(pidof emulationstation)
 # (through the helper: a Main_MiSTer starting again makes its command FIFO anew, and an echo opened meanwhile
 # would wait on the old one for ever, ES with it)
 "$ES/es-mister-helper" cmd "load_core $target"
+stamp "load_core sent"
 
 # the core loaded now, in $core, read by bash itself (no cat), and a wait of SECONDS without a sleep process
 # (read's timeout on a pipe nothing writes to; sleep if that read ends any other way): both cost nothing,
@@ -111,7 +116,7 @@ for i in $(seq 300); do
 done
 
 if [ $started = 1 ]; then
-	echo "core $core started"
+	stamp "core $core started"
 	# back to ES from the controller too: Create + Options held for a second (a DualSense or DualShock 4,
 	# read by the helper) load the menu core
 	"$ES/es-mister-helper" exitkeys $$ &
@@ -122,7 +127,7 @@ if [ $started = 1 ]; then
 		wait_s 0.1
 		corename
 	done
-	echo "back in the menu"
+	stamp "back in the menu"
 	kill "$keys" 2>/dev/null
 	wait "$keys" 2>/dev/null
 	sleep 2 # Main_MiSTer starting again
@@ -135,4 +140,4 @@ for attempt in 1 2 3; do
 	echo "the framebuffer is not on yet (try $attempt)"
 	sleep 3
 done
-echo "framebuffer $DRAWN"
+stamp "framebuffer $DRAWN"
