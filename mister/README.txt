@@ -38,12 +38,14 @@ Using it
   EmulationStation's own frame counter (Show framerate) works too, but it
   changes the screen every frame and so forces the whole screen to be drawn
   again each time: it shows the worst case, not normal use.
-- To play: choose the game. Its MiSTer core loads with it.
+- To play: choose the game. Its MiSTer core loads with it, at once: the zoom
+  on the game's picture before it is in Menu > User interface settings >
+  Game launch transition.
 - To come back from a game: hold Create and Options together for a second
   (Share and Options on a DualShock 4). Or open the OSD (F12 or the
   controller's menu button) and go back to the MiSTer menu (System > Reboot,
-  a short press, not held). The MiSTer menu loads again and EmulationStation
-  comes back by itself within a few seconds.
+  a short press, not held). The MiSTer menu loads again (2 to 3 seconds) and
+  EmulationStation comes back by itself about a second later.
 - To leave EmulationStation: Menu > Quit > Quit EmulationStation (back to the
   MiSTer menu).
 - Menu > Quit > Restart system: the MiSTer restarts cold, as its menu's
