@@ -469,7 +469,7 @@ static int send_cmd(const char* text)
 	return 1;
 }
 
-static int framebuffer_size(int* width, int* height)
+static int framebuffer_mode(int* width, int* height, int* bits)
 {
 	int fd = open("/dev/fb0", O_RDONLY | O_CLOEXEC);
 	if (fd < 0)
@@ -481,8 +481,15 @@ static int framebuffer_size(int* width, int* height)
 	{
 		*width = (int)var.xres;
 		*height = (int)var.yres;
+		if (bits)
+			*bits = (int)var.bits_per_pixel;
 	}
 	return ok;
+}
+
+static int framebuffer_size(int* width, int* height)
+{
+	return framebuffer_mode(width, height, NULL);
 }
 
 static int console_on(const char* size, int presses)
@@ -570,12 +577,18 @@ static int console_on(const char* size, int presses)
 		}
 	}
 
-	// the framebuffer at that size, 32 bits a pixel
-	char command[64];
-	snprintf(command, sizeof(command), "fb_cmd1 8888 1 %d %d", width, height);
-	if (send_cmd(command) != 0)
-		return 1;
-	sleep_ms(300); // Main_MiSTer sets the framebuffer driver's mode
+	// the framebuffer at that size, 32 bits a pixel. Main_MiSTer's F9 has set it so already when that size is
+	// the whole screen's (fill, auto): fb_cmd1 would set the same mode again (the same scaler words), which
+	// clears the framebuffer and costs 0.3 s, so it is asked only for another size
+	int now_width = 0, now_height = 0, now_bits = 0;
+	if (!framebuffer_mode(&now_width, &now_height, &now_bits) || now_width != width || now_height != height || now_bits != 32)
+	{
+		char command[64];
+		snprintf(command, sizeof(command), "fb_cmd1 8888 1 %d %d", width, height);
+		if (send_cmd(command) != 0)
+			return 1;
+		sleep_ms(300); // Main_MiSTer sets the framebuffer driver's mode
+	}
 	printf("%dx%d\n", width, height);
 	return 0;
 }
