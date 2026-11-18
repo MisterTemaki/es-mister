@@ -83,6 +83,11 @@ void AudioManager::init()
 #if defined(__linux__) && !defined(BCM2711)
 	audioRate = 48000;
 #endif
+#ifdef MISTER
+	// SDL waits two of these chunks for the sound to drain each time it closes the device (before every
+	// game): 1024 frames, 21 ms at 48 kHz, as for PipeWire below, wait 43 ms instead of 171
+	audioChunk = 1024;
+#endif
 	// Match the PipeWire graph so a video preview's stream doesn't change the quantum under the music
 	const char* audioDriver = SDL_GetCurrentAudioDriver();
 	if (audioDriver != nullptr && std::string(audioDriver) == "pipewire")
