@@ -28,7 +28,7 @@ CAPTURE=0
 PICTURE_CACHE=1
 THEME_CACHE=1
 PREFETCH=1
-BGM_PAUSE=1
+BGM_STOP=1
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
@@ -80,31 +80,63 @@ if pidof emulationstation >/dev/null 2>&1; then
 	"$ES/es-mister-helper" text
 fi
 
-# The MiSTer BGM (mrext's bgm.sh: music from /media/fat/music while the menu core is loaded) paused while ES
-# runs: ES runs in the menu core, so the music went on under it, its player (mpg123) short of the processor ES
-# draws with and of the sound output ES opens, and it skipped. Its playback set to "disabled" through its socket
-# (in its memory only: bgm.ini is not touched), so that it does not start again either when a game launched from
-# ES ends; when ES closes, set back to what it was and playing again (bgm_resume, also on any other way out).
-BGM_PLAYBACK=""
-bgm_pause() {
-	[ "$BGM_PAUSE" = 1 ] && [ -S /tmp/bgm.sock ] || return 0
-	local playback
-	playback=$("$ES/es-mister-helper" bgm "get playback") || return 0
-	case "$playback" in "" | disabled | *[!a-z]*) return 0 ;; esac
-	"$ES/es-mister-helper" bgm "set playback disabled" >/dev/null
-	"$ES/es-mister-helper" bgm stop >/dev/null
-	BGM_PLAYBACK=$playback
-	echo "MiSTer BGM paused while ES runs (its playback: $playback)"
+# The MiSTer BGM (music from /media/fat/music while the menu core is loaded; mrext's bgm.sh or the older
+# Python one) closed while ES runs, so that ES has the processor and the memory: ES runs in the menu core, and
+# the music went on under it, skipping (its player short of the processor ES draws with). Closed as its own
+# "bgm.sh stop" closes it (the pid from its socket, SIGTERM) without starting bgm.sh for it (the Python one
+# takes about a second to start on the MiSTer); with it its player and its copy in /tmp. Started again when ES
+# closes (also on any other way out of this script) as at the MiSTer's start, "bgm.sh start" ("exec" if its
+# bgm.ini has startup = no: then it had been started from the Scripts menu): it plays in the MiSTer menu
+# again. BGM_STOP=0: left on.
+BGM_SCRIPT=/media/fat/Scripts/bgm.sh
+BGM_SOCKET=/tmp/bgm.sock
+BGM_STOPPED=""
+# the processes whose parent is $1 (read from /proc, without a fork for each: forks are slow on the MiSTer)
+children_of() {
+	local proc stat
+	for proc in /proc/[0-9]*; do
+		read -r stat 2>/dev/null <"$proc/stat" || continue
+		stat=${stat##*) }
+		set -- "$1" $stat
+		[ "$3" = "$1" ] && echo "${proc#/proc/}"
+	done
+	return 0
 }
-bgm_resume() {
-	[ -n "$BGM_PLAYBACK" ] || return 0
-	"$ES/es-mister-helper" bgm "set playback $BGM_PLAYBACK" >/dev/null
-	"$ES/es-mister-helper" bgm play >/dev/null
-	echo "MiSTer BGM playing again ($BGM_PLAYBACK)"
-	BGM_PLAYBACK=""
+bgm_stop() {
+	[ "$BGM_STOP" = 1 ] && [ -S "$BGM_SOCKET" ] && [ -f "$BGM_SCRIPT" ] || return 0
+	local pid children child comm i
+	pid=$("$ES/es-mister-helper" bgm pid) || return 0
+	case "$pid" in "" | *[!0-9]*) return 0 ;; esac
+	children=$(children_of "$pid")
+	kill "$pid" 2>/dev/null || return 0
+	for i in $(seq 40); do
+		kill -0 "$pid" 2>/dev/null || break
+		sleep 0.05
+	done
+	# one that did not end in 2 s: ended (then its socket and its player are left: removed below)
+	kill -0 "$pid" 2>/dev/null && kill -KILL "$pid" 2>/dev/null
+	# its player and the Python one's inotifywait, if left (a pid seen as its child, and still that program)
+	for child in $children; do
+		read -r comm 2>/dev/null <"/proc/$child/comm" || continue
+		case "$comm" in mpg123 | ogg123 | aplay | aplaymidi | inotifywait) kill "$child" 2>/dev/null ;; esac
+	done
+	# a socket nobody answers on: the next start would take it for a running service
+	[ -S "$BGM_SOCKET" ] && ! "$ES/es-mister-helper" bgm status >/dev/null 2>&1 && rm -f "$BGM_SOCKET"
+	BGM_STOPPED=1
+	echo "MiSTer BGM closed while ES runs (pid $pid)"
 }
-bgm_pause
-trap bgm_resume EXIT
+bgm_start() {
+	[ -n "$BGM_STOPPED" ] || return 0
+	BGM_STOPPED=""
+	local how=start
+	grep -qiE '^[[:space:]]*startup[[:space:]]*=[[:space:]]*(no|false|off|0)[[:space:]]*$' /media/fat/music/bgm.ini \
+		2>/dev/null && how=exec
+	# without ES's settings (HOME, SDL_*, ES_*), as at the MiSTer's start
+	( cd / && setsid env -i PATH="$PATH" HOME=/root "$BGM_SCRIPT" "$how" </dev/null >/dev/null 2>&1 & )
+	echo "MiSTer BGM started again (bgm.sh $how)"
+}
+bgm_stop
+trap bgm_start EXIT
 
 # first start: the default settings and controllers
 for file in es_settings.cfg es_input.cfg; do
@@ -377,6 +409,6 @@ if [ -f /tmp/shutdown.please ]; then
 	sync
 	exec "$ES/es-mister-helper" halt
 fi
-# back to the MiSTer menu, with its music if BGM plays it
-bgm_resume
+# back to the MiSTer menu (with BGM's music again, if it was playing)
 "$ES/es-mister-helper" cmd "load_core /media/fat/menu.rbf"
+bgm_start
