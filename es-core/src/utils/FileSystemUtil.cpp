@@ -1,6 +1,7 @@
 #define _FILE_OFFSET_BITS 64
 
 #include "utils/FileSystemUtil.h"
+#include "utils/InputRecorder.h"
 #include "utils/StringUtil.h"
 #include "utils/ZipFile.h"
 #include "utils/md5.h"
@@ -1132,7 +1133,7 @@ namespace Utils
 			return false;
 		} // createDirectory
 
-		bool exists(const std::string& _path, bool enableCache)
+		static bool existsAsked(const std::string& _path, bool enableCache)
 		{
 			if (_path.empty())
 				return false;
@@ -1157,6 +1158,14 @@ namespace Utils
 
 			return FileCache::fromStat64(path, &info) == 0;
 #endif
+		}
+
+		bool exists(const std::string& _path, bool enableCache)
+		{
+			const bool result = existsAsked(_path, enableCache);
+			if (InputRecorder::recording())
+				InputRecorder::add('E', _path, result ? "1" : "0");
+			return result;
 		} // exists
 
 		bool isAbsolute(const std::string& _path)
@@ -1180,7 +1189,7 @@ namespace Utils
 
 		} // isAbsolute
 
-		bool isRegularFile(const std::string& _path)
+		static bool isRegularFileAsked(const std::string& _path)
 		{
 			auto it = FileCache::isRegularFile(_path);
 			if (it) return *it;
@@ -1195,9 +1204,17 @@ namespace Utils
 			// check for S_IFREG attribute
 			return (S_ISREG(info.st_mode));
 
+		}
+
+		bool isRegularFile(const std::string& _path)
+		{
+			const bool result = isRegularFileAsked(_path);
+			if (InputRecorder::recording())
+				InputRecorder::add('G', _path, result ? "1" : "0");
+			return result;
 		} // isRegularFile
 
-		bool isDirectory(const std::string& _path)
+		static bool isDirectoryAsked(const std::string& _path)
 		{
 			auto it = FileCache::isDirectory(_path);
 			if (it) return *it;
@@ -1224,6 +1241,14 @@ namespace Utils
 			// check for S_IFDIR attribute
 			return (S_ISDIR(info.st_mode));
 #endif
+		}
+
+		bool isDirectory(const std::string& _path)
+		{
+			const bool result = isDirectoryAsked(_path);
+			if (InputRecorder::recording())
+				InputRecorder::add('D', _path, result ? "1" : "0");
+			return result;
 		} // isDirectory
 
 		bool isSymlink(const std::string& _path)
@@ -1335,7 +1360,7 @@ namespace Utils
 			return gp + filename;
 		}
 
-		unsigned long long getFileSize(const std::string& _path)
+		static unsigned long long getFileSizeAsked(const std::string& _path)
 		{
 			std::string path = getGenericPath(_path);
 			struct stat64 info;
@@ -1351,6 +1376,14 @@ namespace Utils
 #endif
 
 			return 0;
+		}
+
+		unsigned long long getFileSize(const std::string& _path)
+		{
+			const unsigned long long result = getFileSizeAsked(_path);
+			if (InputRecorder::recording())
+				InputRecorder::add('Z', _path, std::to_string(result));
+			return result;
 		}
 
 		Utils::Time::DateTime getFileCreationDate(const std::string& _path)

@@ -17,6 +17,7 @@
 #include "utils/MathExpr.h"
 #include "renderers/Renderer.h"
 #include "ThemeVariables.h"
+#include "utils/InputRecorder.h"
 
 namespace pugi { class xml_node; }
 
@@ -420,6 +421,9 @@ public:
 
 	static bool parseCustomShader(const ThemeData::ThemeElement* elem, Renderer::ShaderInfo* pShader, const std::string& type = "shader");
 
+	// a file's size and date as text ("-" when it is missing): what the theme cache compares
+	static std::string fileStamp(const std::string& path);
+
 	// The measurement build's dump of everything loadFile built, in a fixed order (ES_THEME_DUMP): two builds that
 	// write the same dump for every system built the same theme. Defined only when MISTER_PERF is (ThemeData.cpp)
 	void dump(std::ostream& out) const;
@@ -576,6 +580,14 @@ private:
 	bool mPerGameOverrideTmp;
 
 	Utils::MathExpr::ValueMap mEvaluatorVariables;
+
+	// The theme cache (ThemeDataCache.cpp, ES_THEME_CACHE): what loadFile built for a system, kept on the SD card
+	// with every answer its loading asked for (files read, files found, settings, the variables it started with),
+	// and loaded again while all of them are the same, without parsing the theme
+	struct CacheCodec;
+	bool loadFromCache(const std::string& system, const std::map<std::string, std::string>& sysDataMap, const std::string& path);
+	void saveToCache(const std::string& system, const std::map<std::string, std::string>& sysDataMap, const std::string& path,
+		const InputRecorder::Record& inputs, const ThemeVariables& startVariables, const Utils::MathExpr::ValueMap& startEvaluator);
 };
 
 class ThemeFileCache
@@ -595,6 +607,7 @@ public:
 
 private:
 	std::unordered_map<std::string, std::string> _cache;
+	std::unordered_map<std::string, std::string> _stamps;	// each file's ThemeData::fileStamp when it was read
 	std::mutex _lock;
 
 	static ThemeFileCache* _instance;

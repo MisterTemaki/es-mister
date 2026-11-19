@@ -1,4 +1,6 @@
 #include "Settings.h"
+#include "utils/InputRecorder.h"
+#include <cstdio>
 
 #include "utils/FileSystemUtil.h"
 #include "Log.h"
@@ -567,13 +569,18 @@ void Settings::loadFile()
 }
 
 //Print a warning message if the setting we're trying to get doesn't already exist in the map, then return the value in the map.
-#define SETTINGS_GETSET(type, mapName, getMethodName, setMethodName, defaultValue) type Settings::getMethodName(const std::string& name) \
+// the values a recorded piece of work read (InputRecorder: the theme cache), as text
+static std::string recordedValue(bool value) { return value ? "1" : "0"; }
+static std::string recordedValue(int value) { return std::to_string(value); }
+static std::string recordedValue(float value) { char text[32]; snprintf(text, sizeof(text), "%a", (double)value); return text; }
+
+#define SETTINGS_GETSET(type, mapName, getMethodName, setMethodName, defaultValue, recordKind) type Settings::getMethodName(const std::string& name) \
 { \
 	auto it = mapName.find(name); \
-	if (it == mapName.cend()) \
-		return defaultValue; \
-\
-	return it->second; \
+	const type value = it == mapName.cend() ? defaultValue : it->second; \
+	if (InputRecorder::recording()) \
+		InputRecorder::add(recordKind, name, recordedValue(value)); \
+	return value; \
 } \
 bool Settings::setMethodName(const std::string& name, type value) \
 { \
@@ -587,13 +594,16 @@ bool Settings::setMethodName(const std::string& name, type value) \
 	return false; \
 }
 
-SETTINGS_GETSET(bool, mBoolMap, getBool, setBool, false);
-SETTINGS_GETSET(int, mIntMap, getInt, setInt, 0);
-SETTINGS_GETSET(float, mFloatMap, getFloat, setFloat, 0.0f);
+SETTINGS_GETSET(bool, mBoolMap, getBool, setBool, false, 'B');
+SETTINGS_GETSET(int, mIntMap, getInt, setInt, 0, 'I');
+SETTINGS_GETSET(float, mFloatMap, getFloat, setFloat, 0.0f, 'F');
 
 std::string Settings::getString(const std::string& name)
 {
 	auto it = mStringMap.find(name);
+	if (InputRecorder::recording())
+		InputRecorder::add('S', name, it == mStringMap.cend() ? mEmptyString : it->second);
+
 	if (it == mStringMap.cend())
 		return mEmptyString;
 

@@ -42,6 +42,7 @@ public:
 
 	const ResourceData getFileData(const std::string& path) const;
 	bool fileExists(const std::string& path) const;
+	bool fileExistsAsked(const std::string& path) const; // fileExists without the InputRecorder
 
 private:
 	ResourceManager();

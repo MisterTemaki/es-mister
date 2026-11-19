@@ -26,6 +26,7 @@
 #include "Paths.h"
 #include "utils/HtmlColor.h"
 #include "utils/VectorEx.h"
+#include "utils/InputRecorder.h"
 #include <unordered_set>
 
 std::set<std::string> ThemeData::sSupportedItemTemplate { "imagegrid", "carousel", "gamecarousel", "textlist" };
@@ -726,7 +727,16 @@ std::string& ThemeFileCache::getXmlDocument(const std::string& path)
 
 	auto it = _cache.find(path);
 	if (it != _cache.cend())
+	{
+		if (InputRecorder::recording())
+			InputRecorder::add('X', path, _stamps[path]);
 		return it->second;
+	}
+
+	// the file's size and date when its text was read (the theme cache keeps a theme while they are the same)
+	_stamps[path] = ThemeData::fileStamp(path);
+	if (InputRecorder::recording())
+		InputRecorder::add('X', path, _stamps[path]);
 	/*
 	pugi::xml_document* doc = new pugi::xml_document();
 	pugi::xml_parse_result res = doc->load_file(WINSTRINGW(path).c_str());
@@ -749,10 +759,16 @@ void ThemeFileCache::clear()
 //		delete item.second;
 
 	_cache.clear();
+	_stamps.clear();
 }
 
 void ThemeData::loadFile(const std::string& system, const std::map<std::string, std::string>& sysDataMap, const std::string& path, bool fromFile)
 {
+	// the theme cache keeps what a new ThemeData builds from a file (SystemData::loadTheme's): what it built is the
+	// same while what it was asked is
+	const bool cacheable = fromFile && mPaths.empty() && mViews.empty() && mSubsets.empty() && mSubsetDefault.empty() &&
+		mEvaluatorVariables.empty() && mDefaultView.empty() && mDefaultTransition.empty() && !mPerGameOverrideTmp;
+
 	mPaths.push_back(path);
 
 	ThemeException error;
@@ -809,6 +825,28 @@ void ThemeData::loadFile(const std::string& system, const std::map<std::string, 
 			mEvaluatorVariables[var.first] = var.second == "true" ? 1 : 0;
 		else
 			mEvaluatorVariables[var.first] = var.second;		
+	}
+
+	if (cacheable && loadFromCache(system, sysDataMap, path))
+	{
+		if (system != "splash" && system != "imageviewer" && system != "default")
+		{
+			mMenuTheme = nullptr;
+			mDefaultTheme = this;
+		}
+		return;
+	}
+
+	// from here, what the loading asks is recorded (a thrown error ends the record with the scope: nothing kept)
+	ThemeVariables startVariables;
+	Utils::MathExpr::ValueMap startEvaluator;
+	InputRecorder::Record record;
+	std::unique_ptr<InputRecorder::Scope> recording;
+	if (cacheable)
+	{
+		startVariables = mVariables;
+		startEvaluator = mEvaluatorVariables;
+		recording.reset(new InputRecorder::Scope(&record));
 	}
 
 	pugi::xml_document doc;
@@ -870,6 +908,12 @@ void ThemeData::loadFile(const std::string& system, const std::map<std::string, 
 					systemcarousel->second.properties["defaultTransition"] = std::string("fade & slide");
 			}
 		}
+	}
+
+	if (cacheable)
+	{
+		recording.reset();
+		saveToCache(system, sysDataMap, path, record, startVariables, startEvaluator);
 	}
 
 	if (system != "splash" && system != "imageviewer" && system != "default")

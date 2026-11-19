@@ -24,6 +24,7 @@ set(CORE_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Splash.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeData.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeVariables.h	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/InputRecorder.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/VolumeControl.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MultiStateInput.h
@@ -164,6 +165,7 @@ set(CORE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Sound.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Splash.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeData.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeDataCache.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeVariables.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/VolumeControl.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp
@@ -334,6 +336,7 @@ if(MISTER_PERF)
     ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureData.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureDataManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeDataCache.cpp
     PROPERTIES COMPILE_DEFINITIONS MISTER_PERF)
 endif()
 add_library(es-core STATIC ${CORE_SOURCES} ${CORE_HEADERS})

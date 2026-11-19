@@ -116,6 +116,12 @@ CAPTURE=0
 # comes back ~20 times faster; 0: none (the folder can be deleted at any time)
 PICTURE_CACHE=1
 
+# 1: each system's theme kept as the theme built it, in cache/themes (~130 KB a system, written after a start
+# that had to read the theme): a start reads it back instead of reading the theme again for every system, while
+# the theme's files, its settings and the art it found are the same; 0: none (the folder can be deleted at any
+# time)
+THEME_CACHE=1
+
 # 1: what EmulationStation reads first (games folders, gamelists, theme, itself) read in the background while
 # its start waits for the MiSTer menu, so that a start after switching the MiSTer on finds them in memory;
 # only read, nothing written; 0: not. Only with SIZE=auto or FILL=0: otherwise EmulationStation starts at once

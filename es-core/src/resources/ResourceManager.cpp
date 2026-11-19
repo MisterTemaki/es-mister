@@ -1,6 +1,7 @@
 #include "ResourceManager.h"
 
 #include "utils/FileSystemUtil.h"
+#include "utils/InputRecorder.h"
 #include "utils/StringUtil.h"
 #include <fstream>
 #include <algorithm>
@@ -165,12 +166,27 @@ ResourceData ResourceManager::loadFile(const std::string& path, size_t size) con
 
 bool ResourceManager::fileExists(const std::string& path) const
 {
+	if (!InputRecorder::recording())
+		return fileExistsAsked(path);
+
+	// one question recorded, not the ones it asks in turn (asked again, this one asks them again)
+	bool result;
+	{
+		InputRecorder::Scope paused(nullptr);
+		result = fileExistsAsked(path);
+	}
+	InputRecorder::add('R', path, result ? "1" : "0");
+	return result;
+}
+
+bool ResourceManager::fileExistsAsked(const std::string& path) const
+{
 	// Animated Gifs : Check if the extension contains a ',' -> If it's the case, we have the multi-image index as argument
 	if (Utils::FileSystem::getExtension(path).find(',') != std::string::npos)
 	{
 		auto idx = path.rfind(',');
 		if (idx != std::string::npos)
-			return fileExists(path.substr(0, idx));
+			return fileExistsAsked(path.substr(0, idx));
 	}
 
 	if (path[0] != ':' && path[0] != '~' && path[0] != '/')

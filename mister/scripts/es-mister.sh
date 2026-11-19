@@ -26,6 +26,7 @@ STRIP=auto
 PLD=256
 CAPTURE=0
 PICTURE_CACHE=1
+THEME_CACHE=1
 PREFETCH=1
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
@@ -125,6 +126,9 @@ es_settings() {
 	# pictures kept decoded and at their size, without loss (cache/pictures; ~70 KB a cover), so that a cover
 	# seen once comes back ~20 times faster; PICTURE_CACHE=0: none
 	[ "$PICTURE_CACHE" = 1 ] && export ES_PICTURE_CACHE=${ES_PICTURE_CACHE:-$ES/cache/pictures}
+	# each system's theme as the theme built it (cache/themes; ~130 KB a system), loaded again while nothing it
+	# depends on changed, instead of parsing the theme for each system at every start; THEME_CACHE=0: none
+	[ "$THEME_CACHE" = 1 ] && export ES_THEME_CACHE=${ES_THEME_CACHE:-$ES/cache/themes}
 	# keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
 	export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
 	# RESTART SYSTEM and SHUTDOWN OPERATING SYSTEM in ES's menu leave these (ES's processQuitMode) for

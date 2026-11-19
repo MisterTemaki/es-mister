@@ -23,6 +23,11 @@
 #include "LocaleES.h"
 #include "utils/HtmlColor.h"
 #include "Settings.h"
+#include "utils/InputRecorder.h"
+
+// the methods whose answer depends on their arguments only
+static const std::set<std::string> sPureMethods = { "getextension", "filename", "stem", "directory", "empty", "lower", "upper", "trim",
+	"proper", "tointeger", "toboolean", "contains", "startswith", "endswith", "inlist", "min", "max", "clamp", "tostring", "default" };
 
 namespace Utils
 {
@@ -527,6 +532,11 @@ namespace Utils
 
 			if (it != _methods.cend())
 			{
+				// a method that asks the outside world (a file, the time, the translation) gives an answer that
+				// cannot be checked again later: a recorded piece of work that used one is not kept (theme cache)
+				if (InputRecorder::recording() && sPureMethods.find(method.name) == sPureMethods.cend())
+					InputRecorder::markUncacheable();
+
 				auto result = it->second(method.arguments);
 				evalxp = Utils::String::replace(evalxp, method.fullExpression, result);
 			}
