@@ -1304,8 +1304,36 @@ void ThemeData::parseViewElement(const pugi::xml_node& node)
 	}
 }
 
+// Whether a node has one of the attributes parseFilterAttributes looks at. Most nodes have none, and passed only after
+// ten lookups by name, one strcmp an attribute each (~1/8 of a theme's loading time)
+static bool hasFilterAttribute(const pugi::xml_node& node)
+{
+	for (pugi::xml_attribute attribute = node.first_attribute(); attribute; attribute = attribute.next_attribute())
+	{
+		const char* name = attribute.name();
+		switch (name[0])
+		{
+		case 'r': if (strcmp(name, "region") == 0) return true; break;
+		case 'l': if (strcmp(name, "lang") == 0) return true; break;
+		case 't': if (strcmp(name, "tinyScreen") == 0) return true; break;
+		case 'v': if (strcmp(name, "verticalScreen") == 0) return true; break;
+		case 'i':
+			if (strcmp(name, "if") == 0 || strcmp(name, "ifHelpPrompts") == 0 || strcmp(name, "ifCheevos") == 0 ||
+				strcmp(name, "ifArch") == 0 || strcmp(name, "ifNotArch") == 0 || strcmp(name, "ifSubset") == 0)
+				return true;
+			break;
+		}
+	}
+
+	return false;
+}
+
 bool ThemeData::parseFilterAttributes(const pugi::xml_node& node)
 {
+	// every test below needs its attribute
+	if (!hasFilterAttribute(node))
+		return true;
+
 	if (!parseRegion(node))
 		return false;
 
