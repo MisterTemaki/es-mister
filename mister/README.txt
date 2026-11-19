@@ -64,14 +64,29 @@ Using it
 
 Game covers
 -----------
-Menu > Scraper > Scrape from: "Libretro-thumbnails" (the default). No account
-and no key needed. The pictures come from libretro-thumbnails (the source the
-PS5's snes9x uses): box art, title screen and screenshot; the box art is the
-game's picture by default (Image source: Box 2D). A game is recognised by its
-ROM's CRC32 (No-Intro list) or by its file name, "(JP)", "(US)", "(EU)" and
-hacks such as "- Fastrom" included. For games libretro-thumbnails does not have
-(hacks, homebrew, unlicensed carts), the cover comes from Hasheous (an IGDB
-picture) or TheGamesDB.
+A new install shows the games without covers: EmulationStation downloads them
+itself, once, for the games on your SD card, whatever their file names (the
+MiSTer needs the network, Wi-Fi or cable):
+1. Start EmulationStation and stay on the systems screen (opened from a game
+   list, the scraper offers only that list's system).
+2. Open the menu (Select on a controller, Space on the keyboard) > Scraper.
+3. Leave the defaults: Scrape from "Libretro-thumbnails" (no account, no
+   key), Games to scrape for "Games missing any media", Systems included: all
+   the systems with games.
+4. Scrape now. It works in the background, its progress in a notice on the
+   screen, and you can keep browsing. With thousands of games it takes a
+   while: leave the MiSTer on until it ends (quitting EmulationStation
+   meanwhile asks whether to stop it).
+Scraping again later only fetches what is missing: new games, covers not found.
+
+Where they come from: Menu > Scraper > Scrape from: "Libretro-thumbnails" (the
+default). No account and no key needed. The pictures come from
+libretro-thumbnails (the source the PS5's snes9x uses): box art, title screen
+and screenshot; the box art is the game's picture by default (Image source:
+Box 2D). A game is recognised by its ROM's CRC32 (No-Intro list) or by its
+file name, "(JP)", "(US)", "(EU)" and hacks such as "- Fastrom" included. For
+games libretro-thumbnails does not have (hacks, homebrew, unlicensed carts),
+the cover comes from Hasheous (an IGDB picture) or TheGamesDB.
 The pictures are saved next to the games: games/<SYSTEM>/images/, listed in
 that folder's gamelist.xml. Each system's list of pictures is kept in
 home/.emulationstation/scrapers/libretro (refreshed every 14 days).
