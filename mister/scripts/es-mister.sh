@@ -96,9 +96,8 @@ fi
 # Always left running: the MiSTer's main program, the network (Wi-Fi, dhcpcd), SSH, Bluetooth with D-Bus (which
 # it needs), udev (controllers and USB devices plugged in), the consoles' logins (init starts them again at
 # once) and the MiSTer's sync of the SD card every 5 s (/etc/resync: what is written reaches the card even if
-# the power is cut). All are closed here, before ES starts (each sent the signal its init script sends; the BGM
-# waited for, so that its player has let go of the sound; about 50 ms in all); the others' end is waited for in
-# the background.
+# the power is cut). All are sent here, before ES starts, the signal their init script sends; their end is waited
+# for in the background once ES has started.
 BOOT_ENV=(HOME=/ TERM=vt102 USER=root SHELL=/bin/sh PATH=/sbin:/usr/sbin:/bin:/usr/bin)
 BGM_SCRIPT=/media/fat/Scripts/bgm.sh
 BGM_SOCKET=/tmp/bgm.sock
@@ -111,7 +110,10 @@ SERVICE_PID_FILES=(/var/run/samba/smbd.pid /var/run/samba/nmbd.pid /var/run/prof
 SERVICES_STOPPED=""
 SERVICES_JOB=""
 CLOSING_PIDS=""
+CLOSE_PENDING=""
 PAUSED=""
+ZAPAROO=""
+BGM_PIDS=""
 
 boot_env() { env -i "${BOOT_ENV[@]}" "$@"; }
 
@@ -127,26 +129,34 @@ pids_gone() {
 	kill -KILL $left 2>/dev/null
 	return 1
 }
+# Zaparoo's service: its pid file's pid, if that is it (ZAPAROO)
 zaparoo_pid() {
 	local pid="" args
+	ZAPAROO=""
 	read -r pid 2>/dev/null <"$ZAPAROO_PID"
 	case "$pid" in "" | *[!0-9]*) return 1 ;; esac
 	mapfile -d '' -t args 2>/dev/null <"/proc/$pid/cmdline" || return 1
-	case "${args[*]}" in *zaparoo*-service*) echo "$pid" ;; *) return 1 ;; esac
+	case "${args[*]}" in *zaparoo*-service*) ZAPAROO=$pid ;; *) return 1 ;; esac
 }
 
-# The BGM closed as its own "bgm.sh stop" closes it (the pid from its socket, SIGTERM), without starting bgm.sh
-# for it (the Python one takes about a second to start on the MiSTer); both end their player as they close, and
-# the Go one removes its copy in /tmp. Waited for, so that the player has let go of the sound before ES opens it.
+# The BGM closed as its own "bgm.sh stop" closes it (SIGTERM to its service, the process its socket names: mrext's
+# runs as "bgm.sh exec", found by services_stop's pidof in BGM_PIDS; the Python one's, named python, asked of its
+# socket) without starting bgm.sh for it (the Python one takes about a second to start on the MiSTer); both end
+# their player as they close (in ~30 ms: ES opens the sound ~4 s after its start), and mrext's removes its copy in
+# /tmp.
 bgm_stop() {
 	[ -S "$BGM_SOCKET" ] && [ -f "$BGM_SCRIPT" ] || return 1
-	local pid
-	pid=$("$ES/es-mister-helper" bgm pid) || return 1
-	case "$pid" in "" | *[!0-9]*) return 1 ;; esac
-	kill "$pid" 2>/dev/null || return 1
-	# one that did not end in 2 s killed (its socket and its player are then left: removed after)
-	pids_gone "$pid"
-	return 0
+	local pid args service=""
+	for pid in $BGM_PIDS; do
+		mapfile -d '' -t args 2>/dev/null <"/proc/$pid/cmdline" || continue
+		[ "${args[-1]}" = exec ] && service+=" $pid"
+	done
+	if [ -z "$service" ]; then
+		service=$("$ES/es-mister-helper" bgm pid) || return 1
+		case "$service" in "" | *[!0-9]*) return 1 ;; esac
+	fi
+	kill $service 2>/dev/null || return 1
+	CLOSING_PIDS+=" $service"
 }
 # a service closed as its init script closes it (samba: SIGKILL, as S91smb; the others SIGTERM), the signal sent
 # from here at once, without running the script (forks are slow, and ES is about to start); its pids kept for
@@ -154,7 +164,7 @@ bgm_stop() {
 service_close() {
 	local pids
 	case "$1" in
-	zaparoo) [ -f "$ZAPAROO_SCRIPT" ] && pids=$(zaparoo_pid) && kill -TERM $pids ;;
+	zaparoo) [ -f "$ZAPAROO_SCRIPT" ] && zaparoo_pid && pids=$ZAPAROO && kill -TERM $pids ;;
 	samba) [ -x /etc/init.d/S91smb ] && pids=$(pidof smbd nmbd) && kill -KILL $pids ;;
 	ftp) [ -x /etc/init.d/S50proftpd ] && pids=$(pidof proftpd) && kill -TERM $pids ;;
 	ntp) [ -x /etc/init.d/S49ntp ] && pids=$(pidof ntpd) && kill -TERM $pids ;;
@@ -194,43 +204,44 @@ paused_signal() {
 	done
 	return 0
 }
-# after the closing, in the background: the ends waited for, pid files left removed, what the BGM may leave (its
-# socket and player if it had to be killed; the Python one's inotifywait), and the daemons not known here logged
+# after the closing, in the background: the ends waited for (one that did not end in 2 s killed), pid files left
+# removed, and what the BGM may leave (its player if it had to be killed, the Python one's inotifywait: left to
+# init; a socket nobody answers on, which its next start would take for a running service)
 services_closed() {
-	local name pid ppid comm others=""
+	local name pid stat
 	[ -n "${CLOSING_PIDS// /}" ] && { pids_gone $CLOSING_PIDS || echo "some did not end in 2 s: killed"; }
 	for name in "${SERVICE_PID_FILES[@]}"; do
 		pid=""
 		read -r pid 2>/dev/null <"$name"
 		[ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null && rm -f "$name"
 	done
-	while read -r pid ppid comm; do
-		[ "$ppid" = 1 ] || continue
-		case "$comm" in
-		mpg123 | ogg123 | aplay | aplaymidi | inotifywait)
-			case " $SERVICES_STOPPED " in *" bgm "*) kill "$pid" 2>/dev/null; echo "left by the BGM, ended: $comm" ;; esac ;;
-		init | MiSTer | resync | udevd | dbus-daemon | bluetoothd | wpa_supplicant | dhcpcd | udhcpc | sshd | agetty | getty | \
-			syslogd | klogd | ntpd | proftpd | smbd | nmbd | bgm.sh | zaparoo.* | gpm | arcsnd | bash | sh | setsid | \
-			emulationstation | es-mister-helpe*) ;;
-		*) others+=" $comm" ;;
-		esac
-	done < <(ps -o pid,ppid,comm)
-	# a BGM socket nobody answers on: the BGM's next start would take it for a running service
 	case " $SERVICES_STOPPED " in
-	*" bgm "*) [ -S "$BGM_SOCKET" ] && ! "$ES/es-mister-helper" bgm status >/dev/null 2>&1 && rm -f "$BGM_SOCKET" ;;
+	*" bgm "*)
+		for pid in $(pidof mpg123 ogg123 aplay aplaymidi inotifywait); do
+			read -r stat 2>/dev/null <"/proc/$pid/stat" || continue
+			stat=${stat##*) }
+			stat=${stat#* }
+			[ "${stat%% *}" = 1 ] && kill "$pid" 2>/dev/null && echo "left by the BGM, ended: pid $pid"
+		done
+		[ -S "$BGM_SOCKET" ] && ! "$ES/es-mister-helper" bgm status >/dev/null 2>&1 && rm -f "$BGM_SOCKET" ;;
 	esac
-	[ -n "$others" ] && echo "left running (not known here):$others"
 	[ -n "$SERVICES_STOPPED$PAUSED" ] && echo "[$(cut -d' ' -f1 /proc/uptime)] closed while ES runs:${SERVICES_STOPPED:- none}${PAUSED:+; paused:$PAUSED}"
 	return 0
 }
 
 services_stop() {
-	local name pid
+	local name pid comm arcsnd=""
+	BGM_PIDS=""
+	# the BGM's and arcsnd's pids with one pidof (each fork costs ~15 ms on the MiSTer)
+	for pid in $(pidof bgm.sh arcsnd); do
+		read -r comm 2>/dev/null <"/proc/$pid/comm" || continue
+		case "$comm" in bgm.sh) BGM_PIDS+=" $pid" ;; arcsnd) arcsnd+=" $pid" ;; esac
+	done
 	for name in $STOP_SERVICES; do
 		case "$name" in
 		bgm) bgm_stop && SERVICES_STOPPED+=" bgm" ;;
 		arcsnd)
-			for pid in $(pidof arcsnd); do
+			for pid in $arcsnd; do
 				# one left paused by an ES that did not end well (its script killed) taken as running
 				kill -STOP "$pid" && PAUSED+=" $pid:arcsnd"
 			done ;;
@@ -239,13 +250,24 @@ services_stop() {
 	done
 	# for mister-launch.sh: running during a game
 	export ES_MISTER_PAUSED="$PAUSED"
+	CLOSE_PENDING=1
+}
+# the background part, once ES has started (its fork, ~20 ms, after ES's)
+services_closing() {
+	[ -n "$CLOSE_PENDING" ] || return 0
+	CLOSE_PENDING=""
 	services_closed &
 	SERVICES_JOB=$!
 }
 services_start() {
 	[ -n "$SERVICES_STOPPED$PAUSED" ] || return 0
 	local stopped=$SERVICES_STOPPED name
-	[ -n "$SERVICES_JOB" ] && wait "$SERVICES_JOB" 2>/dev/null
+	if [ -n "$CLOSE_PENDING" ]; then
+		CLOSE_PENDING=""
+		services_closed
+	elif [ -n "$SERVICES_JOB" ]; then
+		wait "$SERVICES_JOB" 2>/dev/null
+	fi
 	paused_signal CONT
 	SERVICES_STOPPED=""
 	PAUSED=""
@@ -340,6 +362,7 @@ fill:*x*)
 	echo "starting ES: it loads while the framebuffer is asked for (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
 	./emulationstation &
 	ES_PID=$!
+	services_closing
 	;;
 esac
 
@@ -508,6 +531,7 @@ else
 	echo "starting ES: framebuffer $DRAWN (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
 	./emulationstation &
 	ES_PID=$!
+	services_closing
 fi
 wait "$ES_PID"
 echo "ES closed ($?)"
