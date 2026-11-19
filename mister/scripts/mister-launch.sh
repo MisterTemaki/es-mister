@@ -113,15 +113,18 @@ for i in $(seq 300); do
 	fi
 done
 
+DRAWN=""
 if [ $started = 1 ]; then
 	stamp "core $core started"
 	# back to ES from the controller too: Create + Options held for a second (a DualSense or DualShock 4,
-	# read by the helper) load the menu core. The helper also waits for the game's end: it returns once the
-	# menu core is loaded again (the OSD's System > Reboot, or those keys). Before, the helper ran beside a
-	# loop here that looked at the core every 0.1 s with bash's read -t; the helper ending as the menu core
-	# came, its signal could meet that read, which then waited for ever (seen once on the MiSTer: ES did not
-	# come back).
-	"$ES/es-mister-helper" exitkeys $$
+	# read by the helper) load the menu core. The helper also waits for the game's end: once the menu core is
+	# being loaded (the OSD's System > Reboot, or those keys) it makes its keyboard, and once Main_MiSTer has
+	# started again it presses F9 the moment Main_MiSTer has that keyboard: the Linux framebuffer (ES) comes
+	# before the MiSTer menu is drawn. It prints the framebuffer's size. Before, the helper ran beside a loop
+	# here that looked at the core every 0.1 s with bash's read -t; the helper ending as the menu core came,
+	# its signal could meet that read, which then waited for ever (seen once on the MiSTer: ES did not come
+	# back).
+	DRAWN=$("$ES/es-mister-helper" back $$ "$SCREEN")
 	# the helper gone another way (it cannot run, say): the same wait, with sleep
 	corename
 	while [ "$core" != "MENU" ]; do
@@ -129,15 +132,17 @@ if [ $started = 1 ]; then
 		corename
 	done
 	stamp "back in the menu"
-	# no wait for Main_MiSTer starting again: the helper waits until it has taken its keyboard, and presses
-	# F9 until it switches to the Linux framebuffer (a fixed 2 s here kept the MiSTer menu on screen)
 else
 	echo "the core did not start"
 fi
 
-for attempt in 1 2 3; do
-	DRAWN=$("$ES/es-mister-helper" console "$SCREEN") && break
-	echo "the framebuffer is not on yet (try $attempt)"
-	sleep 3
-done
+# the framebuffer not on yet (the helper above failed, or the core did not start): the helper's console, which
+# waits until Main_MiSTer has taken its keyboard and presses F9 until it switches to the Linux framebuffer
+if [ -z "$DRAWN" ]; then
+	for attempt in 1 2 3; do
+		DRAWN=$("$ES/es-mister-helper" console "$SCREEN") && break
+		echo "the framebuffer is not on yet (try $attempt)"
+		sleep 3
+	done
+fi
 stamp "framebuffer $DRAWN"

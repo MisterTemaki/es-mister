@@ -24,13 +24,22 @@
 //   es-mister-helper exitkeys PID           while PID (mister-launch.sh) waits for a game to end: Create and
 //                                          Options (Share and Options) of a DualSense or DualShock 4 held
 //                                          together for a second load the menu core (see exit_keys)
+//   es-mister-helper back PID SIZE          exitkeys, then console SIZE once the menu core is back, with the
+//                                          keyboard made while the menu core loads: F9 before the MiSTer menu
+//                                          is drawn (see back); the size is printed
 //   es-mister-helper reboot                 the MiSTer restarted cold, as its menu's Reboot held (see power)
 //   es-mister-helper halt                   the MiSTer shut down, its HDMI output off (see power)
 
+#define _GNU_SOURCE
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <poll.h>
+#include <sched.h>
 #include <signal.h>
+#include <stdarg.h>
+#include <strings.h>
+#include <sys/inotify.h>
 #include <linux/fb.h>
 #include <linux/kd.h>
 #include <linux/i2c-dev.h>
@@ -67,31 +76,164 @@ static int read_line(const char* path, char* out, size_t size)
 
 static pid_t process_named(const char* wanted);
 
+static long long now_ms(void)
+{
+	struct timespec t;
+	clock_gettime(CLOCK_MONOTONIC, &t);
+	return (long long)t.tv_sec * 1000 + t.tv_nsec / 1000000;
+}
+
+// A line on stderr (the log) after the time since the MiSTer started, as /proc/uptime and the scripts' lines
+// have it
+static void stamp(const char* format, ...)
+{
+	struct timespec t;
+	clock_gettime(CLOCK_BOOTTIME, &t);
+	fprintf(stderr, "[%lld.%02ld] es-mister-helper: ", (long long)t.tv_sec, t.tv_nsec / 10000000);
+	va_list args;
+	va_start(args, format);
+	vfprintf(stderr, format, args);
+	va_end(args);
+	fputc('\n', stderr);
+}
+
+// the keyboard's /dev/input/eventN in node, "" when it cannot be told
+static void keyboard_node(int fd, char* node, size_t size)
+{
+	char sysname[64] = "";
+	node[0] = 0;
+	if (ioctl(fd, UI_GET_SYSNAME(sizeof(sysname)), sysname) < 0)
+		return;
+	char path[160];
+	snprintf(path, sizeof(path), "/sys/devices/virtual/input/%s", sysname);
+	DIR* dir = opendir(path);
+	if (!dir)
+		return;
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != NULL)
+		if (!strncmp(entry->d_name, "event", 5))
+		{
+			snprintf(node, size, "/dev/input/%s", entry->d_name);
+			break;
+		}
+	closedir(dir);
+}
+
+// whether process pid has the file path open (one of /proc/pid/fd leads to it); with suffix set, any file whose
+// name ends so (case ignored)
+static int pid_has_open(pid_t pid, const char* path, int suffix)
+{
+	char fds[64];
+	snprintf(fds, sizeof(fds), "/proc/%d/fd", (int)pid);
+	DIR* dir = opendir(fds);
+	if (!dir)
+		return 0;
+	const size_t length = strlen(path);
+	int found = 0;
+	struct dirent* entry;
+	while (!found && (entry = readdir(dir)) != NULL)
+	{
+		if (entry->d_name[0] < '0' || entry->d_name[0] > '9')
+			continue;
+		char link[96], target[512];
+		snprintf(link, sizeof(link), "%s/%s", fds, entry->d_name);
+		const ssize_t n = readlink(link, target, sizeof(target) - 1);
+		if (n <= 0)
+			continue;
+		target[n] = 0;
+		if (suffix)
+			found = (size_t)n >= length && !strcasecmp(target + n - length, path);
+		else
+			found = !strcmp(target, path);
+	}
+	closedir(dir);
+	return found;
+}
+
+// up to max processes of that name (/proc/N/comm), their number
+static int processes_named(const char* wanted, pid_t* out, int max)
+{
+	DIR* dir = opendir("/proc");
+	if (!dir)
+		return 0;
+	int count = 0;
+	struct dirent* entry;
+	while (count < max && (entry = readdir(dir)) != NULL)
+	{
+		const pid_t n = (pid_t)atoi(entry->d_name);
+		if (n <= 1)
+			continue;
+		char path[64], name[64] = "";
+		snprintf(path, sizeof(path), "/proc/%d/comm", (int)n);
+		if (read_line(path, name, sizeof(name)) && !strcmp(name, wanted))
+			out[count++] = n;
+	}
+	closedir(dir);
+	return count;
+}
+
+// Waits until a Main_MiSTer has the keyboard node open, at most ms: the milliseconds it took, -1 when it did not.
+// The node's opens are watched (inotify IN_OPEN), so an open is seen at once; besides, a look every poll_ms (in
+// case no open is reported). Main_MiSTer starting again (a core loaded) is a new process: the processes named
+// MiSTer are looked for again at each open and every 50 ms.
+static int wait_main_opens(const char* node, int ms, int poll_ms, int* by_watch)
+{
+	int watch = inotify_init1(IN_CLOEXEC | IN_NONBLOCK);
+	if (watch >= 0 && inotify_add_watch(watch, node, IN_OPEN) < 0)
+	{
+		close(watch);
+		watch = -1;
+	}
+	const long long start = now_ms();
+	long long scanned = -1000;
+	pid_t mains[8];
+	int count = 0, waited = -1, opened = 0;
+	*by_watch = 0;
+	for (;;)
+	{
+		const long long now = now_ms();
+		if (opened || now - scanned >= 50)
+		{
+			count = processes_named("MiSTer", mains, 8);
+			scanned = now;
+		}
+		for (int i = 0; i < count && waited < 0; i++)
+			if (pid_has_open(mains[i], node, 0))
+				waited = (int)(now - start);
+		if (waited >= 0)
+		{
+			*by_watch = opened;
+			break;
+		}
+		const int left = ms - (int)(now - start);
+		if (left <= 0)
+			break;
+		opened = 0;
+		if (watch >= 0)
+		{
+			struct pollfd p = { watch, POLLIN, 0 };
+			if (poll(&p, 1, left < poll_ms ? left : poll_ms) > 0)
+			{
+				char events[4096];
+				while (read(watch, events, sizeof(events)) > 0)
+					opened = 1;
+			}
+		}
+		else
+			sleep_ms(left < poll_ms ? left : poll_ms);
+	}
+	if (watch >= 0)
+		close(watch);
+	return waited;
+}
+
 // Main_MiSTer finds new input devices on its own (it watches /dev/input): wait until it has opened this
 // keyboard, its /dev/input/eventN among Main_MiSTer's open files, so the first F9 is not lost. At most
 // MS milliseconds; 1 when it was opened, 0 when not, -1 when it cannot tell (then it waited MS).
 static int keyboard_wait_opened(int fd, int ms)
 {
-	char sysname[64] = "";
-	char node[64] = "";
-	if (ioctl(fd, UI_GET_SYSNAME(sizeof(sysname)), sysname) >= 0)
-	{
-		char path[160];
-		snprintf(path, sizeof(path), "/sys/devices/virtual/input/%s", sysname);
-		DIR* dir = opendir(path);
-		if (dir)
-		{
-			struct dirent* entry;
-			while ((entry = readdir(dir)) != NULL)
-				if (!strncmp(entry->d_name, "event", 5))
-				{
-					snprintf(node, sizeof(node), "/dev/input/%s", entry->d_name);
-					break;
-				}
-			closedir(dir);
-		}
-	}
-
+	char node[64];
+	keyboard_node(fd, node, sizeof(node));
 	const pid_t mister = node[0] ? process_named("MiSTer") : 0;
 	if (!mister)
 	{
@@ -99,29 +241,9 @@ static int keyboard_wait_opened(int fd, int ms)
 		return -1;
 	}
 
-	char fds[64];
-	snprintf(fds, sizeof(fds), "/proc/%d/fd", (int)mister);
 	for (int waited = 0; waited < ms; waited += 10)
 	{
-		DIR* dir = opendir(fds);
-		int opened = 0;
-		if (dir)
-		{
-			struct dirent* entry;
-			while (!opened && (entry = readdir(dir)) != NULL)
-			{
-				char link[96], target[96];
-				snprintf(link, sizeof(link), "%s/%s", fds, entry->d_name);
-				const ssize_t n = readlink(link, target, sizeof(target) - 1);
-				if (n > 0)
-				{
-					target[n] = 0;
-					opened = !strcmp(target, node);
-				}
-			}
-			closedir(dir);
-		}
-		if (opened)
+		if (pid_has_open(mister, node, 0))
 		{
 			// a moment for Main_MiSTer to take it into its loop
 			sleep_ms(50);
@@ -511,7 +633,48 @@ static int framebuffer_size(int* width, int* height)
 	return framebuffer_mode(width, height, NULL);
 }
 
-static int console_on(const char* size, int presses)
+// F9 pressed (held 40 ms) until the active console is tty1 (Main_MiSTer's switch to the Linux framebuffer), at
+// most presses times, 0.3 s apart, the console looked at every 5 ms: the presses it took, 0 when it did not
+static int f9_until_tty1(int kbd, int presses, char* tty, size_t size, int* taken_ms)
+{
+	const long long start = now_ms();
+	for (int tries = 1; tries <= presses; tries++)
+	{
+		emit(kbd, EV_KEY, KEY_F9, 1);
+		emit(kbd, EV_SYN, SYN_REPORT, 0);
+		const long long down = now_ms();
+		int done = 0;
+		for (int waited = 0; waited < 300 && !done; waited += 5)
+		{
+			sleep_ms(5);
+			read_line("/sys/devices/virtual/tty/tty0/active", tty, size);
+			done = strcmp(tty, "tty1") == 0;
+			if (done)
+				*taken_ms = (int)(now_ms() - start);
+			if (done || now_ms() - down >= 40)
+				break;
+		}
+		const long long held = now_ms() - down;
+		if (held < 40)
+			sleep_ms((int)(40 - held));
+		emit(kbd, EV_KEY, KEY_F9, 0);
+		emit(kbd, EV_SYN, SYN_REPORT, 0);
+		for (long long waited = now_ms() - down; !done && waited < 300; waited = now_ms() - down)
+		{
+			sleep_ms(5);
+			read_line("/sys/devices/virtual/tty/tty0/active", tty, size);
+			done = strcmp(tty, "tty1") == 0;
+			if (done)
+				*taken_ms = (int)(now_ms() - start);
+		}
+		if (done)
+			return tries;
+	}
+	return 0;
+}
+
+// kbd: a keyboard made while the menu core loaded (back), -1 for one made now
+static int console_on(const char* size, int presses, int kbd)
 {
 	int width = 640, height = 360, divisor = 1;
 	const int fill = size && !strncmp(size, "fill:", 5);
@@ -532,10 +695,40 @@ static int console_on(const char* size, int presses)
 	if (strcmp(core, "MENU") != 0)
 	{
 		fprintf(stderr, "es-mister-helper: the menu core is not loaded (%s)\n", core);
+		if (kbd >= 0)
+			keyboard_close(kbd);
 		return 1;
 	}
 
-	int kbd = keyboard_open();
+	// Made while the menu core loaded: Main_MiSTer starting again finds it in its first look at /dev/input, which
+	// comes after it has drawn and shown its menu's background (and written CORENAME); F9 the moment it has it, so
+	// that one of its first turns reads F9 and shows the Linux framebuffer: the MiSTer menu on screen 0.18 s, not
+	// 0.58 s as when the keyboard was made after CORENAME. Not opened within 1.5 s (it should be): a new keyboard,
+	// as below.
+	int early = kbd >= 0;
+	if (early)
+	{
+		char node[64];
+		keyboard_node(kbd, node, sizeof(node));
+		// a console Main_MiSTer does not use (see below): already, unless something switched back meanwhile
+		if (active_console() != 3)
+			chvt(3);
+		int by_watch = 0;
+		const int waited = node[0] ? wait_main_opens(node, 1500, 10, &by_watch) : -1;
+		if (waited >= 0)
+			stamp("Main_MiSTer opened the keyboard (%s) %d ms after the menu core was seen (%s)", node, waited,
+				by_watch ? "its open reported" : "seen looking");
+		else
+		{
+			stamp("Main_MiSTer did not open the keyboard (%s) made while the menu core loaded: a new one", node);
+			ioctl(kbd, UI_DEV_DESTROY);
+			close(kbd);
+			early = 0;
+			kbd = -1;
+		}
+	}
+	if (kbd < 0)
+		kbd = keyboard_open();
 	if (kbd < 0)
 		return 1;
 
@@ -547,21 +740,17 @@ static int console_on(const char* size, int presses)
 	// a console Main_MiSTer does not use, so its switch to tty1 can be seen
 	char before[32] = "";
 	read_line("/sys/devices/virtual/tty/tty0/active", before, sizeof(before));
-	chvt(3);
-	sleep_ms(100);
+	if (!early)
+	{
+		chvt(3);
+		sleep_ms(100);
+	}
 
 	char tty[32] = "";
-	int done = 0;
-	for (int tries = 0; tries < presses && !done; tries++)
-	{
-		press(kbd, KEY_F9);
-		for (int wait = 0; wait < 6 && !done; wait++)
-		{
-			sleep_ms(50);
-			read_line("/sys/devices/virtual/tty/tty0/active", tty, sizeof(tty));
-			done = strcmp(tty, "tty1") == 0;
-		}
-	}
+	int taken = 0;
+	const int done = f9_until_tty1(kbd, presses, tty, sizeof(tty), &taken);
+	if (early && done)
+		stamp("F9 taken after %d ms (%d press%s)", taken, done, done > 1 ? "es" : "");
 	keyboard_close(kbd);
 
 	if (!done)
@@ -776,14 +965,19 @@ static int pad_buttons(int kind, const unsigned char* data, int size)
 #define EXIT_KEYS 0x30     // Create (Share) and Options in that byte
 #define EXIT_HOLD_MS 1000
 
-static long long now_ms(void)
+// The menu core being loaded: Main_MiSTer (the game's, pid) has menu.rbf open, which it reads and writes into the
+// FPGA (2 to 3.5 s) before it starts again (System > Reboot, or load_core). Its pid looked for again when gone.
+static int menu_core_loading(pid_t* mister)
 {
-	struct timespec t;
-	clock_gettime(CLOCK_MONOTONIC, &t);
-	return (long long)t.tv_sec * 1000 + t.tv_nsec / 1000000;
+	if (*mister <= 0 || kill(*mister, 0) != 0)
+		*mister = process_named("MiSTer");
+	return *mister > 0 && pid_has_open(*mister, "/menu.rbf", 1);
 }
 
-static int exit_keys(int launcher)
+// keyboard: NULL, or where the keyboard made for back goes (-1 until then). With it, the keyboard is made as soon
+// as the menu core is being loaded, and the console switched to tty3 (see console_on): the game is gone then, and
+// the Main_MiSTer loading it reads no input until it starts again.
+static int exit_keys(int launcher, int* keyboard)
 {
 	struct
 	{
@@ -793,6 +987,8 @@ static int exit_keys(int launcher)
 	} pads[8];
 	int count = 0;
 	long long next_scan = 0;
+	pid_t mister = 0;
+	int asked = 0;
 
 	for (;;)
 	{
@@ -801,6 +997,18 @@ static int exit_keys(int launcher)
 		char core[64] = "";
 		if (read_line("/tmp/CORENAME", core, sizeof(core)) && !strncmp(core, "MENU", 4))
 			break;
+		if (keyboard && *keyboard < 0 && menu_core_loading(&mister))
+		{
+			*keyboard = keyboard_create();
+			if (*keyboard >= 0)
+			{
+				char node[64];
+				keyboard_node(*keyboard, node, sizeof(node));
+				const int switched = chvt(3);
+				stamp("the menu core is being loaded: keyboard %s made, console %s", node[0] ? node : "?",
+					switched ? "3" : "not switched");
+			}
+		}
 
 		// controllers connected meanwhile (a Bluetooth pad turned on during the game), every 2 s
 		const long long now = now_ms();
@@ -828,9 +1036,8 @@ static int exit_keys(int launcher)
 				pads[count].kind = kind;
 				pads[count].since = 0;
 				strcpy(pads[count].node, entry->d_name);
-				printf("es-mister-helper: %s, a %s: Create + Options held for a second go back to ES\n", entry->d_name,
+				fprintf(stderr, "es-mister-helper: %s, a %s: Create + Options held for a second go back to ES\n", entry->d_name,
 					kind == PAD_DUALSENSE ? "DualSense" : "DualShock 4");
-				fflush(stdout);
 				count++;
 			}
 			if (dir)
@@ -871,11 +1078,18 @@ static int exit_keys(int launcher)
 		{
 			if (pads[i].since && now_ms() - pads[i].since >= EXIT_HOLD_MS)
 			{
-				printf("es-mister-helper: Create + Options held on %s: the menu core, back to ES\n", pads[i].node);
-				fflush(stdout);
-				for (int j = 0; j < count; j++)
-					close(pads[j].fd);
-				return send_cmd("load_core /media/fat/menu.rbf");
+				fprintf(stderr, "es-mister-helper: Create + Options held on %s: the menu core, back to ES\n", pads[i].node);
+				if (!keyboard)
+				{
+					for (int j = 0; j < count; j++)
+						close(pads[j].fd);
+					return send_cmd("load_core /media/fat/menu.rbf");
+				}
+				// back: the wait goes on until the menu core is there (its keyboard made meanwhile); asked once
+				if (!asked && send_cmd("load_core /media/fat/menu.rbf") != 0)
+					fprintf(stderr, "es-mister-helper: the menu core not asked for\n");
+				asked = 1;
+				pads[i].since = 0;
 			}
 		}
 	}
@@ -885,13 +1099,41 @@ static int exit_keys(int launcher)
 	return 0;
 }
 
+// Back from a game (mister-launch.sh, while it waits for the game's end): exitkeys, then console SIZE once the
+// menu core is there, with the keyboard made while the menu core loads (exit_keys, console_on), so that F9 comes
+// before the MiSTer menu is drawn. On CPU 0: Main_MiSTer runs on CPU 1 (it pins itself there), and its start is
+// what this waits on. 1 when PID ended before the menu core came.
+static int back(int launcher, const char* size)
+{
+	cpu_set_t set;
+	CPU_ZERO(&set);
+	CPU_SET(0, &set);
+	sched_setaffinity(0, sizeof(set), &set);
+
+	int kbd = -1;
+	exit_keys(launcher, &kbd);
+	char core[64] = "";
+	read_line("/tmp/CORENAME", core, sizeof(core));
+	if (strcmp(core, "MENU") != 0)
+	{
+		if (kbd >= 0)
+			keyboard_close(kbd);
+		return 1;
+	}
+	stamp("the menu core (%s)", kbd >= 0 ? "its keyboard ready" : "no keyboard made yet");
+	return console_on(size, 30, kbd);
+}
+
 int main(int argc, char** argv)
 {
 	if (argc >= 2 && !strcmp(argv[1], "console"))
 	{
 		const int presses = argc >= 4 ? atoi(argv[3]) : 30;
-		return console_on(argc >= 3 ? argv[2] : NULL, presses >= 1 && presses <= 100 ? presses : 30);
+		return console_on(argc >= 3 ? argv[2] : NULL, presses >= 1 && presses <= 100 ? presses : 30, -1);
 	}
+
+	if (argc >= 4 && !strcmp(argv[1], "back"))
+		return back(atoi(argv[2]), argv[3]);
 
 	if (argc >= 3 && !strcmp(argv[1], "cmd"))
 		return send_cmd(argv[2]);
@@ -929,11 +1171,11 @@ int main(int argc, char** argv)
 		return ungrab(atoi(argv[2])) >= 0 ? 0 : 1;
 
 	if (argc >= 3 && !strcmp(argv[1], "exitkeys"))
-		return exit_keys(atoi(argv[2]));
+		return exit_keys(atoi(argv[2]), NULL);
 
 	if (argc >= 2 && (!strcmp(argv[1], "reboot") || !strcmp(argv[1], "halt")))
 		return power(!strcmp(argv[1], "halt"));
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | cmd TEXT | key NAME | core | text | guard PID | ungrab PID | exitkeys PID | reboot | halt\n", argv[0]);
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | cmd TEXT | key NAME | core | text | guard PID | ungrab PID | exitkeys PID | back PID SIZE | reboot | halt\n", argv[0]);
 	return 2;
 }

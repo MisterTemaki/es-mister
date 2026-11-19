@@ -44,8 +44,9 @@ Using it
 - To come back from a game: hold Create and Options together for a second
   (Share and Options on a DualShock 4). Or open the OSD (F12 or the
   controller's menu button) and go back to the MiSTer menu (System > Reboot,
-  a short press, not held). The MiSTer menu loads again (2 to 3 seconds) and
-  EmulationStation comes back by itself about a second later.
+  a short press, not held). The MiSTer menu core loads again (about 2
+  seconds) and EmulationStation comes back by itself: the MiSTer menu
+  shows only for a moment (about 0.2 s).
 - To leave EmulationStation: Menu > Quit > Quit EmulationStation (back to the
   MiSTer menu).
 - Menu > Quit > Restart system: the MiSTer restarts cold, as its menu's
