@@ -93,3 +93,130 @@ TEST(canonical_path)
 	CHECK_EQ(getCanonicalPath(deep + "/./x"), expected + "/x");
 	CHECK_EQ(getCanonicalPath(deep + "/../x"), expected.substr(0, expected.rfind('/')) + "/x");
 }
+
+namespace
+{
+	// isAbsolute and getCanonicalPath as they were before they skipped work (getGenericPath's copy; the loop for a
+	// "/." that is no "." folder): the new ones must give the same for any path
+	bool oldIsAbsolute(const std::string& _path)
+	{
+		if (_path.size() >= 2 && _path[0] == ':' && _path[1] == '/')
+			return true;
+		std::string path = Utils::FileSystem::getGenericPath(_path);
+		return ((path.size() > 0) && (path[0] == '/'));
+	}
+
+	std::string oldCanonicalPath(const std::string& _path)
+	{
+		using namespace Utils::FileSystem;
+		if (_path.size() >= 2 && _path[0] == ':' && _path[1] == '/')
+			return _path;
+		std::string path = oldIsAbsolute(_path) ? getGenericPath(_path) : (exists(_path) ? getAbsolutePath(_path) : getGenericPath(_path));
+		if (path.find("/.") == std::string::npos)
+			return path;
+		std::vector<int> indexes;
+		int index = -1;
+		std::vector<char> buffer(path.size() + 1);
+		char* fp = buffer.data();
+		int pos = 0;
+		bool pointset = false;
+		bool twopointset = false;
+		for (int i = 0; i < (int)path.size(); i++)
+		{
+			char c = path[i];
+			if (c == '/' || c == '\\')
+			{
+				if (twopointset)
+				{
+					if (index > 0)
+						pos = indexes[--index] + 1;
+					twopointset = false;
+					pointset = false;
+					continue;
+				}
+				else if (pointset)
+				{
+					pos = index >= 0 ? indexes[index] + 1 : 0;
+					pointset = false;
+					continue;
+				}
+				else
+				{
+					if (++index >= (int)indexes.size())
+						indexes.resize(index + 1);
+					indexes[index] = pos;
+				}
+				fp[pos++] = '/';
+				continue;
+			}
+			else if (c == '.')
+			{
+				if (twopointset)
+					twopointset = false;
+				else if (pointset)
+				{
+					twopointset = true;
+					pointset = false;
+				}
+				else if (index >= 0 && i > 0 && (path[i - 1] == '/' || path[i - 1] == '\\'))
+					pointset = true;
+			}
+			else
+			{
+				twopointset = false;
+				pointset = false;
+			}
+			fp[pos++] = c;
+		}
+		fp[pos] = 0;
+		return fp;
+	}
+}
+
+TEST(absolute_and_canonical_paths_as_before)
+{
+	// every path of up to 7 characters of these, and some longer ones made of them at random
+	const char alphabet[] = { '/', '\\', '.', 'a', '?', ':', '\0' };
+	const int letters = sizeof(alphabet);
+	std::vector<std::string> paths;
+	for (int length = 0; length <= 7; length++)
+	{
+		std::vector<int> digits(length, 0);
+		while (true)
+		{
+			std::string path;
+			for (int d : digits)
+				path += alphabet[d];
+			paths.push_back(path);
+			int i = 0;
+			while (i < length && ++digits[i] == letters)
+				digits[i++] = 0;
+			if (i == length)
+				break;
+		}
+	}
+	unsigned seed = 12345;
+	for (int n = 0; n < 200000; n++)
+	{
+		std::string path;
+		const int length = 8 + (seed = seed * 1103515245 + 12345) % 40;
+		for (int i = 0; i < length; i++)
+			path += alphabet[((seed = seed * 1103515245 + 12345) >> 16) % letters];
+		paths.push_back(path);
+	}
+	for (const char* real : { "/media/fat/es-mister-720p/.emulationstation/themes/es-theme-carbon/./art/logos/snes.svg",
+		"/media/fat/es-mister-720p/.emulationstation/themes/es-theme-carbon/art/../art/x.png", "/a/.hidden/./b/", "\\\\?\\/x", "///" })
+		paths.push_back(real);
+
+	int different = 0;
+	for (const std::string& path : paths)
+	{
+		if (Utils::FileSystem::isAbsolute(path) != oldIsAbsolute(path) || Utils::FileSystem::getCanonicalPath(path) != oldCanonicalPath(path))
+		{
+			if (different++ < 5)
+				CHECK_EQ(Utils::FileSystem::getCanonicalPath(path) + (Utils::FileSystem::isAbsolute(path) ? " abs" : " rel"), oldCanonicalPath(path) + (oldIsAbsolute(path) ? " abs" : " rel"));
+		}
+	}
+	CHECK_EQ(different, 0);
+	CHECK_EQ(paths.size() > 1000000, true);
+}

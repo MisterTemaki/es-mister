@@ -719,6 +719,12 @@ namespace Utils
 			// Early return if there are no . or .. components to normalize
 			if (path.find("/.") == std::string::npos)
 				return path;
+
+			// The loop below changes a path only at a "." or ".." folder with a separator after it ("/./", "/../":
+			// getGenericPath left no other separator than "/"), or at a NUL, where it stops. Any "/." sent a path
+			// through it: all the theme's paths, under ".emulationstation", went through and came out the same
+			if (path.find("/./") == std::string::npos && path.find("/../") == std::string::npos && path.find('\0') == std::string::npos)
+				return path;
 #endif
 			
 			// where each folder of the path starts, as deep as it goes (it was 32, and a deeper path wrote past
@@ -1157,13 +1163,19 @@ namespace Utils
 		{
 			if(_path.size() >= 2 && _path[0] == ':' && _path[1] == '/')
 				return true;
-		
-			std::string path = getGenericPath(_path);
 
 #ifdef WIN32
+			std::string path = getGenericPath(_path);
 			return ((path.size() > 1) && (path[1] == ':'));
 #else // _WIN32
-			return ((path.size() > 0) && (path[0] == '/'));
+			// what getGenericPath(_path) starting with "/" gives, without making that copy: after a "\\?\" (taken
+			// away), a separator first, and not only separators (getGenericPath takes the last ones away: "/" and
+			// "//" come out empty)
+			const size_t start = (_path.size() >= 4 && _path.compare(0, 4, "\\\\?\\") == 0) ? 4 : 0;
+			if (start >= _path.size() || (_path[start] != '/' && _path[start] != '\\'))
+				return false;
+
+			return _path.find_first_not_of("/\\", start) != std::string::npos;
 #endif // _WIN32
 
 		} // isAbsolute
