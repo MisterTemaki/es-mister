@@ -68,9 +68,9 @@ static int read_line(const char* path, char* out, size_t size)
 static pid_t process_named(const char* wanted);
 
 // Main_MiSTer finds new input devices on its own (it watches /dev/input): wait until it has opened this
-// keyboard, its /dev/input/eventN among Main_MiSTer's open files, so the first F9 is not lost. It was a
-// fixed second; now that second is only the most it waits (and what it waits when it cannot tell).
-static void keyboard_wait_opened(int fd)
+// keyboard, its /dev/input/eventN among Main_MiSTer's open files, so the first F9 is not lost. At most
+// MS milliseconds; 1 when it was opened, 0 when not, -1 when it cannot tell (then it waited MS).
+static int keyboard_wait_opened(int fd, int ms)
 {
 	char sysname[64] = "";
 	char node[64] = "";
@@ -95,13 +95,13 @@ static void keyboard_wait_opened(int fd)
 	const pid_t mister = node[0] ? process_named("MiSTer") : 0;
 	if (!mister)
 	{
-		sleep_ms(1000);
-		return;
+		sleep_ms(ms);
+		return -1;
 	}
 
 	char fds[64];
 	snprintf(fds, sizeof(fds), "/proc/%d/fd", (int)mister);
-	for (int waited = 0; waited < 1000; waited += 10)
+	for (int waited = 0; waited < ms; waited += 10)
 	{
 		DIR* dir = opendir(fds);
 		int opened = 0;
@@ -126,14 +126,15 @@ static void keyboard_wait_opened(int fd)
 			// a moment for Main_MiSTer to take it into its loop
 			sleep_ms(50);
 			fprintf(stderr, "es-mister-helper: Main_MiSTer opened the keyboard (%s) after %d ms\n", node, waited);
-			return;
+			return 1;
 		}
 		sleep_ms(10);
 	}
-	fprintf(stderr, "es-mister-helper: Main_MiSTer did not open the keyboard (%s) in 1 s\n", node);
+	fprintf(stderr, "es-mister-helper: Main_MiSTer did not open the keyboard (%s) in %d ms\n", node, ms);
+	return 0;
 }
 
-static int keyboard_open(void)
+static int keyboard_create(void)
 {
 	int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
 	if (fd < 0)
@@ -160,9 +161,27 @@ static int keyboard_open(void)
 		close(fd);
 		return -1;
 	}
-
-	keyboard_wait_opened(fd);
 	return fd;
+}
+
+// The keyboard, once Main_MiSTer has it. Right after a core is loaded, Main_MiSTer starting again could miss
+// a keyboard made meanwhile (between its look at /dev/input and its watch on it): it then took it only some
+// 1.3 s later, 1 back from a game in 4. So a keyboard not taken within 0.25 s is made again (a new device
+// Main_MiSTer sees), 4 times at most; then the last one is kept, as before.
+static int keyboard_open(void)
+{
+	for (int attempt = 1;; attempt++)
+	{
+		const int fd = keyboard_create();
+		if (fd < 0)
+			return -1;
+		const int last = attempt == 4;
+		const int opened = keyboard_wait_opened(fd, last ? 1000 : 250);
+		if (opened != 0 || last)
+			return fd;
+		ioctl(fd, UI_DEV_DESTROY);
+		close(fd);
+	}
 }
 
 static void emit(int fd, int type, int code, int value)
