@@ -271,7 +271,7 @@ endif()
 # define target
 include_directories(${COMMON_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(MISTER_PERF)
-  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/FileData.cpp PROPERTIES COMPILE_DEFINITIONS MISTER_PERF)
+  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/FileData.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/SystemData.cpp PROPERTIES COMPILE_DEFINITIONS MISTER_PERF)
 endif()
 add_executable(emulationstation ${ES_SOURCES} ${ES_HEADERS})
 target_link_libraries(emulationstation ${COMMON_LIBRARIES} es-core)

@@ -2946,3 +2946,122 @@ void ThemeData::applySelfTheme(GuiComponent* comp, const ThemeElement& elem)
 	// made and freed while it scrolls. (Taken out of the copy, which would free them with this temporary theme.)
 	comp->takeStoryboards(element.mStoryBoards);
 }
+
+#ifdef MISTER_PERF
+#include <cstdio>
+#include <typeinfo>
+
+// floats as hexadecimal, exact to the bit
+static std::string dumpFloat(double v)
+{
+	char buf[64];
+	snprintf(buf, sizeof(buf), "%a", v);
+	return buf;
+}
+
+static void dumpProperty(std::ostream& out, const ThemeData::ThemeElement::Property& p)
+{
+	out << "t" << (int)p.type << " s=[" << p.s << "] v=" << dumpFloat(p.v.x()) << "," << dumpFloat(p.v.y())
+		<< " r=" << dumpFloat(p.r.x()) << "," << dumpFloat(p.r.y()) << "," << dumpFloat(p.r.z()) << "," << dumpFloat(p.r.w());
+	switch (p.type)
+	{
+	case ThemeData::ThemeElement::Property::PropertyType::Int: out << " i=" << p.i; break;
+	case ThemeData::ThemeElement::Property::PropertyType::Float: out << " f=" << dumpFloat(p.f); break;
+	case ThemeData::ThemeElement::Property::PropertyType::Bool: out << " b=" << (int)p.b; break;
+	default: break;
+	}
+}
+
+static void dumpElement(std::ostream& out, const ThemeData::ThemeElement& e, const std::string& indent)
+{
+	out << indent << "type=[" << e.type << "] extra=" << e.extra << "\n";
+
+	// sorted, then the map's own order (a code that walks the properties sees that one)
+	std::vector<std::string> keys;
+	std::string order;
+	for (auto& p : e.properties)
+	{
+		keys.push_back(p.first);
+		order += p.first + " ";
+	}
+	std::sort(keys.begin(), keys.end());
+	out << indent << "order: " << order << "\n";
+	for (auto& k : keys)
+	{
+		out << indent << "p " << k << ": ";
+		dumpProperty(out, e.properties.at(k));
+		out << "\n";
+	}
+
+	for (auto& sb : e.mStoryBoards)
+	{
+		out << indent << "storyboard [" << sb.first << "] event=[" << sb.second->eventName << "] repeat=" << sb.second->repeat << " repeatAt=" << sb.second->repeatAt << "\n";
+		for (auto anim : sb.second->animations)
+		{
+			out << indent << "  anim " << typeid(*anim).name() << " prop=[" << anim->propertyName << "] duration=" << anim->duration << " begin=" << anim->begin
+				<< " autoReverse=" << anim->autoReverse << " repeat=" << anim->repeat << " easing=" << (int)anim->easingMode << " enabled=" << anim->enabled
+				<< " enabledExpression=[" << anim->enabledExpression << "]\n";
+			out << indent << "    from: ";
+			dumpProperty(out, anim->from);
+			out << "\n" << indent << "    to: ";
+			dumpProperty(out, anim->to);
+			out << "\n";
+		}
+	}
+
+	for (auto& child : e.children)
+	{
+		out << indent << "child [" << child.first << "]\n";
+		dumpElement(out, child.second, indent + "    ");
+	}
+}
+
+void ThemeData::dump(std::ostream& out) const
+{
+	out << "version=" << dumpFloat(mVersion) << " defaultView=[" << mDefaultView << "] defaultTransition=[" << mDefaultTransition << "]\n";
+	out << "colorset=[" << mColorset << "] iconset=[" << mIconset << "] menu=[" << mMenu << "] systemview=[" << mSystemview << "] gamelistview=[" << mGamelistview << "]\n";
+	out << "systemThemeFolder=[" << mSystemThemeFolder << "] language=[" << mLanguage << "] langAndRegion=[" << mLangAndRegion << "] region=[" << mRegion << "]\n";
+	out << "perGameOverrideTmp=" << mPerGameOverrideTmp << "\n";
+
+	for (auto& path : mPaths)
+		out << "path [" << path << "]\n";
+
+	for (auto& v : mVariables)
+		out << "var " << v.first << "=[" << v.second << "]\n";
+
+	for (auto& v : mEvaluatorVariables)
+		out << "eval " << v.first << " type=" << v.second.type << " number=" << dumpFloat(v.second.number) << " string=[" << v.second.string << "]\n";
+
+	for (auto& s : mSubsets)
+	{
+		out << "subset [" << s.subset << "] name=[" << s.name << "] displayName=[" << s.displayName << "] subSetDisplayName=[" << s.subSetDisplayName << "] appliesTo:";
+		for (auto& a : s.appliesTo)
+			out << " [" << a << "]";
+		out << "\n";
+	}
+
+	for (auto& s : mSubsetDefault)
+		out << "subsetDefault " << s.first << "=[" << s.second << "]\n";
+
+	for (auto& view : mViews)
+	{
+		const ThemeView& v = view.second;
+		out << "view [" << view.first << "] baseType=[" << v.baseType << "] extraTransition=[" << v.extraTransition << "] extraTransitionDirection=[" << v.extraTransitionDirection
+			<< "] extraTransitionSpeed=" << dumpFloat(v.extraTransitionSpeed) << " displayName=[" << v.displayName << "] isCustomView=" << v.isCustomView << "\n";
+
+		out << "  baseTypes:";
+		for (auto& b : v.baseTypes)
+			out << " [" << b << "]";
+		out << "\n  orderedKeys:";
+		for (auto& k : v.orderedKeys)
+			out << " [" << k << "]";
+		out << "\n";
+
+		for (auto& e : v.elements)
+		{
+			out << "  element [" << e.first << "]\n";
+			dumpElement(out, e.second, "    ");
+		}
+	}
+}
+#endif

@@ -420,6 +420,10 @@ public:
 
 	static bool parseCustomShader(const ThemeData::ThemeElement* elem, Renderer::ShaderInfo* pShader, const std::string& type = "shader");
 
+	// The measurement build's dump of everything loadFile built, in a fixed order (ES_THEME_DUMP): two builds that
+	// write the same dump for every system built the same theme. Defined only when MISTER_PERF is (ThemeData.cpp)
+	void dump(std::ostream& out) const;
+
 private:
 	static std::map< std::string, std::map<std::string, ElementPropertyType> > sElementMap;
 	static std::set<std::string> sSupportedItemTemplate;

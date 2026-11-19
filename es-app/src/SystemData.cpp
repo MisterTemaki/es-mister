@@ -1863,6 +1863,15 @@ void SystemData::loadTheme()
 		*/
 
 		mTheme->loadFile(getThemeFolder(), sysData, path);
+
+#ifdef MISTER_PERF
+		// ES_THEME_DUMP=folder: everything the theme loaded, one file a system, to compare two builds
+		if (const char* dumpDir = getenv("ES_THEME_DUMP"))
+		{
+			std::ofstream out(std::string(dumpDir) + "/" + getName() + ".txt", std::ios::binary);
+			mTheme->dump(out);
+		}
+#endif
 	}
 	catch(ThemeException& e)
 	{

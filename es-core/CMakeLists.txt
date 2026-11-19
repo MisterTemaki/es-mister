@@ -333,6 +333,7 @@ if(MISTER_PERF)
     ${CMAKE_CURRENT_SOURCE_DIR}/src/renderers/soft/SoftScript.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureData.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureDataManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ThemeData.cpp
     PROPERTIES COMPILE_DEFINITIONS MISTER_PERF)
 endif()
 add_library(es-core STATIC ${CORE_SOURCES} ${CORE_HEADERS})
