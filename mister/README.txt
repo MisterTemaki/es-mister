@@ -111,12 +111,21 @@ Settings
                  on); only read, nothing written; 0 = not. Only with SIZE=auto
                  or FILL=0: otherwise EmulationStation starts at once and reads
                  them itself meanwhile
-  BGM_STOP=1     1 = the MiSTer BGM (the music it plays in the MiSTer menu)
-                 closed while EmulationStation runs, so that it has the
-                 processor and the memory (under EmulationStation the music
-                 skipped), and started again when it closes: it plays in the
-                 MiSTer menu as before; 0 = it goes on. BGM's own settings
-                 (bgm.ini) are not changed.
+  STOP_SERVICES="bgm zaparoo arcsnd"
+                 what else runs on the MiSTer, closed while EmulationStation
+                 runs (so that it has the processor and the memory to itself)
+                 and started again when it closes, as the MiSTer starts it at
+                 boot: the MiSTer BGM (under EmulationStation its music
+                 skipped), Zaparoo (NFC cards; "write an NFC tag" is not
+                 offered meanwhile) and the arcade sound server (arcsnd:
+                 paused while EmulationStation is on screen, running during
+                 the games it starts, whose sound it plays). Take a name out
+                 to leave it running. Can be added: samba (the SD card on the
+                 network), ftp (the FTP server), ntp (the clock's network
+                 time), syslog (the system log), gpm (the console's mouse).
+                 Always left running: the MiSTer's main program, Wi-Fi and
+                 the network, SSH, Bluetooth, udev, the consoles' logins and
+                 the MiSTer's sync of the SD card every 5 s.
 
 Measuring the drawing on your MiSTer
 ------------------------------------

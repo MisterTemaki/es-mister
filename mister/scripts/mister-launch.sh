@@ -92,6 +92,17 @@ fi
 # menu's button asks first) when it lets go of the screen; again here, in case it could not
 ES_PID=$(pidof emulationstation)
 [ -n "$ES_PID" ] && "$ES/es-mister-helper" ungrab "$ES_PID"
+# what es-mister.sh paused while ES is shown (ES_MISTER_PAUSED, pid:name: the arcade sound server, which plays the
+# sound of some arcade games) running during the game, and paused again once ES is back; signalled only if
+# still that program
+paused_signal() {
+	local entry comm
+	for entry in $ES_MISTER_PAUSED; do
+		read -r comm 2>/dev/null <"/proc/${entry%%:*}/comm" && [ "$comm" = "${entry#*:}" ] && kill -"$1" "${entry%%:*}"
+	done
+	return 0
+}
+paused_signal CONT
 # (through the helper: a Main_MiSTer starting again makes its command FIFO anew, and an echo opened meanwhile
 # would wait on the old one for ever, ES with it)
 "$ES/es-mister-helper" cmd "load_core $target"
@@ -146,3 +157,4 @@ if [ -z "$DRAWN" ]; then
 	done
 fi
 stamp "framebuffer $DRAWN"
+paused_signal STOP

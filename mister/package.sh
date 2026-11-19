@@ -128,10 +128,17 @@ THEME_CACHE=1
 # and reads them itself meanwhile
 PREFETCH=1
 
-# 1: the MiSTer BGM (music in the MiSTer menu, from /media/fat/music) closed while ES runs, so that ES has
-# the processor and the memory (under ES its music skipped), and started again when ES closes: it plays in the
-# MiSTer menu as before; 0: it goes on under ES. bgm.ini is not changed.
-BGM_STOP=1
+# What else runs on the MiSTer closed while ES runs (so that ES has the processor and the memory to itself) and
+# started again when ES closes, as the MiSTer starts it at boot; take a name out to leave it running:
+#   bgm      the MiSTer BGM (under ES its music skipped)
+#   zaparoo  Zaparoo (NFC cards; ES's "write an NFC tag" is not offered meanwhile)
+#   arcsnd   the arcade sound server (Konami Hornet, Hyper NeoGeo 64): paused while ES is on screen, running
+#            during the games ES starts (it plays their sound)
+# These can be added (left running by default): samba (the SD card shared on the network), ftp (the FTP server),
+# ntp (the clock's network time), syslog (the system log), gpm (the Linux console's mouse).
+# Always left running: the MiSTer's main program, Wi-Fi and the network, SSH, Bluetooth, udev (controllers and
+# USB devices plugged in), the consoles' logins and the MiSTer's sync of the SD card every 5 s.
+STOP_SERVICES="bgm zaparoo arcsnd"
 
 # Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of
 # other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.

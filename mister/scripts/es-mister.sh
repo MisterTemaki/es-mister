@@ -28,7 +28,7 @@ CAPTURE=0
 PICTURE_CACHE=1
 THEME_CACHE=1
 PREFETCH=1
-BGM_STOP=1
+STOP_SERVICES="bgm zaparoo arcsnd"
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
@@ -80,63 +80,187 @@ if pidof emulationstation >/dev/null 2>&1; then
 	"$ES/es-mister-helper" text
 fi
 
-# The MiSTer BGM (music from /media/fat/music while the menu core is loaded; mrext's bgm.sh or the older
-# Python one) closed while ES runs, so that ES has the processor and the memory: ES runs in the menu core, and
-# the music went on under it, skipping (its player short of the processor ES draws with). Closed as its own
-# "bgm.sh stop" closes it (the pid from its socket, SIGTERM) without starting bgm.sh for it (the Python one
-# takes about a second to start on the MiSTer); with it its player and its copy in /tmp. Started again when ES
-# closes (also on any other way out of this script) as at the MiSTer's start, "bgm.sh start" ("exec" if its
-# bgm.ini has startup = no: then it had been started from the Scripts menu): it plays in the MiSTer menu
-# again. BGM_STOP=0: left on.
+# What else runs on the MiSTer closed while ES runs, so that ES has the processor and the memory to itself, and
+# started again when ES closes (also on any other way out of this script), each as the MiSTer starts it at boot:
+# by its own init script or command, with the boot's environment. STOP_SERVICES names them; by default:
+#   bgm      the MiSTer BGM (mrext's bgm.sh or the older Python one; under ES its music skipped)
+#   zaparoo  Zaparoo (NFC cards; ES's "write an NFC tag" is not offered meanwhile)
+#   arcsnd   the arcade sound server (Konami Hornet, Hyper NeoGeo 64): paused while ES is on screen, and running
+#            during the games ES starts, whose sound it plays (mister-launch.sh)
+# and, if added (left running by default):
+#   samba    the SD card shared on the network (smbd, nmbd)
+#   ftp      the FTP server (proftpd)
+#   ntp      the clock's network time (ntpd; the clock runs on meanwhile)
+#   syslog   the system log (syslogd, klogd; the kernel keeps its messages meanwhile)
+#   gpm      the Linux console's mouse
+# Always left running: the MiSTer's main program, the network (Wi-Fi, dhcpcd), SSH, Bluetooth with D-Bus (which
+# it needs), udev (controllers and USB devices plugged in), the consoles' logins (init starts them again at
+# once) and the MiSTer's sync of the SD card every 5 s (/etc/resync: what is written reaches the card even if
+# the power is cut). All are closed here, before ES starts (each sent the signal its init script sends; the BGM
+# waited for, so that its player has let go of the sound; about 50 ms in all); the others' end is waited for in
+# the background.
+BOOT_ENV=(HOME=/ TERM=vt102 USER=root SHELL=/bin/sh PATH=/sbin:/usr/sbin:/bin:/usr/bin)
 BGM_SCRIPT=/media/fat/Scripts/bgm.sh
 BGM_SOCKET=/tmp/bgm.sock
-BGM_STOPPED=""
-# the processes whose parent is $1 (read from /proc, without a fork for each: forks are slow on the MiSTer)
-children_of() {
-	local proc stat
-	for proc in /proc/[0-9]*; do
-		read -r stat 2>/dev/null <"$proc/stat" || continue
-		stat=${stat##*) }
-		set -- "$1" $stat
-		[ "$3" = "$1" ] && echo "${proc#/proc/}"
+ZAPAROO_SCRIPT=/media/fat/Scripts/zaparoo.sh
+ZAPAROO_PID=/tmp/zaparoo/core.pid
+GPM_COMMAND=(/sbin/gpm -m /dev/input/mice -t imps2)
+# their pid files, which the init scripts remove (or a process killed leaves): a start finds none, as at boot
+SERVICE_PID_FILES=(/var/run/samba/smbd.pid /var/run/samba/nmbd.pid /var/run/proftpd.pid /var/run/ntpd.pid
+	/var/run/syslogd.pid /var/run/klogd.pid /var/run/gpm.pid "$ZAPAROO_PID")
+SERVICES_STOPPED=""
+SERVICES_JOB=""
+CLOSING_PIDS=""
+PAUSED=""
+
+boot_env() { env -i "${BOOT_ENV[@]}" "$@"; }
+
+# the pids given gone (looked at every 10 ms, up to about 2 s), else killed
+pids_gone() {
+	local i pid left
+	for ((i = 0; i < 150; i++)); do
+		left=""
+		for pid; do kill -0 "$pid" 2>/dev/null && left+=" $pid"; done
+		[ -z "$left" ] && return 0
+		sleep 0.01
+	done
+	kill -KILL $left 2>/dev/null
+	return 1
+}
+zaparoo_pid() {
+	local pid="" args
+	read -r pid 2>/dev/null <"$ZAPAROO_PID"
+	case "$pid" in "" | *[!0-9]*) return 1 ;; esac
+	mapfile -d '' -t args 2>/dev/null <"/proc/$pid/cmdline" || return 1
+	case "${args[*]}" in *zaparoo*-service*) echo "$pid" ;; *) return 1 ;; esac
+}
+
+# The BGM closed as its own "bgm.sh stop" closes it (the pid from its socket, SIGTERM), without starting bgm.sh
+# for it (the Python one takes about a second to start on the MiSTer); both end their player as they close, and
+# the Go one removes its copy in /tmp. Waited for, so that the player has let go of the sound before ES opens it.
+bgm_stop() {
+	[ -S "$BGM_SOCKET" ] && [ -f "$BGM_SCRIPT" ] || return 1
+	local pid
+	pid=$("$ES/es-mister-helper" bgm pid) || return 1
+	case "$pid" in "" | *[!0-9]*) return 1 ;; esac
+	kill "$pid" 2>/dev/null || return 1
+	# one that did not end in 2 s killed (its socket and its player are then left: removed after)
+	pids_gone "$pid"
+	return 0
+}
+# a service closed as its init script closes it (samba: SIGKILL, as S91smb; the others SIGTERM), the signal sent
+# from here at once, without running the script (forks are slow, and ES is about to start); its pids kept for
+# the wait. 1: not running.
+service_close() {
+	local pids
+	case "$1" in
+	zaparoo) [ -f "$ZAPAROO_SCRIPT" ] && pids=$(zaparoo_pid) && kill -TERM $pids ;;
+	samba) [ -x /etc/init.d/S91smb ] && pids=$(pidof smbd nmbd) && kill -KILL $pids ;;
+	ftp) [ -x /etc/init.d/S50proftpd ] && pids=$(pidof proftpd) && kill -TERM $pids ;;
+	ntp) [ -x /etc/init.d/S49ntp ] && pids=$(pidof ntpd) && kill -TERM $pids ;;
+	syslog) [ -x /etc/init.d/S01syslogd ] && pids=$(pidof klogd syslogd) && kill -TERM $pids ;;
+	gpm)
+		pids=$(pidof gpm) || return 1
+		local cmdline
+		mapfile -d '' -t cmdline 2>/dev/null <"/proc/${pids%% *}/cmdline" && [ ${#cmdline[@]} -gt 0 ] && GPM_COMMAND=("${cmdline[@]}")
+		kill -TERM $pids ;;
+	*) return 1 ;;
+	esac 2>/dev/null || return 1
+	CLOSING_PIDS+=" $pids"
+}
+service_open() {
+	case "$1" in
+	syslog) boot_env /etc/init.d/S01syslogd start; boot_env /etc/init.d/S02klogd start ;;
+	ntp) boot_env /etc/init.d/S49ntp start ;;
+	samba) boot_env /etc/init.d/S91smb start ;;
+	ftp) boot_env /etc/init.d/S50proftpd start ;;
+	zaparoo) boot_env "$ZAPAROO_SCRIPT" -service start ;;
+	gpm) boot_env "${GPM_COMMAND[@]}" ;;
+	bgm)
+		# as at the MiSTer's start ("start"), or "exec" if its bgm.ini has startup = no (it had been started from
+		# the Scripts menu)
+		if grep -qiE '^[[:space:]]*startup[[:space:]]*=[[:space:]]*(no|false|off|0)[[:space:]]*$' /media/fat/music/bgm.ini; then
+			boot_env "$BGM_SCRIPT" exec &
+		else
+			boot_env "$BGM_SCRIPT" start
+		fi ;;
+	esac </dev/null >/dev/null 2>&1
+}
+# the processes paused (pid:name), signalled if still that program
+paused_signal() {
+	local entry comm
+	for entry in $PAUSED; do
+		read -r comm 2>/dev/null <"/proc/${entry%%:*}/comm" && [ "$comm" = "${entry#*:}" ] && kill -"$1" "${entry%%:*}"
 	done
 	return 0
 }
-bgm_stop() {
-	[ "$BGM_STOP" = 1 ] && [ -S "$BGM_SOCKET" ] && [ -f "$BGM_SCRIPT" ] || return 0
-	local pid children child comm i
-	pid=$("$ES/es-mister-helper" bgm pid) || return 0
-	case "$pid" in "" | *[!0-9]*) return 0 ;; esac
-	children=$(children_of "$pid")
-	kill "$pid" 2>/dev/null || return 0
-	for i in $(seq 40); do
-		kill -0 "$pid" 2>/dev/null || break
-		sleep 0.05
+# after the closing, in the background: the ends waited for, pid files left removed, what the BGM may leave (its
+# socket and player if it had to be killed; the Python one's inotifywait), and the daemons not known here logged
+services_closed() {
+	local name pid ppid comm others=""
+	[ -n "${CLOSING_PIDS// /}" ] && { pids_gone $CLOSING_PIDS || echo "some did not end in 2 s: killed"; }
+	for name in "${SERVICE_PID_FILES[@]}"; do
+		pid=""
+		read -r pid 2>/dev/null <"$name"
+		[ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null && rm -f "$name"
 	done
-	# one that did not end in 2 s: ended (then its socket and its player are left: removed below)
-	kill -0 "$pid" 2>/dev/null && kill -KILL "$pid" 2>/dev/null
-	# its player and the Python one's inotifywait, if left (a pid seen as its child, and still that program)
-	for child in $children; do
-		read -r comm 2>/dev/null <"/proc/$child/comm" || continue
-		case "$comm" in mpg123 | ogg123 | aplay | aplaymidi | inotifywait) kill "$child" 2>/dev/null ;; esac
+	while read -r pid ppid comm; do
+		[ "$ppid" = 1 ] || continue
+		case "$comm" in
+		mpg123 | ogg123 | aplay | aplaymidi | inotifywait)
+			case " $SERVICES_STOPPED " in *" bgm "*) kill "$pid" 2>/dev/null; echo "left by the BGM, ended: $comm" ;; esac ;;
+		init | MiSTer | resync | udevd | dbus-daemon | bluetoothd | wpa_supplicant | dhcpcd | udhcpc | sshd | agetty | getty | \
+			syslogd | klogd | ntpd | proftpd | smbd | nmbd | bgm.sh | zaparoo.* | gpm | arcsnd | bash | sh | setsid | \
+			emulationstation | es-mister-helpe*) ;;
+		*) others+=" $comm" ;;
+		esac
+	done < <(ps -o pid,ppid,comm)
+	# a BGM socket nobody answers on: the BGM's next start would take it for a running service
+	case " $SERVICES_STOPPED " in
+	*" bgm "*) [ -S "$BGM_SOCKET" ] && ! "$ES/es-mister-helper" bgm status >/dev/null 2>&1 && rm -f "$BGM_SOCKET" ;;
+	esac
+	[ -n "$others" ] && echo "left running (not known here):$others"
+	[ -n "$SERVICES_STOPPED$PAUSED" ] && echo "[$(cut -d' ' -f1 /proc/uptime)] closed while ES runs:${SERVICES_STOPPED:- none}${PAUSED:+; paused:$PAUSED}"
+	return 0
+}
+
+services_stop() {
+	local name pid
+	for name in $STOP_SERVICES; do
+		case "$name" in
+		bgm) bgm_stop && SERVICES_STOPPED+=" bgm" ;;
+		arcsnd)
+			for pid in $(pidof arcsnd); do
+				# one left paused by an ES that did not end well (its script killed) taken as running
+				kill -STOP "$pid" && PAUSED+=" $pid:arcsnd"
+			done ;;
+		*) service_close "$name" && SERVICES_STOPPED+=" $name" ;;
+		esac
 	done
-	# a socket nobody answers on: the next start would take it for a running service
-	[ -S "$BGM_SOCKET" ] && ! "$ES/es-mister-helper" bgm status >/dev/null 2>&1 && rm -f "$BGM_SOCKET"
-	BGM_STOPPED=1
-	echo "MiSTer BGM closed while ES runs (pid $pid)"
+	# for mister-launch.sh: running during a game
+	export ES_MISTER_PAUSED="$PAUSED"
+	services_closed &
+	SERVICES_JOB=$!
 }
-bgm_start() {
-	[ -n "$BGM_STOPPED" ] || return 0
-	BGM_STOPPED=""
-	local how=start
-	grep -qiE '^[[:space:]]*startup[[:space:]]*=[[:space:]]*(no|false|off|0)[[:space:]]*$' /media/fat/music/bgm.ini \
-		2>/dev/null && how=exec
-	# without ES's settings (HOME, SDL_*, ES_*), as at the MiSTer's start
-	( cd / && setsid env -i PATH="$PATH" HOME=/root "$BGM_SCRIPT" "$how" </dev/null >/dev/null 2>&1 & )
-	echo "MiSTer BGM started again (bgm.sh $how)"
+services_start() {
+	[ -n "$SERVICES_STOPPED$PAUSED" ] || return 0
+	local stopped=$SERVICES_STOPPED name
+	[ -n "$SERVICES_JOB" ] && wait "$SERVICES_JOB" 2>/dev/null
+	paused_signal CONT
+	SERVICES_STOPPED=""
+	PAUSED=""
+	SERVICES_JOB=""
+	# in the background (the BGM's "start" waits for nothing; Zaparoo's takes ~0.3 s), in the boot's order
+	(
+		cd / || exit
+		for name in syslog ntp samba ftp zaparoo gpm bgm; do
+			case " $stopped " in *" $name "*) service_open "$name" ;; esac
+		done
+		echo "[$(cut -d' ' -f1 /proc/uptime)] started again:$stopped"
+	) &
 }
-bgm_stop
-trap bgm_start EXIT
+services_stop
+trap services_start EXIT
 
 # first start: the default settings and controllers
 for file in es_settings.cfg es_input.cfg; do
@@ -409,6 +533,6 @@ if [ -f /tmp/shutdown.please ]; then
 	sync
 	exec "$ES/es-mister-helper" halt
 fi
-# back to the MiSTer menu (with BGM's music again, if it was playing)
+# back to the MiSTer menu, and what was closed while ES ran started again
 "$ES/es-mister-helper" cmd "load_core /media/fat/menu.rbf"
-bgm_start
+services_start
