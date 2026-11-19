@@ -760,6 +760,16 @@ void ImageDownloadHandle::update()
 
 		// what the file is, by its first bytes (some servers name a PNG image/jpeg), else by what the server says
 		std::string trueExtension = sniffImageExtension(mSavePath);
+		// a WebP picture: ES's picture reader (stb) has no WebP, so the cover would stay empty ("Could not
+		// initialize texture"); the next address is tried instead (Hasheous serves some IGDB covers as WebP)
+		if (trueExtension == ".webp")
+		{
+			Utils::FileSystem::removeFile(mSavePath);
+			if (tryNextUrl())
+				return;
+			setStatus(ASYNC_DONE);
+			return;
+		}
 		if (!trueExtension.empty() && trueExtension != ext)
 		{
 			auto newFileName = Utils::FileSystem::changeExtension(mSavePath, trueExtension);
