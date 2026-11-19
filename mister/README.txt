@@ -111,6 +111,10 @@ Settings
                  on); only read, nothing written; 0 = not. Only with SIZE=auto
                  or FILL=0: otherwise EmulationStation starts at once and reads
                  them itself meanwhile
+  BGM_PAUSE=1    1 = the MiSTer BGM (the music it plays in the MiSTer menu)
+                 paused while EmulationStation runs, and playing again when it
+                 closes (under EmulationStation its music skipped); 0 = it plays
+                 on. BGM's own settings (bgm.ini) are not changed.
 
 Measuring the drawing on your MiSTer
 ------------------------------------

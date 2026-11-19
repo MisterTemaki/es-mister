@@ -128,6 +128,11 @@ THEME_CACHE=1
 # and reads them itself meanwhile
 PREFETCH=1
 
+# 1: the MiSTer BGM (music in the MiSTer menu, from /media/fat/music) paused while ES runs, and playing again
+# when ES closes (ES leaves its player too little of the processor: the music skipped); 0: it plays on under
+# ES. bgm.ini is not changed.
+BGM_PAUSE=1
+
 # Folders of _Arcade that ES does not read (lower case, space apart). _alternatives has thousands of
 # other versions in hundreds of folders: reading it from the SD card adds many seconds to ES's start.
 # Take it out of the list to see them in ES.

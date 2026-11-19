@@ -24,6 +24,8 @@
 //   es-mister-helper exitkeys PID           while PID (mister-launch.sh) waits for a game to end: Create and
 //                                          Options (Share and Options) of a DualSense or DualShock 4 held
 //                                          together for a second load the menu core (see exit_keys)
+//   es-mister-helper bgm COMMAND            one command to the MiSTer BGM service (see bgm_command); its reply
+//                                          printed; 1 when no service runs
 //   es-mister-helper back PID SIZE          exitkeys, then console SIZE once the menu core is back, with the
 //                                          keyboard made while the menu core loads: F9 before the MiSTer menu
 //                                          is drawn (see back); the size is printed
@@ -52,7 +54,9 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/reboot.h>
+#include <sys/socket.h>
 #include <sys/syscall.h>
+#include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -577,6 +581,53 @@ static int guard(int es)
 // again for up to 10 s: a Main_MiSTer starting again (the menu core loaded, after a game or when ES ends) makes the
 // FIFO anew, and a plain open made meanwhile waits on the old one for ever, with whatever waits for it (ES, while
 // it starts a game). 0 when written whole.
+// One command to the MiSTer BGM service (mrext's bgm.sh, or the older Python one: the same protocol), which plays
+// music while the menu core is loaded: on its socket /tmp/bgm.sock, one command per connection ("stop", "play",
+// "get playback", "set playback disabled"...), then its reply, if any, until it closes the connection. The reply
+// is printed. 1 when no service listens (no socket, or a dead one's), or it did not answer within 5 s.
+static int bgm_command(const char* command)
+{
+	const char* path = getenv("ES_BGM_SOCKET");
+	if (!path || !*path)
+		path = "/tmp/bgm.sock";
+	const int fd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
+	if (fd < 0)
+		return 1;
+	struct sockaddr_un address;
+	memset(&address, 0, sizeof(address));
+	address.sun_family = AF_UNIX;
+	snprintf(address.sun_path, sizeof(address.sun_path), "%s", path);
+	// "stop" waits for the track playing to end (its player killed): a moment
+	const struct timeval wait = { 5, 0 };
+	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &wait, sizeof(wait));
+	setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &wait, sizeof(wait));
+	if (connect(fd, (struct sockaddr*)&address, sizeof(address)) < 0 ||
+		write(fd, command, strlen(command)) != (ssize_t)strlen(command))
+	{
+		close(fd);
+		return 1;
+	}
+	char reply[4096];
+	size_t got = 0;
+	while (got < sizeof(reply) - 1)
+	{
+		const ssize_t n = read(fd, reply + got, sizeof(reply) - 1 - got);
+		if (n == 0)
+			break;
+		if (n < 0)
+		{
+			close(fd);
+			return 1;
+		}
+		got += (size_t)n;
+	}
+	close(fd);
+	reply[got] = 0;
+	if (got)
+		printf("%s\n", reply);
+	return 0;
+}
+
 static int send_cmd(const char* text)
 {
 	char line[1024];
@@ -1132,6 +1183,9 @@ int main(int argc, char** argv)
 		return console_on(argc >= 3 ? argv[2] : NULL, presses >= 1 && presses <= 100 ? presses : 30, -1);
 	}
 
+	if (argc >= 3 && !strcmp(argv[1], "bgm"))
+		return bgm_command(argv[2]);
+
 	if (argc >= 4 && !strcmp(argv[1], "back"))
 		return back(atoi(argv[2]), argv[3]);
 
@@ -1176,6 +1230,6 @@ int main(int argc, char** argv)
 	if (argc >= 2 && (!strcmp(argv[1], "reboot") || !strcmp(argv[1], "halt")))
 		return power(!strcmp(argv[1], "halt"));
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | cmd TEXT | key NAME | core | text | guard PID | ungrab PID | exitkeys PID | back PID SIZE | reboot | halt\n", argv[0]);
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | cmd TEXT | key NAME | core | text | guard PID | ungrab PID | exitkeys PID | back PID SIZE | bgm COMMAND | reboot | halt\n", argv[0]);
 	return 2;
 }

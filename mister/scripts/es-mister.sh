@@ -28,6 +28,7 @@ CAPTURE=0
 PICTURE_CACHE=1
 THEME_CACHE=1
 PREFETCH=1
+BGM_PAUSE=1
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 GAMES_ROOTS="/media/fat /media/usb0 /media/usb1 /media/usb2 /media/usb3 /media/usb4 /media/usb5 /media/fat/cifs"
@@ -78,6 +79,32 @@ if pidof emulationstation >/dev/null 2>&1; then
 	# killed, it left the console in graphics mode, where no console switch (F9) happens
 	"$ES/es-mister-helper" text
 fi
+
+# The MiSTer BGM (mrext's bgm.sh: music from /media/fat/music while the menu core is loaded) paused while ES
+# runs: ES runs in the menu core, so the music went on under it, its player (mpg123) short of the processor ES
+# draws with and of the sound output ES opens, and it skipped. Its playback set to "disabled" through its socket
+# (in its memory only: bgm.ini is not touched), so that it does not start again either when a game launched from
+# ES ends; when ES closes, set back to what it was and playing again (bgm_resume, also on any other way out).
+BGM_PLAYBACK=""
+bgm_pause() {
+	[ "$BGM_PAUSE" = 1 ] && [ -S /tmp/bgm.sock ] || return 0
+	local playback
+	playback=$("$ES/es-mister-helper" bgm "get playback") || return 0
+	case "$playback" in "" | disabled | *[!a-z]*) return 0 ;; esac
+	"$ES/es-mister-helper" bgm "set playback disabled" >/dev/null
+	"$ES/es-mister-helper" bgm stop >/dev/null
+	BGM_PLAYBACK=$playback
+	echo "MiSTer BGM paused while ES runs (its playback: $playback)"
+}
+bgm_resume() {
+	[ -n "$BGM_PLAYBACK" ] || return 0
+	"$ES/es-mister-helper" bgm "set playback $BGM_PLAYBACK" >/dev/null
+	"$ES/es-mister-helper" bgm play >/dev/null
+	echo "MiSTer BGM playing again ($BGM_PLAYBACK)"
+	BGM_PLAYBACK=""
+}
+bgm_pause
+trap bgm_resume EXIT
 
 # first start: the default settings and controllers
 for file in es_settings.cfg es_input.cfg; do
@@ -350,5 +377,6 @@ if [ -f /tmp/shutdown.please ]; then
 	sync
 	exec "$ES/es-mister-helper" halt
 fi
-# back to the MiSTer menu
+# back to the MiSTer menu, with its music if BGM plays it
+bgm_resume
 "$ES/es-mister-helper" cmd "load_core /media/fat/menu.rbf"
