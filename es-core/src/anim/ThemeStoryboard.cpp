@@ -91,48 +91,52 @@ bool ThemeStoryboard::fromXmlNode(const pugi::xml_node& root, const std::map<std
 
 		ThemeAnimation* anim = nullptr;
 
+		// each looked up once (they were twice: to test, then to read)
+		const pugi::xml_attribute fromAttr = node.attribute("from");
+		const pugi::xml_attribute toAttr = node.attribute("to");
+
 		switch (type)
 		{
 		case ThemeData::ElementPropertyType::NORMALIZED_RECT:
 			anim = new ThemeVector4Animation();
-			if (node.attribute("from")) anim->from = Vector4f::parseString(RESOLVEVAR(node.attribute("from").as_string()));
-			if (node.attribute("to")) anim->to = Vector4f::parseString(RESOLVEVAR(node.attribute("to").as_string()));
+			if (fromAttr) anim->from = Vector4f::parseString(RESOLVEVAR(fromAttr.as_string()));
+			if (toAttr) anim->to = Vector4f::parseString(RESOLVEVAR(toAttr.as_string()));
 			break;
 
 		case ThemeData::ElementPropertyType::NORMALIZED_PAIR:
 			anim = new ThemeVector2Animation();
-			if (node.attribute("from")) anim->from = Vector2f::parseString(RESOLVEVAR(node.attribute("from").as_string()));
-			if (node.attribute("to")) anim->to = Vector2f::parseString(RESOLVEVAR(node.attribute("to").as_string()));
+			if (fromAttr) anim->from = Vector2f::parseString(RESOLVEVAR(fromAttr.as_string()));
+			if (toAttr) anim->to = Vector2f::parseString(RESOLVEVAR(toAttr.as_string()));
 			break;
 
 		case ThemeData::ElementPropertyType::COLOR:			
 			anim = new ThemeColorAnimation();
-			if (node.attribute("from")) anim->from = Utils::HtmlColor::parse(RESOLVEVAR(node.attribute("from").as_string()));
-			if (node.attribute("to")) anim->to = Utils::HtmlColor::parse(RESOLVEVAR(node.attribute("to").as_string()));
+			if (fromAttr) anim->from = Utils::HtmlColor::parse(RESOLVEVAR(fromAttr.as_string()));
+			if (toAttr) anim->to = Utils::HtmlColor::parse(RESOLVEVAR(toAttr.as_string()));
 			break;
 
 		case ThemeData::ElementPropertyType::FLOAT:
 			anim = new ThemeFloatAnimation();
-			if (node.attribute("from")) anim->from = Utils::String::toFloat(RESOLVEVAR(node.attribute("from").as_string()));
-			if (node.attribute("to")) anim->to = Utils::String::toFloat(RESOLVEVAR(node.attribute("to").as_string()));
+			if (fromAttr) anim->from = Utils::String::toFloat(RESOLVEVAR(fromAttr.as_string()));
+			if (toAttr) anim->to = Utils::String::toFloat(RESOLVEVAR(toAttr.as_string()));
 			break;
 
 		case ThemeData::ElementPropertyType::PATH:
 			anim = new ThemePathAnimation();
-			if (node.attribute("from")) anim->from = Utils::FileSystem::resolveRelativePath(RESOLVEVAR(node.attribute("from").as_string()), relativePath, true);
-			if (node.attribute("to")) anim->to = Utils::FileSystem::resolveRelativePath(RESOLVEVAR(node.attribute("to").as_string()), relativePath, true);
+			if (fromAttr) anim->from = Utils::FileSystem::resolveRelativePath(RESOLVEVAR(fromAttr.as_string()), relativePath, true);
+			if (toAttr) anim->to = Utils::FileSystem::resolveRelativePath(RESOLVEVAR(toAttr.as_string()), relativePath, true);
 			break;
 
 		case ThemeData::ElementPropertyType::STRING:
 			anim = new ThemeStringAnimation();
-			if (node.attribute("from")) anim->from = RESOLVEVAR(node.attribute("from").as_string());
-			if (node.attribute("to")) anim->to = RESOLVEVAR(node.attribute("to").as_string());
+			if (fromAttr) anim->from = RESOLVEVAR(fromAttr.as_string());
+			if (toAttr) anim->to = RESOLVEVAR(toAttr.as_string());
 			break;
 
 		case ThemeData::ElementPropertyType::BOOLEAN:
 			anim = new ThemeBoolAnimation();
-			if (node.attribute("from")) anim->from = Utils::String::toBoolean(RESOLVEVAR(node.attribute("from").as_string()));
-			if (node.attribute("to")) anim->to = Utils::String::toBoolean(RESOLVEVAR(node.attribute("to").as_string()));
+			if (fromAttr) anim->from = Utils::String::toBoolean(RESOLVEVAR(fromAttr.as_string()));
+			if (toAttr) anim->to = Utils::String::toBoolean(RESOLVEVAR(toAttr.as_string()));
 			break;
 
 		default:
@@ -148,6 +152,14 @@ bool ThemeStoryboard::fromXmlNode(const pugi::xml_node& root, const std::map<std
 
 			for (pugi::xml_attribute xattr : node.attributes())
 			{
+				// none of the names below starts with another letter: "property", "from" and "to", on every
+				// animation, went through all eight strcmp
+				switch (xattr.name()[0])
+				{
+				case 'e': case 'b': case 'd': case 'r': case 'a': case 'm': break;
+				default: continue;
+				}
+
 				if (strcmp(xattr.name(), "enabled") == 0)
 				{
 					std::string enabled = xattr.as_string();
