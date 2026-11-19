@@ -64,3 +64,34 @@ TEST(dualsense_buttons_numbered_as_the_kernel_does)
 	CHECK_EQ(oldStart, -1);
 }
 #endif
+
+#include "MultiStateInput.h"
+
+// A short press (a game list's Options, A, X, Y): another input let go of meanwhile (the d-pad released just
+// after the button went down) leaves it a short press; another input pressed meanwhile does not
+TEST(short_press_survives_another_input_let_go)
+{
+	InputConfig pad(0, 0, "pad", "guid", 13, 1, 6);
+	pad.mapInput("select", Input(0, TYPE_BUTTON, 9, 1, true));
+	pad.mapInput("start", Input(0, TYPE_BUTTON, 10, 1, true));
+	pad.mapInput("down", Input(0, TYPE_HAT, 0, 4, true));
+	pad.mapInput("b", Input(0, TYPE_BUTTON, 0, 1, true));
+	// the controller's Start, ES's "select" on the MiSTer (isMappedTo)
+	const Input optionsDown(0, TYPE_BUTTON, 10, 1, false), optionsUp(0, TYPE_BUTTON, 10, 0, false);
+	const Input dpadUp(0, TYPE_HAT, 0, 0, false), southDown(0, TYPE_BUTTON, 0, 1, false);
+
+	MultiStateInput button("select");
+	CHECK(!button.isShortPressed(&pad, optionsDown));
+	CHECK(!button.isShortPressed(&pad, dpadUp));
+	CHECK(button.isShortPressed(&pad, optionsUp));
+
+	CHECK(!button.isShortPressed(&pad, optionsDown));
+	CHECK(!button.isShortPressed(&pad, southDown));
+	CHECK(!button.isShortPressed(&pad, optionsUp));
+
+	// held 500 ms: a long press, then no short press at the release
+	CHECK(!button.isShortPressed(&pad, optionsDown));
+	CHECK(!button.isLongPressed(400));
+	CHECK(button.isLongPressed(100));
+	CHECK(!button.isShortPressed(&pad, optionsUp));
+}

@@ -31,8 +31,15 @@ bool MultiStateInput::isShortPressed(InputConfig* config, Input input)
 
 		mTimeHoldingButton = 0;
 	}
+#ifdef MISTER
+	// another input pressed meanwhile: not this button's short press. Not when another input is let go of
+	// (the d-pad released just after the button went down): that made a press do nothing, now and then
+	else if (input.value != 0)
+		mIsPressed = false;
+#else
 	else
 		mIsPressed = false;
+#endif
 
 	return false;
 }
