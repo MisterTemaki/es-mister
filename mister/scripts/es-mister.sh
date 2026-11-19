@@ -129,8 +129,11 @@ es_settings() {
 	# each system's theme as the theme built it (cache/themes; ~130 KB a system), loaded again while nothing it
 	# depends on changed, instead of parsing the theme for each system at every start; THEME_CACHE=0: none
 	[ "$THEME_CACHE" = 1 ] && export ES_THEME_CACHE=${ES_THEME_CACHE:-$ES/cache/themes}
-	# keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys
-	export SDL_EVDEV_IGNORE="$INPUT_IGNORE"
+	# keyboards ES leaves out: Main_MiSTer's and Zaparoo's virtual ones repeat a controller's presses as keys.
+	# And always the controllers' touchpads (DualSense, DualShock 4: "... Controller Touchpad"), which SDL took
+	# for a mouse: pressing the pad (easily done reaching for Create or Options, on either side of it) was a
+	# click, which closed the menu just opened or cancelled the press
+	export SDL_EVDEV_IGNORE="${INPUT_IGNORE:+$INPUT_IGNORE,}Controller Touchpad"
 	# RESTART SYSTEM and SHUTDOWN OPERATING SYSTEM in ES's menu leave these (ES's processQuitMode) for
 	# below
 	rm -f /tmp/reboot.please /tmp/shutdown.please

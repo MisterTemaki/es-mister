@@ -135,7 +135,8 @@ ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 
 # Input devices ES leaves out, by name (comma apart; /proc/bus/input/devices lists them). Main_MiSTer's
 # and Zaparoo's virtual keyboards repeat a controller's presses as keys: without this, each press moved
-# twice. Physical keyboards and controllers are not affected.
+# twice. Physical keyboards and controllers are not affected. The controllers' touchpads (DualSense,
+# DualShock 4) are always left out: pressing the pad was a mouse click.
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
 
 # Where games folders are looked for, in order (each system takes the first that has its folder)
