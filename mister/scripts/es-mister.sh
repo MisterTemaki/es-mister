@@ -418,8 +418,8 @@ es_settings() {
 		# and the frames themselves, to draw again with es-mister-replay
 		[ "$CAPTURE" = 1 ] && export ES_SOFT_SLOW_CAPTURE=1
 	fi
-	# pictures kept decoded and at their size, without loss (cache/pictures; ~70 KB a cover), so that a cover
-	# seen once comes back ~20 times faster; PICTURE_CACHE=0: none
+	# pictures kept decoded and at their size, without loss (cache/pictures; ~200 KB a cover on the card), so
+	# that a cover seen once comes back ~20 times faster; PICTURE_CACHE=0: none
 	[ "$PICTURE_CACHE" = 1 ] && export ES_PICTURE_CACHE=${ES_PICTURE_CACHE:-$ES/cache/pictures}
 	# each system's theme as the theme built it (cache/themes; ~130 KB a system), loaded again while nothing it
 	# depends on changed, instead of parsing the theme for each system at every start; THEME_CACHE=0: none

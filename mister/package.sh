@@ -125,7 +125,7 @@ PLD=256
 # again with es-mister-replay (a few MB each); 0 in normal use
 CAPTURE=0
 
-# 1: pictures kept decoded at the size shown, without loss, in cache/pictures (~70 KB a cover, written the
+# 1: pictures kept decoded at the size shown, without loss, in cache/pictures (~200 KB a cover, written the
 # first time a picture is shown, never while less than 1 GB is free on the SD card): a cover seen before
 # comes back ~20 times faster; 0: none (the folder can be deleted at any time)
 PICTURE_CACHE=1

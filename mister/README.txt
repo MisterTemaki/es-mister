@@ -32,6 +32,19 @@ Installing
    folders are listed in __ES_DIR__/systems.tsv. Games inside .zip files are
    listed for the Virtual Boy (they usually come zipped), not yet elsewhere.
 
+Space needed on the SD card
+---------------------------
+- The program, its theme and settings: about 90 MB (the ZIP itself: 58 MB).
+- Covers, downloaded next to the games: about 420 KB a game on average
+  (measured: 20,069 covers, 8.5 GB).
+- The picture cache (cache/pictures, PICTURE_CACHE): about 200 KB for each
+  cover seen once (measured: 16,912 covers, 3.3 GB). It is not written while
+  less than 1 GB is free, and can be deleted at any time.
+- The theme cache (cache/themes) and logs: about 10 MB.
+In all, about 100 MB plus 0.6 GB for every 1,000 games with covers (1 GB free
+left over keeps the picture cache working): 5,000 games need about 3.2 GB,
+20,000 games about 12.5 GB.
+
 Using it
 --------
 - In the MiSTer menu: Scripts > __ES_SCRIPT__. The MiSTer menu goes away, the
@@ -134,7 +147,7 @@ Settings
   CAPTURE=0      1 = slow frames also saved whole (logs/es-slow-frame-N.escf),
                  to measure with es-mister-replay
   PICTURE_CACHE=1  1 = pictures kept decoded at the size shown, without loss,
-                 in cache/pictures (~70 KB a cover; not written while less
+                 in cache/pictures (~200 KB a cover; not written while less
                  than 1 GB is free): a cover seen before comes back ~20 times
                  faster; 0 = none. The folder can be deleted at any time.
   PREFETCH=1     1 = the games folders, gamelists, theme and EmulationStation
