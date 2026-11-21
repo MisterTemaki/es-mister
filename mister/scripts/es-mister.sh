@@ -183,15 +183,20 @@ BGM_PIDS=""
 
 boot_env() { env -i "${BOOT_ENV[@]}" "$@"; }
 
-# the pids given gone (looked at every 10 ms, up to about 2 s), else killed
+# the pids given gone (looked at every 50 ms, up to 2 s), else killed. Waited without sleep, a program (a fork and
+# an exec each time, ~10-15 ms of the ARM: every 10 ms, the wait took a whole core from ES as it loaded): a read
+# with a timeout on a pipe nobody writes to
 pids_gone() {
-	local i pid left
-	for ((i = 0; i < 150; i++)); do
+	local i pid left nap
+	exec {nap}<> <(:)
+	for ((i = 0; i < 40; i++)); do
 		left=""
 		for pid; do kill -0 "$pid" 2>/dev/null && left+=" $pid"; done
-		[ -z "$left" ] && return 0
-		sleep 0.01
+		[ -z "$left" ] && break
+		read -r -t 0.05 -u "$nap" _
 	done
+	exec {nap}<&-
+	[ -z "$left" ] && return 0
 	kill -KILL $left 2>/dev/null
 	return 1
 }
