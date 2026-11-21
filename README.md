@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/mistercera-fe-logo.png" alt="Mistercera FE" width="720"></p>
+
 # ES-MiSTer — Batocera's EmulationStation on the MiSTer FPGA
 
 EmulationStation frontend for the MiSTer/DE10-Nano, drawn in software (the
