@@ -3,10 +3,10 @@
 #
 #   NAME/              the program, its scripts, resources and translations, its default settings
 #                      and controllers, and the Carbon theme (trimmed to its systems)
-#   Scripts/NAME.sh    starts it from the MiSTer's Scripts menu
+#   Scripts/SCRIPT.sh  starts it from the MiSTer's Scripts menu
 #
-# NAME is ES_NAME (emulationstation unless set). Run by build.sh after the binary is built
-# (build-mister/out/emulationstation).
+# NAME is ES_NAME (emulationstation unless set), SCRIPT is ES_SCRIPT (NAME unless set). Run by build.sh
+# after the binary is built (build-mister/out/emulationstation).
 
 set -euo pipefail
 
@@ -20,8 +20,13 @@ VERSION=${VERSION:-$(git -C "$ROOT" describe --always --dirty 2>/dev/null || ech
 # unset, SIZE=auto (the MiSTer's own) and the pictures made for 1080p
 ES_SIZE=${ES_SIZE:-}
 THEME_SIZE=${ES_SIZE:-1920x1080}
-# ES_NAME=es-mister-720p (say): the folder on the SD card (/media/fat/NAME) and the script (Scripts/NAME.sh)
+# ES_NAME=mistercera_fe (say): the folder on the SD card (/media/fat/NAME)
 ES_NAME=${ES_NAME:-emulationstation}
+# ES_SCRIPT=Mistercera_FE (say): the script, as the MiSTer's Scripts menu lists it (Scripts/SCRIPT.sh); no spaces
+# (Main_MiSTer runs the script by its path unquoted)
+ES_SCRIPT=${ES_SCRIPT:-$ES_NAME}
+# ES_ZIP=Mistercera_FE-0.10-beta6 (say): the ZIP's name, without .zip; by default NAME-VERSION[-SIZE]
+ES_ZIP=${ES_ZIP:-}
 # ES_TITLE: the package's name in README.txt
 ES_TITLE=${ES_TITLE:-ES-MiSTer}
 # ES_VERSION: the release's number ("0.10 beta 1"), in README.txt and in ES (its menu's footer and System
@@ -31,6 +36,12 @@ ES_VERSION=${ES_VERSION:-}
 ES_LANGUAGE=${ES_LANGUAGE:-en_US}
 case "$ES_NAME" in
 	*[!A-Za-z0-9._-]*|"") echo "ES_NAME: letters, digits, '.', '_' and '-' only" >&2; exit 1 ;;
+esac
+case "$ES_SCRIPT" in
+	*[!A-Za-z0-9._-]*|"") echo "ES_SCRIPT: letters, digits, '.', '_' and '-' only" >&2; exit 1 ;;
+esac
+case "$ES_ZIP" in
+	*[!A-Za-z0-9._-]*) echo "ES_ZIP: letters, digits, '.', '_' and '-' only" >&2; exit 1 ;;
 esac
 
 # Batocera's theme and controller database, at the versions batocera.linux pins
@@ -60,8 +71,8 @@ llvm-strip -o "$ES/emulationstation" "$WORK/out/emulationstation"
 "$TOOLS/zc++" -O2 -s -static -pthread -std=c++17 -I "$ROOT/es-core/src" -o "$ES/es-mister-replay" "$ROOT/mister/tests/replay.cpp" \
 	"$ROOT/es-core/src/renderers/soft/SoftCapture.cpp" "$ROOT/es-core/src/renderers/soft/SoftRaster.cpp"
 cp "$ROOT/mister/scripts/es-mister.sh" "$ROOT/mister/scripts/mister-launch.sh" "$ROOT/mister/systems.tsv" "$ES/"
-sed -e "s|^ES=/media/fat/emulationstation$|ES=/media/fat/$ES_NAME|" "$ROOT/mister/scripts/emulationstation.sh" >"$STAGE/Scripts/$ES_NAME.sh"
-grep -q "^ES=/media/fat/$ES_NAME$" "$STAGE/Scripts/$ES_NAME.sh" || { echo "the Scripts launcher has no ES= line to set" >&2; exit 1; }
+sed -e "s|^ES=/media/fat/emulationstation$|ES=/media/fat/$ES_NAME|" "$ROOT/mister/scripts/emulationstation.sh" >"$STAGE/Scripts/$ES_SCRIPT.sh"
+grep -q "^ES=/media/fat/$ES_NAME$" "$STAGE/Scripts/$ES_SCRIPT.sh" || { echo "the Scripts launcher has no ES= line to set" >&2; exit 1; }
 cat >"$ES/es-mister.ini" <<'EOF'
 # EmulationStation on the MiSTer: settings read by es-mister.sh and mister-launch.sh
 
@@ -181,7 +192,7 @@ cp "$SRC/batocera.linux/package/batocera/emulationstation/batocera-emulationstat
 echo "== theme"
 python3 -I "$ROOT/mister/tools/trim-theme.py" "$SRC/es-theme-carbon" "$ES/home/.emulationstation/themes/es-theme-carbon" "$ROOT/mister/systems.tsv" "$THEME_SIZE"
 
-sed -e "s|__ES_DIR__|$ES_NAME|g" -e "s|__ES_SIZE__|${ES_SIZE:-auto}|g" -e "s|__ES_TITLE__|$ES_TITLE${ES_VERSION:+ $ES_VERSION}|g" "$ROOT/mister/README.txt" >"$ES/README.txt"
+sed -e "s|__ES_DIR__|$ES_NAME|g" -e "s|__ES_SCRIPT__|$ES_SCRIPT|g" -e "s|__ES_SIZE__|${ES_SIZE:-auto}|g" -e "s|__ES_TITLE__|$ES_TITLE${ES_VERSION:+ $ES_VERSION}|g" "$ROOT/mister/README.txt" >"$ES/README.txt"
 if [ -n "$ES_VERSION" ]; then
 	printf '%s\n' "$ES_VERSION" >"$ES/version.info"
 	printf '%s\n' "$ES_TITLE" >"$ES/about.info"
@@ -192,7 +203,7 @@ cp "$ROOT/LICENSE.md" "$ES/LICENSE-EmulationStation.md"
 find "$STAGE" -name '*.sh' -exec sed -i 's/\r$//' {} \;
 
 mkdir -p "$WORK/dist"
-ZIP=$WORK/dist/$ES_NAME-$VERSION${ES_SIZE:+-$ES_SIZE}.zip
+ZIP=$WORK/dist/${ES_ZIP:-$ES_NAME-$VERSION${ES_SIZE:+-$ES_SIZE}}.zip
 rm -f "$ZIP"
 (cd "$STAGE" && python3 -I -c '
 import os, sys, zipfile

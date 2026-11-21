@@ -14,7 +14,14 @@ Installing
 ----------
 1. Extract the ZIP at the root of the MiSTer's SD card. You get:
      /media/fat/__ES_DIR__/          (the program, theme and settings)
-     /media/fat/Scripts/__ES_DIR__.sh
+     /media/fat/Scripts/__ES_SCRIPT__.sh
+   Updating: extract it over the old one. Games, covers and EmulationStation's
+   own settings stay; __ES_DIR__/es-mister.ini is replaced with the default
+   one (save yours first if you changed it).
+   Updating from 0.10 beta 5 or earlier (the folder es-mister-720p): first
+   rename /media/fat/es-mister-720p to /media/fat/__ES_DIR__ (EmulationStation's
+   settings and caches stay), then extract, and delete the old launcher
+   Scripts/es-mister-720p.sh.
 2. Keep "fb_terminal=1" in MiSTer.ini (it is the default).
 3. Games stay in the MiSTer's usual folders (games/NES, games/SNES,
    games/MegaDrive, games/GBA, games/PSX...; arcade in _Arcade; the Sharp
@@ -27,7 +34,7 @@ Installing
 
 Using it
 --------
-- In the MiSTer menu: Scripts > __ES_DIR__. The MiSTer menu goes away, the
+- In the MiSTer menu: Scripts > __ES_SCRIPT__. The MiSTer menu goes away, the
   logo shows at once (the one EmulationStation drew at its last start, kept in
   cache/splash.snapshot), and the systems come a few seconds later. The logo
   stays at least SPLASH_TIME seconds (es-mister.ini).
@@ -59,7 +66,7 @@ Using it
 - The controller's button for the MiSTer menu (the DualSense's PS) asks
   first: yes closes EmulationStation and the MiSTer menu comes back.
 - F12 on the keyboard shows the MiSTer menu over it: EmulationStation stays
-  open, paused. To go back to it: F9, or Scripts > __ES_DIR__ again.
+  open, paused. To go back to it: F9, or Scripts > __ES_SCRIPT__ again.
   Meanwhile the menu's other scripts run as usual. After F12 the controller's
   button opens the MiSTer menu at once, without asking, until
   EmulationStation is shown again. Started from the Scripts menu, F12 does
