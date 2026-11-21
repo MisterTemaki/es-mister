@@ -5,8 +5,9 @@ What it is
 ----------
 Batocera's frontend (EmulationStation, with the Carbon theme) running on the
 MiSTer's ARM, drawn in software (the MiSTer has no GPU) on the Linux
-framebuffer, which the FPGA scales up for the TV. Pick a game, play it on its
-MiSTer core, and come back to the frontend.
+framebuffer, which the MiSTer shows on the TV (drawn at 1280x720, its frames
+are enlarged by EmulationStation itself to fill a 1080p screen: FILL below).
+Pick a game, play it on its MiSTer core, and come back to the frontend.
 
 This package draws at __ES_SIZE__ (SIZE in es-mister.ini).
 
@@ -139,6 +140,8 @@ Settings
                  DualSense's PS) asks first, and yes closes EmulationStation;
                  0 = it opens the MiSTer menu over it at once
   FPS=60         the most frames a second
+  SPLASH_TIME=2.2  the least time, in seconds, the logo stays on screen when
+                 EmulationStation is ready sooner; 0 = not held
   BENCH=0        1 = the whole screen drawn again every frame, to measure what
                  drawing costs (see logs/es-mister-stats.txt)
   STRIP=auto     rows in each band of the drawing: auto chooses by the screen's
@@ -150,6 +153,12 @@ Settings
                  in cache/pictures (~200 KB a cover; not written while less
                  than 1 GB is free): a cover seen before comes back ~20 times
                  faster; 0 = none. The folder can be deleted at any time.
+  THEME_CACHE=1  1 = each system's theme kept as the theme built it, in
+                 cache/themes, and read back at the next starts while nothing
+                 it depends on changed (a start ~2 s faster); built again by
+                 itself after a theme setting, the language or
+                 EmulationStation changes; 0 = none. The folder can be deleted
+                 at any time.
   PREFETCH=1     1 = the games folders, gamelists, theme and EmulationStation
                  itself read in the background while the start waits for the
                  MiSTer menu (a faster first start after switching the MiSTer
@@ -202,8 +211,10 @@ What to send when reporting a problem
 
 If something hangs
 ------------------
-- If EmulationStation's screen does not show up, press F9 (shows Linux) or F12
-  (back to the MiSTer menu).
+- If EmulationStation's screen does not show up: started from the Scripts
+  menu, the MiSTer takes no keys while its script runs, and if EmulationStation
+  cannot start, the MiSTer menu comes back by itself; otherwise press F9 (shows
+  Linux) or F12 (back to the MiSTer menu).
 - To end it by force over SSH:  killall emulationstation
   es-mister.sh puts the console back in text mode and loads the MiSTer menu
   again by itself. If it was ended too, do it by hand:
