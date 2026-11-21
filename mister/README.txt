@@ -66,6 +66,11 @@ Using it
   nothing until a game has been played (the MiSTer takes no keys while its
   script runs): the controller's button above (MENU_ASK=1) or Menu > Quit goes
   back to the MiSTer menu.
+- Whenever the MiSTer shows a screen of its own over EmulationStation (its
+  menu, or its background after the TV is turned on again and the HDMI link
+  comes back), the controllers are its until EmulationStation is shown again;
+  after the HDMI link comes back, EmulationStation is shown again by itself
+  within a few seconds.
 
 Game covers
 -----------

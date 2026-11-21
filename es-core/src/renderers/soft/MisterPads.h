@@ -9,11 +9,12 @@
 // (EVIOCGRAB on SDL's own descriptor, so SDL still reads them); ES asks, and on yes gives them back and
 // closes (es-mister.sh loads the MiSTer menu).
 //
-// ES cannot see the MiSTer menu over it (no console switch, nothing to read), so it holds the controllers
-// only while nothing else may have the screen: its console shown (given back by the console's thread when
-// let go of, whatever ES's thread is doing), the menu core loaded (/tmp/CORENAME: not a core Zaparoo or a
-// script loaded), and no F12 pressed on a keyboard since (the MiSTer menu over ES, which the controllers
-// must reach; held again once ES's console has been let go of and is back, or at ES's next start).
+// ES does not see the MiSTer menu over it (no console switch), so it holds the controllers only while nothing
+// else may have the screen: its console shown (given back by the console's thread when let go of, whatever
+// ES's thread is doing), the menu core loaded (/tmp/CORENAME: not a core Zaparoo or a script loaded), no F12
+// pressed on a keyboard since (the MiSTer menu over ES, which the controllers must reach), and Main_MiSTer
+// not holding its own input devices (a screen of its own shown: SoftOutput's watchMain). Held again once
+// ES's console is back, Main_MiSTer has let go of its devices, or at ES's next start.
 // Keyboards are never taken (F12 always opens the MiSTer menu), nor virtual devices (Zaparoo's).
 //
 //   ES_MISTER_MENU_ASK=1  on (es-mister.sh, MENU_ASK in es-mister.ini)
@@ -21,6 +22,8 @@
 #include <map>
 #include <string>
 #include <vector>
+
+#include <sys/types.h>
 
 namespace Renderer
 {
@@ -32,6 +35,7 @@ namespace Renderer
 			void grab();             // the controllers with a MiSTer menu button ES's (new ones too)
 			void release();          // given back to Main_MiSTer
 			void shown(bool shown);  // ES's console on the screen, or let go of
+			bool holds(dev_t device); // a device ES holds now (its device number)
 
 			// ES's thread
 			bool hidden();           // ES's console not on the screen: what is pressed is not for ES

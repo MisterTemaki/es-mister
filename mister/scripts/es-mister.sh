@@ -369,6 +369,9 @@ es_settings() {
 	# the MiSTer menu's button on a controller (the DualSense's PS) asks first while ES is shown, and on yes
 	# ES closes (the MiSTer menu loaded below)
 	export ES_MISTER_MENU_ASK=$MENU_ASK
+	# for F9, when Main_MiSTer shows its menu's background over ES after a video re-initialization of its (the
+	# TV turned on or woken up): ES's screen shown again
+	export ES_MISTER_HELPER=$ES/es-mister-helper
 	# ES's first frame (the splash) kept there, painted by es-mister-helper at the next start from the Scripts
 	# menu before ES draws
 	export ES_SPLASH_SNAPSHOT=$ES/cache/splash.snapshot

@@ -246,6 +246,15 @@ namespace Renderer
 				return hiddenNow;
 			}
 
+			bool holds(dev_t device)
+			{
+				std::lock_guard<std::mutex> guard(lock);
+				for (const Pad& pad : pads)
+					if (pad.device == device)
+						return true;
+				return false;
+			}
+
 			bool menuButton(const std::string& devicePath, int button, bool pressed, bool& ask)
 			{
 				ask = false;
@@ -348,6 +357,7 @@ namespace Renderer
 			void release() { }
 			void shown(bool) { }
 			bool hidden() { return false; }
+			bool holds(dev_t) { return false; }
 			bool menuButton(const std::string&, int, bool, bool& ask) { ask = false; return false; }
 			std::map<int, int> standardRenumbering(const std::string&, int& oldStart, int& newStart) { oldStart = newStart = -1; return std::map<int, int>(); }
 			std::map<int, int> renumberingOf(const std::vector<int>&, int& oldStart, int& newStart) { oldStart = newStart = -1; return std::map<int, int>(); }
