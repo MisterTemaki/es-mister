@@ -1,25 +1,90 @@
 <p align="center"><img src="docs/mistercera-fe-logo.png" alt="Mistercera FE" width="720"></p>
 
-# ES-MiSTer — Batocera's EmulationStation on the MiSTer FPGA
+# Mistercera FE — Batocera's EmulationStation on the MiSTer FPGA
 
-EmulationStation frontend for the MiSTer/DE10-Nano, drawn in software (the
-MiSTer has no GPU) on the Linux framebuffer, with Batocera's Carbon theme.
-Two versions are published:
+Batocera's EmulationStation frontend, with the Carbon theme, running on the
+MiSTer/DE10-Nano's ARM: drawn in software (the MiSTer has no GPU) on the Linux
+framebuffer. Pick a game, play it on its MiSTer core, and come back to the
+frontend. Two versions are published:
 
-- **ES-MiSTer 720p** (release `es-mister-720p-20261116`): draws at 1280×720,
-  with the newer renderer optimisations, the Libretro-thumbnails cover scraper
-  and the fixes for the MiSTer menu's console switches. Its sources are the
-  [`audit-2026-11-16`](https://github.com/MisterTemaki/es-mister/tree/audit-2026-11-16) branch.
-- **ES-MiSTer 1080p** (release `mister-1080p-20261115`, this branch): the
-  1920×1080 version validated below.
+- **Mistercera FE** (latest release: [0.10 beta 6](https://github.com/MisterTemaki/es-mister/releases/latest)):
+  draws at 1280×720 and fills a 1080p screen. This is the version to use. Its
+  sources are the [`audit-2026-11-16`](https://github.com/MisterTemaki/es-mister/tree/audit-2026-11-16) branch.
+  It was called ES-MiSTer 720p up to 0.10 beta 5.
+- **ES-MiSTer 1080p** (release `mister-1080p-20261115`, this branch): an
+  experimental 1920×1080 version, very slow (about 80 ms a whole frame), kept
+  for tests.
 
-## ES-MiSTer 720p
+## Mistercera FE
 
-[Download the ES-MiSTer 720p release](https://github.com/MisterTemaki/es-mister/releases/tag/es-mister-720p-20261116).
-Extract the ZIP at the root of the SD card and run Scripts > es-mister-720p from
-the MiSTer menu. It installs to `/media/fat/es-mister-720p` and does not touch
-other installations. The notes in the ZIP (`README.txt`) cover using it, the
-covers, the settings and what to do if something goes wrong.
+[Download the latest release](https://github.com/MisterTemaki/es-mister/releases/latest)
+(`Mistercera_FE-0.10-beta6.zip`).
+
+1. Extract the ZIP at the root of the MiSTer's SD card. You get
+   `/media/fat/mistercera_fe/` and `/media/fat/Scripts/Mistercera_FE.sh`;
+   nothing else on the card is touched.
+2. Keep `fb_terminal=1` in `MiSTer.ini` (it is the default).
+3. In the MiSTer menu: **Scripts > Mistercera_FE**. The MiSTer menu goes away
+   at once, the logo shows while the frontend loads, and the systems come a
+   few seconds later.
+4. **Covers:** the games show without covers at first. With the MiSTer on the
+   network, stay on the systems screen, open the menu (Select on a controller,
+   Space on the keyboard) > **Scraper**, leave the defaults (Libretro-thumbnails:
+   no account or key) and choose **Scrape now**. Games are recognised by their
+   ROM's CRC32 or their file name, so any naming works.
+
+Room on the SD card: about 100 MB, plus about 0.6 GB for every 1,000 games once
+their covers are downloaded.
+
+**Updating from 0.10 beta 5 or earlier** (the folder `es-mister-720p`): first
+rename `/media/fat/es-mister-720p` to `/media/fat/mistercera_fe` (the
+frontend's settings and caches stay), then extract the ZIP and delete the old
+`Scripts/es-mister-720p.sh`. Extracting always replaces
+`mistercera_fe/es-mister.ini` with the default settings: save yours first if
+you changed it.
+
+What it does:
+
+- **Full screen at 1280×720** with the MiSTer's own output and `MiSTer.ini`
+  left as they are: the frontend enlarges its frames 1.5 times as it copies
+  them to a 1080p framebuffer.
+- **Games on their MiSTer cores:** a game starts at once; hold **Create +
+  Options** for a second (Share + Options on a DualShock 4) to come back to the
+  frontend. The controller's MiSTer menu button (the DualSense's PS) asks
+  before leaving for the MiSTer menu.
+- **Games in the MiSTer's usual folders** (`games/NES`, `games/SNES`,
+  `games/MegaDrive`, …; arcade in `_Arcade`; the Sharp X68000 as the MGL files
+  in `_Computer/_X68000 Games`).
+- **Covers without an account or a key** (Libretro-thumbnails, with Hasheous
+  and TheGamesDB for the rest), kept decoded in a cache so that a cover seen
+  before comes back about 20 times faster.
+- **The processor for the frontend:** the MiSTer BGM and Zaparoo are closed
+  while it runs and started again when it closes; the arcade sound server is
+  paused (`STOP_SERVICES` in `es-mister.ini`).
+- Opens in English; the language is in Menu > System settings > Language.
+
+`README.txt` in the folder covers using it, the covers, the settings and what
+to do if something goes wrong; the [release notes](https://github.com/MisterTemaki/es-mister/releases)
+list what changed in each version.
+
+### Building Mistercera FE
+
+On Linux with Git, CMake, Ninja, Python 3, autoconf, automake, libtool and gettext:
+
+```bash
+git clone --recurse-submodules -b audit-2026-11-16 https://github.com/MisterTemaki/es-mister.git
+cd es-mister
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install ziglang==0.17.1
+export MISTER_WORK=/path/to/es-mister-cache
+bash mister/build.sh deps
+bash mister/build.sh es
+ES_SIZE=1280x720 ES_NAME=mistercera_fe ES_SCRIPT=Mistercera_FE ES_TITLE="Mistercera FE" \
+  ES_VERSION="0.10 beta 6" ES_ZIP=Mistercera_FE-0.10-beta6 bash mister/package.sh
+```
+
+The ZIP ends up in `$MISTER_WORK/dist/`.
 
 ## ES-MiSTer 1080p — Carbon in Full HD
 
@@ -60,7 +125,7 @@ adds this documentation and the reproduction scripts.
 - [The delivery's summaries and hashes](audit/performance-1080p/final-delivery/)
 - [Preparing the validation scripts](validation/README.md)
 
-### Building the ARM binary
+### Building the 1080p ARM binary
 
 On Linux with Git, CMake, Ninja, Python 3, autoconf, automake, libtool and gettext:
 
