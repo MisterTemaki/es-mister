@@ -27,12 +27,20 @@
 #include <mutex>
 #include <thread>
 #include <unistd.h>
+#ifdef MISTER
+#include "resources/ResourceManager.h"
+#include <qoi/qoi.h>
+#include <sys/stat.h>
+#endif
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
 #include <arm_neon.h>
 #endif
 
 namespace Renderer
 {
+#ifdef MISTER
+	static void snapshotSplash(const uint32_t* pixels, int width, int height);
+#endif
 	namespace
 	{
 		using Soft::Output;
@@ -208,6 +216,10 @@ namespace Renderer
 			bool pending = false;
 			bool pendingError = false;
 			std::string waitPath;
+			// when the screen became ES's (opened at the start, or attached once ES_SOFT_OUTPUT_WAIT's file was
+			// there): how long the splash has been seen (screenShownMs)
+			std::chrono::steady_clock::time_point openedAt;
+			bool opened = false;
 
 			Raster raster;
 			Bands bands;
@@ -346,6 +358,8 @@ namespace Renderer
 			s.width = width;
 			s.height = height;
 			s.open = true;
+			s.openedAt = std::chrono::steady_clock::now();
+			s.opened = true;
 			LOG(LogInfo) << "SoftRenderer: output " << s.output->describe();
 			return true;
 		}
@@ -372,6 +386,8 @@ namespace Renderer
 				LOG(LogWarning) << "SoftRenderer: the screen takes " << width << "x" << height << ", ES draws at " << s.width << "x" << s.height;
 			s.pending = false;
 			s.open = true;
+			s.openedAt = std::chrono::steady_clock::now();
+			s.opened = true;
 			s.forceRedraw = true;
 			s.lastValid = false;
 			LOG(LogInfo) << "SoftRenderer: output " << s.output->describe();
@@ -1290,6 +1306,9 @@ namespace Renderer
 			{
 				shownOnce = true;
 				StartupTrace::mark("first frame shown");
+#ifdef MISTER
+				snapshotSplash(s.raster.pixels(), s.width, s.height);
+#endif
 			}
 
 			// the time from a press to the frame that shows its effect, and the frames over a 60 Hz frame's time
@@ -1858,6 +1877,90 @@ namespace Renderer
 	}
 
 #ifdef MISTER
+	// ES_SPLASH_SNAPSHOT (es-mister.sh): the first frame shown, the splash with the logo, kept in that file at
+	// the size ES draws, for es-mister-helper to paint on the screen at the next start from the Scripts menu
+	// (es-mister.sh --scripts), long before ES's own first frame. The file: "ESSPLSH1", the width and the
+	// height, a key (the layout, the splash picture's size and time, the language, the size) and the frame as a QOI
+	// picture (bytes R, G, B, A). Written again, in a thread of its own, only when its key is not the same.
+	static void snapshotSplash(const uint32_t* pixels, int width, int height)
+	{
+		const char* path = getenv("ES_SPLASH_SNAPSHOT");
+		if (path == nullptr || *path == 0 || pixels == nullptr || width <= 0 || height <= 0)
+			return;
+		struct stat picture;
+		const std::string logo = ResourceManager::getInstance()->getResourcePath(":/logo.png");
+		if (stat(logo.c_str(), &picture) != 0)
+			return;
+		char key[512];
+		// "layout 2": the splash's layout (Splash.cpp); a new number when the label or the bar move
+		snprintf(key, sizeof(key), "layout 2 %s %lld %lld.%09ld %s %dx%d", logo.c_str(), (long long)picture.st_size,
+			(long long)picture.st_mtim.tv_sec, (long)picture.st_mtim.tv_nsec,
+			Settings::getInstance()->getString("Language").c_str(), width, height);
+
+		// the key the file has now
+		std::string current;
+		if (FILE* f = fopen(path, "rb"))
+		{
+			char magic[8];
+			uint32_t head[3];
+			if (fread(magic, 1, 8, f) == 8 && memcmp(magic, "ESSPLSH1", 8) == 0 && fread(head, 4, 3, f) == 3 && head[2] < 4096)
+			{
+				current.resize(head[2]);
+				if (fread(&current[0], 1, head[2], f) != head[2])
+					current.clear();
+			}
+			fclose(f);
+		}
+		if (current == key)
+			return;
+
+		std::vector<uint8_t> rgba((size_t)width * height * 4);
+		for (size_t i = 0, n = (size_t)width * height; i < n; i++)
+		{
+			const uint32_t p = pixels[i];
+			rgba[i * 4 + 0] = (uint8_t)(p >> 16);
+			rgba[i * 4 + 1] = (uint8_t)(p >> 8);
+			rgba[i * 4 + 2] = (uint8_t)p;
+			rgba[i * 4 + 3] = (uint8_t)(p >> 24);
+		}
+		std::string file = path, keyText = key;
+		std::thread([rgba = std::move(rgba), file, keyText, width, height]() {
+			qoi_desc desc;
+			desc.width = (unsigned int)width;
+			desc.height = (unsigned int)height;
+			desc.channels = 4;
+			desc.colorspace = QOI_SRGB;
+			int length = 0;
+			unsigned char* data = (unsigned char*)qoi_encode(rgba.data(), &desc, &length);
+			if (data == nullptr || length <= 0)
+				return;
+			const std::string temporary = file + ".new";
+			bool ok = false;
+			if (FILE* f = fopen(temporary.c_str(), "wb"))
+			{
+				const uint32_t head[3] = { (uint32_t)width, (uint32_t)height, (uint32_t)keyText.size() };
+				const uint32_t size = (uint32_t)length;
+				ok = fwrite("ESSPLSH1", 1, 8, f) == 8 && fwrite(head, 4, 3, f) == 3 &&
+					fwrite(keyText.data(), 1, keyText.size(), f) == keyText.size() &&
+					fwrite(&size, 4, 1, f) == 1 && fwrite(data, 1, (size_t)length, f) == (size_t)length;
+				ok = fclose(f) == 0 && ok;
+			}
+			delete[] data;
+			if (ok && rename(temporary.c_str(), file.c_str()) == 0)
+				LOG(LogInfo) << "SoftRenderer: the splash kept for the next start (" << file << ", " << length << " bytes)";
+			else
+				unlink(temporary.c_str());
+		}).detach();
+	}
+
+	int screenShownMs()
+	{
+		SoftState& s = S();
+		if (!s.opened)
+			return -1;
+		return (int)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - s.openedAt).count();
+	}
+
 	void waitForScreen()
 	{
 		SoftState& s = S();

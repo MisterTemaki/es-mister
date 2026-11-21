@@ -178,6 +178,8 @@ namespace Renderer
 	void        reclaimScreen   ();
 	// ES started before the screen was ready (ES_SOFT_OUTPUT_WAIT): back once it is open
 	void        waitForScreen   ();
+	// how long the screen has been ES's (since it opened), in ms; -1 while it is not
+	int         screenShownMs   ();
 #endif
 	void        pushClipRect    (const Vector2i& _pos, const Vector2i& _size);
 	void		pushClipRect	(int x, int y, int w, int h);

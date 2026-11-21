@@ -43,6 +43,7 @@
 #include "Scripting.h"
 #include "watchers/WatchersManager.h"
 #include "HttpReq.h"
+#include <chrono>
 #include <thread>
 #include "ZaparooSupport.h"
 #include "utils/ThreadPool.h"
@@ -801,6 +802,22 @@ int main(int argc, char* argv[])
 		threadPool->wait();
 	}
 	delete threadPool;
+
+#ifdef MISTER
+	// ES_SPLASH_MIN_MS (es-mister.ini's SPLASH_TIME): the splash, the logo, seen at least that long once the
+	// screen is ES's, when ES is ready sooner (a small game library, or the screen shown early)
+	if (splashScreen && errorMsg == NULL)
+	{
+		const char* minimum = getenv("ES_SPLASH_MIN_MS");
+		const int wanted = minimum != nullptr ? atoi(minimum) : 0;
+		const int shown = Renderer::screenShownMs();
+		if (wanted > 0 && wanted <= 10000 && shown >= 0 && shown < wanted)
+		{
+			StartupTrace::Scope trace("splash held");
+			std::this_thread::sleep_for(std::chrono::milliseconds(wanted - shown));
+		}
+	}
+#endif
 
 	window.closeSplashScreen();
 
