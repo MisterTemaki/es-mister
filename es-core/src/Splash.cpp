@@ -105,6 +105,12 @@ Splash::Splash(Window* window, const std::string image, bool fullScreenBackGroun
 		mText.setPosition(0, Renderer::getScreenHeight() * 0.83f);
 	else
 		mText.setPosition(0, Renderer::getScreenHeight() * 0.86f);
+#elif defined(MISTER)
+	// the label one line lower than upstream's, nearer the progress bar
+	if (fullScreenBackGround)
+		mText.setPosition(0, Renderer::getScreenHeight() * 0.78f + font->getHeight());
+	else
+		mText.setPosition(0, Renderer::getScreenHeight() * 0.835f);
 #else
 	if (fullScreenBackGround)
 		mText.setPosition(0, Renderer::getScreenHeight() * 0.78f);
