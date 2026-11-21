@@ -27,8 +27,10 @@ Installing
 
 Using it
 --------
-- In the MiSTer menu: Scripts > __ES_DIR__. The MiSTer menu goes away and
-  EmulationStation shows up within a few seconds.
+- In the MiSTer menu: Scripts > __ES_DIR__. The MiSTer menu goes away, the
+  logo shows at once (the one EmulationStation drew at its last start, kept in
+  cache/splash.snapshot), and the systems come a few seconds later. The logo
+  stays at least SPLASH_TIME seconds (es-mister.ini).
 - Keyboard: arrows, Enter (choose), Esc (back), Space (menu).
   Controllers: the common ones are recognised; otherwise EmulationStation asks
   you to set the buttons up. On a controller, Select opens the menu, and Start
@@ -60,7 +62,10 @@ Using it
   open, paused. To go back to it: F9, or Scripts > __ES_DIR__ again.
   Meanwhile the menu's other scripts run as usual. After F12 the controller's
   button opens the MiSTer menu at once, without asking, until
-  EmulationStation is shown again from the Scripts menu or started again.
+  EmulationStation is shown again. Started from the Scripts menu, F12 does
+  nothing until a game has been played (the MiSTer takes no keys while its
+  script runs): the controller's button above (MENU_ASK=1) or Menu > Quit goes
+  back to the MiSTer menu.
 
 Game covers
 -----------

@@ -7,9 +7,30 @@ ES=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 HOME_DIR=$ES/home
 CONFIG=$HOME_DIR/.emulationstation
 LOGS=$ES/logs
-mkdir -p "$CONFIG" "$LOGS"
+mkdir -p "$CONFIG" "$LOGS" "$ES/cache"
 LOG=$LOGS/es-mister.log
 exec >>"$LOG" 2>&1
+# --show: ES running hidden (after F12), on the screen again; --scripts PID: started from the Scripts menu by
+# emulationstation.sh (PID), which stays while ES runs (below: ES shown on the script's console at once)
+SHOW=""
+FROM_SCRIPTS=""
+SCRIPTS_PID=""
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--show) SHOW=1 ;;
+	--scripts)
+		FROM_SCRIPTS=1
+		case "${2:-}" in '' | *[!0-9]*) ;; *) SCRIPTS_PID=$2; shift ;; esac
+		;;
+	esac
+	shift
+done
+# emulationstation.sh let end (Main_MiSTer then closes the script's screen, and takes F9 afterwards)
+scripts_release() {
+	[ -n "$SCRIPTS_PID" ] && kill "$SCRIPTS_PID" 2>/dev/null
+	SCRIPTS_PID=""
+}
+
 # times since the machine started (as ES's startup trace has them): from here to ES on the screen
 uptime() { local u rest; read -r u rest </proc/uptime; echo "$u"; }
 echo "== $(date '+%F %T') es-mister.sh (uptime $(uptime) s)"
@@ -28,6 +49,7 @@ CAPTURE=0
 PICTURE_CACHE=1
 THEME_CACHE=1
 PREFETCH=1
+SPLASH_TIME=2.2
 STOP_SERVICES="bgm zaparoo arcsnd"
 ARCADE_SKIP="cores _organized mame hbmame _alternatives"
 INPUT_IGNORE="MiSTer virtual input,Zaparoo"
@@ -42,6 +64,14 @@ case "$FILL:$SIZE" in
 1:*x*) SCREEN=fill:$SIZE ;;
 esac
 
+# Started from the Scripts menu and not shown on the script's console (below): Main_MiSTer takes no F9 until
+# the script has ended (emulationstation.sh, let end: scripts_release) and it has seen it end; its screen then
+# waits for a key (the first F9 closes it, the next shows ES's console). Waited for here, up to 3 s.
+scripts_screen_wait() {
+	[ -n "$FROM_SCRIPTS" ] || return 0
+	"$ES/es-mister-helper" scripts-wait
+}
+
 # ES on the screen again (the Scripts menu's emulationstation.sh, with ES running hidden: after F12 the
 # MiSTer menu covers it). The script's screen closes first, then F9 until Main_MiSTer shows ES's console,
 # at the size ES draws at (as after a game).
@@ -50,7 +80,11 @@ show() {
 	drawn=$(cat "$LOGS/es-mister.size" 2>/dev/null)
 	[ -n "$drawn" ] || drawn=$SCREEN
 	echo "== $(date '+%F %T') ES running: on the screen again at $drawn"
-	sleep 2
+	if [ -n "$FROM_SCRIPTS" ] && "$ES/es-mister-helper" scripts "fill:$drawn" >/dev/null; then
+		return 0
+	fi
+	scripts_release
+	scripts_screen_wait
 	for attempt in 1 2 3 4 5 6 7; do
 		"$ES/es-mister-helper" console "$drawn" 8 >/dev/null && return 0
 		echo "the framebuffer is not on yet (try $attempt)"
@@ -61,11 +95,12 @@ show() {
 }
 
 if [ -f /tmp/es-mister.pid ] && kill -0 "$(cat /tmp/es-mister.pid)" 2>/dev/null; then
-	if [ "${1:-}" = "--show" ]; then
+	if [ -n "$SHOW" ]; then
 		show
 		exit $?
 	fi
 	echo "already running"
+	scripts_release
 	exit 0
 fi
 echo $$ >/tmp/es-mister.pid
@@ -79,6 +114,37 @@ if pidof emulationstation >/dev/null 2>&1; then
 	# killed, it left the console in graphics mode, where no console switch (F9) happens
 	"$ES/es-mister-helper" text
 fi
+
+# Started from the Scripts menu: while emulationstation.sh runs, Main_MiSTer shows the Linux framebuffer with its
+# console, so ES is shown there at once (black until it draws, ES started below), with no F9 (Main_MiSTer takes
+# it only once the script has ended and its screen has closed, its menu's background then drawn again: 3-4 s
+# with a wallpaper). emulationstation.sh stays until ES closes; meanwhile F12 does not show the MiSTer menu over
+# ES (Main_MiSTer takes no keys while a script runs on the framebuffer) until a game has been played. When that
+# cannot be (a SIZE without FILL), emulationstation.sh is let end and F9 is used, as before.
+# es-mister-helper switches to that console and paints ES's splash there while ES starts (below); its answer
+# (the size the framebuffer is drawn at, or nothing: then F9) is read once ES has started (scripts_drawn), and
+# only then may ES open the screen (SCREEN_READY), so that its frames come after the helper's.
+SCRIPTS_DRAWN=""
+SCRIPTS_FD=""
+if [ -n "$FROM_SCRIPTS" ]; then
+	case "$SCREEN" in
+	fill:*x*) exec {SCRIPTS_FD}< <("$ES/es-mister-helper" scripts "$SCREEN" "$ES/cache/splash.snapshot") ;;
+	*) scripts_release ;;
+	esac
+fi
+scripts_drawn() {
+	[ -n "$SCRIPTS_FD" ] || return 0
+	read -r -u "$SCRIPTS_FD" SCRIPTS_DRAWN || true
+	exec {SCRIPTS_FD}<&-
+	SCRIPTS_FD=""
+	case "$SCRIPTS_DRAWN" in
+	*x*) ;;
+	*)
+		SCRIPTS_DRAWN=""
+		scripts_release
+		;;
+	esac
+}
 
 # What else runs on the MiSTer closed while ES runs, so that ES has the processor and the memory to itself, and
 # started again when ES closes (also on any other way out of this script), each as the MiSTer starts it at boot:
@@ -281,7 +347,8 @@ services_start() {
 		echo "[$(cut -d' ' -f1 /proc/uptime)] started again:$stopped"
 	) &
 }
-services_stop
+# with ES started early (FILL, below) right after it, so that it starts sooner; otherwise now
+case "$SCREEN" in fill:*x*) ;; *) services_stop ;; esac
 trap services_start EXIT
 
 # first start: the default settings and controllers
@@ -302,6 +369,21 @@ es_settings() {
 	# the MiSTer menu's button on a controller (the DualSense's PS) asks first while ES is shown, and on yes
 	# ES closes (the MiSTer menu loaded below)
 	export ES_MISTER_MENU_ASK=$MENU_ASK
+	# ES's first frame (the splash) kept there, painted by es-mister-helper at the next start from the Scripts
+	# menu before ES draws
+	export ES_SPLASH_SNAPSHOT=$ES/cache/splash.snapshot
+	# the logo (ES's splash) seen at least SPLASH_TIME seconds once ES's screen is shown, when ES is ready
+	# sooner; in ms for ES (2.2: 2200), 0 or not a number: not held
+	local whole frac
+	case "$SPLASH_TIME" in
+	'' | *[!0-9.]* | *.*.* | .) export ES_SPLASH_MIN_MS=0 ;;
+	*)
+		whole=${SPLASH_TIME%%.*}
+		frac=${SPLASH_TIME#"$whole"}
+		frac=${frac#.}000
+		export ES_SPLASH_MIN_MS=$((10#${whole:-0} * 1000 + 10#${frac:0:3}))
+		;;
+	esac
 	export SDL_AUDIODRIVER=alsa
 	export ES_SOFT_FPS=$FPS
 	# the drawing times, a line every 600 frames (the previous start's kept beside it: ES adds to the file);
@@ -360,8 +442,16 @@ fill:*x*)
 	es_settings
 	export ES_SOFT_OUTPUT_WAIT=$SCREEN_READY ES_SYSTEMS_WAIT=$SYSTEMS_READY
 	echo "starting ES: it loads while the framebuffer is asked for (SIZE=$SIZE FILL=$FILL, uptime $(uptime) s)"
-	./emulationstation &
+	if [ -n "$SCRIPTS_FD" ]; then
+		./emulationstation {SCRIPTS_FD}<&- &
+	else
+		./emulationstation &
+	fi
 	ES_PID=$!
+	services_stop
+	# on the script's console already (--scripts), its splash painted: ES draws there from its first frame
+	scripts_drawn
+	[ -n "$SCRIPTS_DRAWN" ] && echo "$SCRIPTS_DRAWN" >"$SCREEN_READY"
 	services_closing
 	;;
 esac
@@ -479,11 +569,14 @@ done
 
 # the framebuffer ES draws in: at SIZE, with auto at the size Main_MiSTer gives it for the menu, with fill
 # at the screen's (ES enlarges its frames to it).
-# Started from the Scripts menu, Main_MiSTer is still closing the script's screen and does not take F9
-# yet: a moment first, then short tries (8 presses, about 4 s each) until it does, for up to ~30 s.
+# Started from the Scripts menu: once Main_MiSTer has seen the script end (scripts_screen_wait, above), short
+# tries (8 presses, about 4 s each) until it takes F9, for up to ~30 s.
 echo "the menu core is loaded (uptime $(uptime) s)"
-sleep 2
-echo "asking for the framebuffer (uptime $(uptime) s)"
+scripts_drawn
+if [ -z "$SCRIPTS_DRAWN" ]; then
+	scripts_screen_wait || echo "the Scripts menu's screen did not end in 3 s"
+	echo "asking for the framebuffer (uptime $(uptime) s)"
+fi
 framebuffer_on() {
 	DRAWN=""
 	for attempt in 1 2 3 4 5 6 7; do
@@ -494,7 +587,9 @@ framebuffer_on() {
 	done
 	return 1
 }
-if ! framebuffer_on; then
+if [ -n "$SCRIPTS_DRAWN" ]; then
+	DRAWN=$SCRIPTS_DRAWN
+elif ! framebuffer_on; then
 	# Main_MiSTer did not take F9 (seen with its framebuffer left on without ES): the menu core loaded again,
 	# so Main_MiSTer starts afresh (as after any game), and the same tries once more
 	echo "the menu core loaded again, then the same tries"

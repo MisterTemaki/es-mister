@@ -53,6 +53,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/reboot.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
@@ -374,8 +375,8 @@ static int chvt(int n)
 		fprintf(stderr, "es-mister-helper: the console is in graphics mode (a program drawing on it holds it): it cannot switch\n");
 	int ok = ioctl(fd, VT_ACTIVATE, n) == 0;
 	close(fd);
-	for (int wait = 0; ok && wait < 20 && active_console() != n; wait++)
-		sleep_ms(50);
+	for (int wait = 0; ok && wait < 200 && active_console() != n; wait++)
+		sleep_ms(5);
 	return ok && active_console() == n;
 }
 
@@ -868,6 +869,272 @@ static int console_on(const char* size, int presses, int kbd)
 	return 0;
 }
 
+// Main_MiSTer's child running the Scripts menu's script on tty2 (the agetty, then the script it runs, named
+// "script"): its pid, 0 when there is none
+static pid_t scripts_child(void)
+{
+	pid_t mains[8];
+	const int count = processes_named("MiSTer", mains, 8);
+	DIR* dir = count > 0 ? opendir("/proc") : NULL;
+	if (!dir)
+		return 0;
+	pid_t found = 0;
+	struct dirent* entry;
+	while (!found && (entry = readdir(dir)) != NULL)
+	{
+		const pid_t n = (pid_t)atoi(entry->d_name);
+		if (n <= 1)
+			continue;
+		char path[64], stat[512];
+		snprintf(path, sizeof(path), "/proc/%d/stat", (int)n);
+		if (!read_line(path, stat, sizeof(stat)))
+			continue;
+		char* open_paren = strchr(stat, '(');
+		char* close_paren = strrchr(stat, ')');
+		char state = 0;
+		int parent = 0;
+		if (!open_paren || !close_paren || sscanf(close_paren + 1, " %c %d", &state, &parent) != 2 || state == 'Z')
+			continue;
+		*close_paren = 0;
+		const char* name = open_paren + 1;
+		for (int i = 0; i < count; i++)
+			if (parent == mains[i] && (!strcmp(name, "script") || !strcmp(name, "agetty")))
+				found = n;
+	}
+	closedir(dir);
+	return found;
+}
+
+// A QOI picture (qoiformat.org) decoded to count pixels 0xAARRGGBB: the splash snapshot's (ES writes it with
+// the reference encoder, external/qoi). 1 when it decoded whole.
+static int qoi_decode_argb(const unsigned char* data, size_t length, uint32_t* out, size_t count)
+{
+	if (length < 14 + 8 || memcmp(data, "qoif", 4) != 0)
+		return 0;
+	const size_t chunks = length - 8;
+	size_t p = 14;
+	uint32_t index[64];
+	memset(index, 0, sizeof(index));
+	unsigned char r = 0, g = 0, b = 0, a = 255;
+	int run = 0;
+	for (size_t i = 0; i < count; i++)
+	{
+		if (run > 0)
+			run--;
+		else if (p < chunks)
+		{
+			const int b1 = data[p++];
+			if (b1 == 0xfe)
+			{
+				if (p + 3 > chunks)
+					return 0;
+				r = data[p++]; g = data[p++]; b = data[p++];
+			}
+			else if (b1 == 0xff)
+			{
+				if (p + 4 > chunks)
+					return 0;
+				r = data[p++]; g = data[p++]; b = data[p++]; a = data[p++];
+			}
+			else if ((b1 & 0xc0) == 0x00)
+			{
+				const uint32_t px = index[b1];
+				a = (unsigned char)(px >> 24); r = (unsigned char)(px >> 16); g = (unsigned char)(px >> 8); b = (unsigned char)px;
+			}
+			else if ((b1 & 0xc0) == 0x40)
+			{
+				r += ((b1 >> 4) & 0x03) - 2;
+				g += ((b1 >> 2) & 0x03) - 2;
+				b += (b1 & 0x03) - 2;
+			}
+			else if ((b1 & 0xc0) == 0x80)
+			{
+				if (p + 1 > chunks)
+					return 0;
+				const int b2 = data[p++];
+				const int vg = (b1 & 0x3f) - 32;
+				r += vg - 8 + ((b2 >> 4) & 0x0f);
+				g += vg;
+				b += vg - 8 + (b2 & 0x0f);
+			}
+			else
+				run = b1 & 0x3f;
+			index[(r * 3 + g * 5 + b * 7 + a * 11) % 64] = ((uint32_t)a << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+		}
+		else
+			return 0;
+		out[i] = ((uint32_t)a << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+	}
+	return 1;
+}
+
+// the mean of two pixels, each byte rounded up: as ES's SoftScale (NEON's vrhadd)
+static inline uint32_t pixel_mean(uint32_t a, uint32_t b)
+{
+	return (a | b) - (((a ^ b) & 0xFEFEFEFEu) >> 1);
+}
+
+// ES's splash snapshot (ES_SPLASH_SNAPSHOT, written by ES at its first frame) on the framebuffer (map, of
+// width x height pixels, rows of pitch bytes): as ES copies its frames to it, the same size or 1.5 times
+// bigger (each 2x2 pixels to 3x3, the middle ones means, as SoftScale's three halves), so that ES's own
+// first frame, the same picture, changes nothing. 0 when there is none or it does not fit (black then).
+static int paint_snapshot(const char* path, uint8_t* map, int width, int height, size_t pitch)
+{
+	if (!path || !*path)
+		return 0;
+	const int fd = open(path, O_RDONLY | O_CLOEXEC);
+	if (fd < 0)
+		return 0;
+	struct stat info;
+	unsigned char* file = NULL;
+	ssize_t got = -1;
+	if (fstat(fd, &info) == 0 && info.st_size > 32 && info.st_size < 64 * 1024 * 1024 && (file = malloc((size_t)info.st_size)) != NULL)
+		got = read(fd, file, (size_t)info.st_size);
+	close(fd);
+	if (!file || got != info.st_size)
+	{
+		free(file);
+		return 0;
+	}
+	uint32_t head[3], qoi_length = 0;
+	int ok = 0;
+	if (memcmp(file, "ESSPLSH1", 8) == 0)
+	{
+		memcpy(head, file + 8, sizeof(head));
+		const size_t at = 8 + sizeof(head) + head[2];
+		if (head[2] < 4096 && at + 4 <= (size_t)got)
+		{
+			memcpy(&qoi_length, file + at, 4);
+			const int w = (int)head[0], h = (int)head[1];
+			const int same = w == width && h == height;
+			const int half = (int64_t)w * 3 == (int64_t)width * 2 && (int64_t)h * 3 == (int64_t)height * 2 && w % 2 == 0 && h % 2 == 0;
+			uint32_t* frame = (same || half) && at + 4 + qoi_length == (size_t)got ? malloc((size_t)w * h * 4) : NULL;
+			if (frame && qoi_decode_argb(file + at + 4, qoi_length, frame, (size_t)w * h))
+			{
+				if (same)
+					for (int y = 0; y < h; y++)
+						memcpy(map + (size_t)y * pitch, frame + (size_t)y * w, (size_t)w * 4);
+				else
+					for (int y = 0; y < h; y += 2)
+					{
+						const uint32_t* top = frame + (size_t)y * w;
+						const uint32_t* bottom = top + w;
+						uint32_t* row0 = (uint32_t*)(map + (size_t)(y / 2 * 3) * pitch);
+						uint32_t* row1 = (uint32_t*)((uint8_t*)row0 + pitch);
+						uint32_t* row2 = (uint32_t*)((uint8_t*)row1 + pitch);
+						for (int x = 0; x < w; x += 2)
+						{
+							const int o = x / 2 * 3;
+							row0[o] = top[x];
+							row0[o + 1] = pixel_mean(top[x], top[x + 1]);
+							row0[o + 2] = top[x + 1];
+							const uint32_t even = pixel_mean(top[x], bottom[x]), odd = pixel_mean(top[x + 1], bottom[x + 1]);
+							row1[o] = even;
+							row1[o + 1] = pixel_mean(even, odd);
+							row1[o + 2] = odd;
+							row2[o] = bottom[x];
+							row2[o + 1] = pixel_mean(bottom[x], bottom[x + 1]);
+							row2[o + 2] = bottom[x + 1];
+						}
+					}
+				ok = 1;
+			}
+			free(frame);
+		}
+	}
+	free(file);
+	return ok;
+}
+
+// Started from the Scripts menu (es-mister.sh --scripts): while the script runs, Main_MiSTer shows the Linux
+// framebuffer with the script's console (tty2), and emulationstation.sh stays until ES closes. ES's console
+// shown there at once, without F9: Main_MiSTer takes F9 only once the script has ended, a key has closed its
+// screen and it has drawn its menu's background again (3-4 s with a wallpaper, its keys unread meanwhile).
+// tty1 put in graphics mode first (no console text drawn on it), switched to, and the framebuffer cleared to
+// black until ES draws; then the framebuffer at the size asked, as console_on sets it. 1 when Main_MiSTer is
+// not showing a script's console (es-mister.sh then asks for the framebuffer with F9).
+static int scripts_screen(const char* size, const char* snapshot)
+{
+	int width = 640, height = 360;
+	const int fill = size && !strncmp(size, "fill:", 5);
+	if (!fill || sscanf(size + 5, "%dx%d", &width, &height) != 2 || width < 16 || height < 16)
+	{
+		fprintf(stderr, "es-mister-helper: scripts needs fill:WIDTHxHEIGHT, not %s\n", size ? size : "");
+		return 2;
+	}
+	char core[64] = "";
+	read_line("/tmp/CORENAME", core, sizeof(core));
+	if (strcmp(core, "MENU") != 0 || active_console() != 2 || scripts_child() == 0)
+	{
+		fprintf(stderr, "es-mister-helper: no script's console shown (core %s, tty%d)\n", core, active_console());
+		return 1;
+	}
+
+	// ES holding tty1 already (shown again after F12: es-mister.sh --show): it draws all again once it has the
+	// console back; otherwise graphics mode and black here until ES draws
+	int held = 0;
+	const int tty = open("/dev/tty1", O_RDWR | O_CLOEXEC | O_NOCTTY);
+	if (tty >= 0)
+	{
+		struct vt_mode mode;
+		held = ioctl(tty, VT_GETMODE, &mode) == 0 && mode.mode == VT_PROCESS;
+		if (!held)
+			ioctl(tty, KDSETMODE, KD_GRAPHICS);
+		close(tty);
+	}
+	if (!chvt(1))
+	{
+		fprintf(stderr, "es-mister-helper: the switch to tty1 did not happen (tty%d)\n", active_console());
+		text_mode();
+		return 1;
+	}
+	stamp("the script's console shown by Main_MiSTer: tty1 now, without F9");
+
+	// the screen's size, which ES's frames are enlarged to (as console_on does for fill)
+	int screen_width = 0, screen_height = 0;
+	if (!framebuffer_size(&screen_width, &screen_height) || screen_width <= 0 || screen_height <= 0)
+		fprintf(stderr, "es-mister-helper: cannot read the framebuffer's size, %dx%d\n", width, height);
+	else if (!(screen_width % width == 0 && screen_height % height == 0 && screen_width / width == screen_height / height))
+	{
+		width = screen_width;
+		height = screen_height;
+	}
+	int now_width = 0, now_height = 0, now_bits = 0;
+	if (!framebuffer_mode(&now_width, &now_height, &now_bits) || now_width != width || now_height != height || now_bits != 32)
+	{
+		char command[64];
+		snprintf(command, sizeof(command), "fb_cmd1 8888 1 %d %d", width, height);
+		if (send_cmd(command) != 0)
+			return 1;
+		sleep_ms(300); // Main_MiSTer sets the framebuffer driver's mode
+	}
+
+	// ES's splash as it last drew it (snapshot), else black, until ES draws (the script's text stays in the
+	// framebuffer otherwise)
+	const int fb = held ? -1 : open("/dev/fb0", O_RDWR | O_CLOEXEC);
+	if (fb >= 0)
+	{
+		struct fb_fix_screeninfo fix;
+		struct fb_var_screeninfo var;
+		if (ioctl(fb, FBIOGET_FSCREENINFO, &fix) == 0 && ioctl(fb, FBIOGET_VSCREENINFO, &var) == 0 && var.bits_per_pixel == 32)
+		{
+			const size_t length = (size_t)fix.line_length * var.yres;
+			uint8_t* map = length > 0 && length <= fix.smem_len ? mmap(NULL, length, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0) : MAP_FAILED;
+			if (map != MAP_FAILED)
+			{
+				if (paint_snapshot(snapshot, map, (int)var.xres, (int)var.yres, fix.line_length))
+					stamp("ES's splash painted (%s)", snapshot);
+				else
+					memset(map, 0, length);
+				munmap(map, length);
+			}
+		}
+		close(fb);
+	}
+	printf("%dx%d\n", width, height);
+	return 0;
+}
+
 // U-Boot's boot flag, which Main_MiSTer sets before it restarts the board (fpga_io.cpp, reboot): 0 a
 // cold boot, which loads the MiSTer as at power on; its magic value a warm one
 static int boot_flag_cold(void)
@@ -1183,6 +1450,20 @@ int main(int argc, char** argv)
 		return console_on(argc >= 3 ? argv[2] : NULL, presses >= 1 && presses <= 100 ? presses : 30, -1);
 	}
 
+	if (argc >= 3 && !strcmp(argv[1], "scripts"))
+		return scripts_screen(argv[2], argc >= 4 ? argv[3] : NULL);
+	// the Scripts menu's script ended and seen so by Main_MiSTer (no child of its running it), up to 3 s
+	if (argc >= 2 && !strcmp(argv[1], "scripts-wait"))
+	{
+		for (int waited = 0; waited < 3000; waited += 10)
+		{
+			if (scripts_child() == 0)
+				return 0;
+			sleep_ms(10);
+		}
+		return 1;
+	}
+
 	if (argc >= 3 && !strcmp(argv[1], "bgm"))
 		return bgm_command(argv[2]);
 
@@ -1230,6 +1511,6 @@ int main(int argc, char** argv)
 	if (argc >= 2 && (!strcmp(argv[1], "reboot") || !strcmp(argv[1], "halt")))
 		return power(!strcmp(argv[1], "halt"));
 
-	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | cmd TEXT | key NAME | core | text | guard PID | ungrab PID | exitkeys PID | back PID SIZE | bgm COMMAND | reboot | halt\n", argv[0]);
+	fprintf(stderr, "usage: %s console WIDTHxHEIGHT|auto|auto/N|fill:WIDTHxHEIGHT | cmd TEXT | key NAME | core | text | guard PID | ungrab PID | exitkeys PID | back PID SIZE | scripts fill:WIDTHxHEIGHT [SNAPSHOT] | scripts-wait | bgm COMMAND | reboot | halt\n", argv[0]);
 	return 2;
 }

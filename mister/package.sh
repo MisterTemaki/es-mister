@@ -86,6 +86,9 @@ MENU_ASK=1
 # The most frames a second ES draws (fewer leaves the ARM more time)
 FPS=60
 
+# The least time, in seconds, the logo (ES's splash) stays on screen when ES is ready sooner; 0: not held
+SPLASH_TIME=2.2
+
 # 1: every frame drawn whole even when nothing changed, to measure the drawing's cost
 # (logs/es-mister-stats.txt); 0 in normal use
 BENCH=0
