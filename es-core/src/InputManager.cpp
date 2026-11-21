@@ -669,7 +669,7 @@ static void askMisterMenu(Window* window)
 		return;
 	// yes: the controllers given back at once (ES's end may take a while, writing its lists), and ES
 	// closed: es-mister.sh loads the MiSTer menu
-	asking = new GuiMsgBox(window, _("LEAVE EMULATIONSTATION FOR THE MISTER MENU?"),
+	asking = new GuiMsgBox(window, _("LEAVE MISTERCERA FOR THE MISTER MENU?"),
 		_("YES"), []
 		{
 			Renderer::Soft::MisterPads::giveBack("leaving ES for the MiSTer menu");
