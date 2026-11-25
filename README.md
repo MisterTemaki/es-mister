@@ -17,6 +17,9 @@ frontend. Two versions are published:
 
 ## Mistercera FE
 
+<p align="center"><img src="docs/mistercera-fe-snes-grid.png" alt="Mistercera FE: the Super Nintendo's games as a grid of covers" width="836"></p>
+<p align="center"><sub>The Super Nintendo's games with their covers (Carbon theme, menu in Portuguese).</sub></p>
+
 [Download the latest release](https://github.com/MisterTemaki/es-mister/releases/latest)
 (`Mistercera_FE-0.10-beta6.zip`).
 
